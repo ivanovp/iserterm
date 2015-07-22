@@ -52,18 +52,43 @@ public:
     explicit Console(QWidget *parent = 0);
 
     void putData(const QByteArray &data);
+    void clear();
 
-    void setLocalEchoEnabled(bool set);
+    bool isLocalEchoEnabled() const;
+    void setLocalEchoEnabled(bool localEchoEnabled = true);
+
+    bool isUpdateEnabled() const;
+    void setUpdateEnabled(bool updateEnabled = true);
+
+    int getDataSizeLimit() const;
+    void setDataSizeLimit(int dataSizeLimit);
+
+    bool isDisplayTimestampEnabled() const;
+    void setDisplayTimestampEnabled(bool displayTimestampEnabled = true);
+
+    bool isDisplayHexValuesEnabled() const;
+    void setDisplayHexValuesEnabled(bool displayHexValues = true);
+
+    QString getLineEnding() const;
+    void setLineEnding(const QString &lineEnding);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseDoubleClickEvent(QMouseEvent *e);
+    //    virtual void mousePressEvent(QMouseEvent *e);
+//    virtual void mouseDoubleClickEvent(QMouseEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);
+    void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true);
+    void rebuildConsole();
+
+    QByteArray m_data;
+    int m_dataSizeLimit;
 
 private:
-    bool localEchoEnabled;
-
+    bool m_localEchoEnabled;
+    bool m_updateEnabled;
+    bool m_displayTimestampEnabled;
+    bool m_displayHexValuesEnabled;
+    QString m_lineEnding;
 };
 
 #endif // CONSOLE_H

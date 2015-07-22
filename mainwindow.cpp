@@ -40,6 +40,7 @@
 #include "ui_mainwindow.h"
 #include "console.h"
 #include "settingsdialog.h"
+#include "hexvalidator.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -59,18 +60,16 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon (QIcon (":/images/iserterm.png"));
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
     console = new Console;
-    console->setEnabled(false);
-    setCentralWidget(console);
+    enableConsole(false);
+    ui->consoleWidget->addWidget(console);
 //! [1]
     serial = new QSerialPort(this);
 //! [1]
     serialSettings = new SettingsDialog;
 
-    ui->actionConnect->setEnabled(true);
-    ui->actionDisconnect->setEnabled(false);
-    ui->actionQuit->setEnabled(true);
-    ui->actionConfigure->setEnabled(true);
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
+    ui->actionQuit->setEnabled(true);
+    ui->hexInputLineEdit->setValidator(new HexValidator (this));
 
     initActionsConnections();
 
@@ -90,8 +89,20 @@ MainWindow::~MainWindow()
     QSettings settings;
     settings.setValue("window/width", size().width());
     settings.setValue("window/height", size().height());
+    settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
     delete serialSettings;
     delete ui;
+}
+
+void MainWindow::enableConsole(bool enable)
+{
+    console->setReadOnly (!enable);
+//    console->setEnabled(enable);
+    ui->hexInputLabel->setEnabled(enable);
+    ui->hexInputLineEdit->setEnabled(enable);
+    ui->actionConnect->setEnabled(!enable);
+    ui->actionDisconnect->setEnabled(enable);
+    ui->actionConfigure->setEnabled(!enable);
 }
 
 //! [4]
@@ -106,12 +117,9 @@ void MainWindow::openSerialPort()
     serial->setFlowControl(p.flowControl);
     if (serial->open(QIODevice::ReadWrite))
     {
-        console->setEnabled(true);
+        enableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
-        ui->actionConnect->setEnabled(false);
-        ui->actionDisconnect->setEnabled(true);
-        ui->actionConfigure->setEnabled(false);
         ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, flow control: %6")
                                    .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                                    .arg(p.stringParity[0]).arg(p.stringStopBits).arg(p.stringFlowControl));
@@ -132,10 +140,7 @@ void MainWindow::closeSerialPort()
     {
         serial->close();
     }
-    console->setEnabled(false);
-    ui->actionConnect->setEnabled(true);
-    ui->actionDisconnect->setEnabled(false);
-    ui->actionConfigure->setEnabled(true);
+    enableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
 }
 //! [5]
@@ -218,7 +223,7 @@ void MainWindow::on_actionSet_background_color_triggered()
     QPalette palette = console->palette();
     QColor colorOriginal = palette.color(QPalette::Base).toRgb();
     QColor color;
-    color = QColorDialog::getColor(colorOriginal, this, "Choose background color"/*, QColorDialog::ShowAlphaChannel*/);
+    color = QColorDialog::getColor(colorOriginal, this, "Choose background color");
     if (color.isValid())
     {
         QSettings settings;
@@ -234,7 +239,7 @@ void MainWindow::on_actionSet_foreground_color_triggered()
     QColor colorOriginal = palette.color(QPalette::Text).toRgb();
     QColor color;
     qDebug() << "fgcolor orig" << colorOriginal;
-    color = QColorDialog::getColor(colorOriginal, this, "Choose foreground color"/*, QColorDialog::ShowAlphaChannel*/);
+    color = QColorDialog::getColor(colorOriginal, this, "Choose foreground color");
     if (color.isValid())
     {
         QSettings settings;
@@ -242,4 +247,40 @@ void MainWindow::on_actionSet_foreground_color_triggered()
         palette.setColor(QPalette::Text, color);
         console->setPalette(palette);
     }
+}
+
+void MainWindow::on_hexInputLineEdit_returnPressed()
+{
+    QString str = ui->hexInputLineEdit->text();
+    str.remove(' ');
+    QByteArray data;
+    while (str.length() > 1)
+    {
+        char c;
+        bool ok;
+        QString hexStr = str.left(2);
+        c = hexStr.toInt(&ok, 16);
+        if (ok)
+        {
+            data.append(c);
+        }
+        else
+        {
+            qDebug() << "Cannot convert string to number!";
+        }
+        str.remove(0, 2);
+    }
+    if (data.length())
+    {
+        serial->write(data);
+        if (ui->actionLocal_echo->isChecked())
+        {
+            console->putData(data);
+        }
+    }
+}
+
+void MainWindow::on_actionStop_update_triggered(bool checked)
+{
+    console->setUpdateEnabled(!checked);
 }

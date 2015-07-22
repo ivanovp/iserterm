@@ -64,6 +64,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void enableConsole(bool enable);
 private slots:
     void openSerialPort();
     void closeSerialPort();
@@ -74,12 +75,12 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
 
     void on_actionLocal_echo_triggered(bool checked);
-
     void on_actionSet_font_triggered();
-
     void on_actionSet_background_color_triggered();
-
     void on_actionSet_foreground_color_triggered();
+    void on_hexInputLineEdit_returnPressed();
+
+    void on_actionStop_update_triggered(bool checked);
 
 private:
     void initActionsConnections();
