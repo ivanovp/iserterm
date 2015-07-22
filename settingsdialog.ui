@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>381</width>
+    <width>431</width>
     <height>216</height>
    </rect>
   </property>
@@ -77,7 +77,7 @@
     <widget class="QGroupBox" name="selectBox">
      <property name="minimumSize">
       <size>
-       <width>200</width>
+       <width>300</width>
        <height>0</height>
       </size>
      </property>
@@ -86,44 +86,64 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QComboBox" name="serialPortInfoListBox"/>
+       <widget class="QComboBox" name="serialPortInfoListBox">
+        <property name="minimumSize">
+         <size>
+          <width>125</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
-      <item row="1" column="0">
+      <item row="0" column="1">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="0" colspan="2">
        <widget class="QLabel" name="descriptionLabel">
         <property name="text">
          <string>Description:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="2" column="0" colspan="2">
        <widget class="QLabel" name="manufacturerLabel">
         <property name="text">
          <string>Manufacturer:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="serialNumberLabel">
         <property name="text">
          <string>Serial number:</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="locationLabel">
         <property name="text">
          <string>Location:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="vidLabel">
         <property name="text">
          <string>Vendor ID:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="6" column="0" colspan="2">
        <widget class="QLabel" name="pidLabel">
         <property name="text">
          <string>Product ID:</string>

@@ -22,7 +22,7 @@
      <x>0</x>
      <y>0</y>
      <width>500</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -43,6 +43,8 @@
     <addaction name="separator"/>
     <addaction name="actionClear"/>
     <addaction name="actionSet_font"/>
+    <addaction name="actionSet_background_color"/>
+    <addaction name="actionSet_foreground_color"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -161,12 +163,22 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Local echo</string>
+    <string>Local &amp;echo</string>
    </property>
   </action>
   <action name="actionSet_font">
    <property name="text">
-    <string>Set font...</string>
+    <string>Set &amp;font...</string>
+   </property>
+  </action>
+  <action name="actionSet_background_color">
+   <property name="text">
+    <string>Set &amp;background color...</string>
+   </property>
+  </action>
+  <action name="actionSet_foreground_color">
+   <property name="text">
+    <string>Set &amp;foreground color...</string>
    </property>
   </action>
  </widget>

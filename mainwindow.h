@@ -77,6 +77,10 @@ private slots:
 
     void on_actionSet_font_triggered();
 
+    void on_actionSet_background_color_triggered();
+
+    void on_actionSet_foreground_color_triggered();
+
 private:
     void initActionsConnections();
 

@@ -55,18 +55,30 @@ Console::Console(QWidget *parent)
     font.setStyleHint(QFont::TypeWriter);
     document()->setDefaultFont(font);
     QPalette p = palette();
-    p.setColor(QPalette::Base, Qt::black);
-    p.setColor(QPalette::Text, Qt::green);
+    QVariant bgcolordef;
+    bgcolordef = QColor (Qt::black).name(QColor::HexArgb); // Convert default color to "#rrggbb" format string
+    QVariant fgcolordef;
+    fgcolordef = QColor (Qt::green).name(QColor::HexArgb); // Convert default color to "#rrggbb" format string
+    QColor bgcolor = settings.value("console/bgcolor", bgcolordef).toString();
+    QColor fgcolor = settings.value("console/fgcolor", fgcolordef).toString();
+    qDebug() << "bgcolor" << bgcolor;
+    qDebug() << "fgcolor" << fgcolor;
+    p.setColor(QPalette::Base, bgcolor);
+    p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
-
 }
 
 void Console::putData(const QByteArray &data)
 {
+    QScrollBar *bar = verticalScrollBar();
+    bool scrolledToEnd = bar->sliderPosition() == bar->maximum();
+
     insertPlainText(QString(data));
 
-    QScrollBar *bar = verticalScrollBar();
-    bar->setValue(bar->maximum());
+    if (scrolledToEnd)
+    {
+      bar->setValue(bar->maximum());
+    }
 }
 
 void Console::setLocalEchoEnabled(bool set)

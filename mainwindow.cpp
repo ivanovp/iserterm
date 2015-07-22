@@ -45,6 +45,7 @@
 #include <QMessageBox>
 #include <QFontDialog>
 #include <QSettings>
+#include <QColorDialog>
 #include <QtSerialPort/QSerialPort>
 
 //! [0]
@@ -55,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QSettings settings;
 //! [0]
     ui->setupUi(this);
+    setWindowIcon (QIcon (":/images/iserterm.png"));
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
     console = new Console;
     console->setEnabled(false);
@@ -110,9 +112,9 @@ void MainWindow::openSerialPort()
         ui->actionConnect->setEnabled(false);
         ui->actionDisconnect->setEnabled(true);
         ui->actionConfigure->setEnabled(false);
-        ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
+        ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, flow control: %6")
                                    .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                   .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
+                                   .arg(p.stringParity[0]).arg(p.stringStopBits).arg(p.stringFlowControl));
     }
     else
     {
@@ -143,7 +145,7 @@ void MainWindow::about()
     QMessageBox::about(this, tr("About iSerTerm"),
                        tr("iSerTerm v0.1\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
-                          "RS-232 serial terminal software basedon Simple Terminal example.\n"
+                          "RS-232 serial terminal software based on Simple Terminal example.\n"
                           "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015\n"
                           "\n"
                           "Simple Terminal authors:\n"
@@ -208,5 +210,36 @@ void MainWindow::on_actionSet_font_triggered()
         console->document()->setDefaultFont(font);
         QSettings settings;
         settings.setValue("console/font", font.toString());
+    }
+}
+
+void MainWindow::on_actionSet_background_color_triggered()
+{
+    QPalette palette = console->palette();
+    QColor colorOriginal = palette.color(QPalette::Base).toRgb();
+    QColor color;
+    color = QColorDialog::getColor(colorOriginal, this, "Choose background color"/*, QColorDialog::ShowAlphaChannel*/);
+    if (color.isValid())
+    {
+        QSettings settings;
+        settings.setValue("console/bgcolor", color.name(QColor::HexArgb));
+        palette.setColor(QPalette::Base, color);
+        console->setPalette(palette);
+    }
+}
+
+void MainWindow::on_actionSet_foreground_color_triggered()
+{
+    QPalette palette = console->palette();
+    QColor colorOriginal = palette.color(QPalette::Text).toRgb();
+    QColor color;
+    qDebug() << "fgcolor orig" << colorOriginal;
+    color = QColorDialog::getColor(colorOriginal, this, "Choose foreground color"/*, QColorDialog::ShowAlphaChannel*/);
+    if (color.isValid())
+    {
+        QSettings settings;
+        settings.setValue("console/fgcolor", color.name(QColor::HexArgb));
+        palette.setColor(QPalette::Text, color);
+        console->setPalette(palette);
     }
 }
