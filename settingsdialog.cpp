@@ -172,7 +172,7 @@ void SettingsDialog::fillPortsParameters()
 #endif
     ui->stopBitsBox->addItem(QStringLiteral("2"), QSerialPort::TwoStop);
 
-    ui->flowControlBox->addItem(tr("None"), QSerialPort::NoFlowControl);
+    ui->flowControlBox->addItem(tr("No handshake"), QSerialPort::NoFlowControl);
     ui->flowControlBox->addItem(tr("RTS/CTS"), QSerialPort::HardwareControl);
     ui->flowControlBox->addItem(tr("XON/XOFF"), QSerialPort::SoftwareControl);
 }

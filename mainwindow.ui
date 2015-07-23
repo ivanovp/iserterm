@@ -15,20 +15,88 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QLabel" name="hexInputLabel">
-        <property name="text">
-         <string>Hex input:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="hexInputLineEdit"/>
-      </item>
-      <item row="0" column="0" colspan="2">
+     <layout class="QGridLayout" name="gridLayout" rowstretch="1,0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
        <layout class="QVBoxLayout" name="consoleWidget"/>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="sendLayout">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="sendLabel">
+          <property name="text">
+           <string>Hex input:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="sendLineEdit"/>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="hexRadioButton">
+          <property name="text">
+           <string>Hex</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sendButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="decRadioButton">
+          <property name="text">
+           <string>Dec</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sendButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="binRadioButton">
+          <property name="text">
+           <string>Bin</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sendButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="sendButton">
+          <property name="text">
+           <string>&amp;Send</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -45,25 +113,22 @@
    </property>
    <widget class="QMenu" name="menuCalls">
     <property name="title">
-     <string>Calls</string>
+     <string>File</string>
     </property>
-    <addaction name="actionConnect"/>
-    <addaction name="actionDisconnect"/>
+    <addaction name="actionSend_file"/>
+    <addaction name="actionSave_log"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>Serial</string>
     </property>
+    <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
     <addaction name="actionConfigure"/>
     <addaction name="actionLocal_echo"/>
-    <addaction name="actionStop_update"/>
     <addaction name="separator"/>
-    <addaction name="actionClear"/>
-    <addaction name="actionSet_font"/>
-    <addaction name="actionSet_background_color"/>
-    <addaction name="actionSet_foreground_color"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -72,8 +137,20 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>Console</string>
+    </property>
+    <addaction name="actionSet_font"/>
+    <addaction name="actionSet_background_color"/>
+    <addaction name="actionSet_foreground_color"/>
+    <addaction name="actionStop_update"/>
+    <addaction name="actionClear"/>
+    <addaction name="actionViewSendInput"/>
+   </widget>
    <addaction name="menuCalls"/>
    <addaction name="menuTools"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -217,6 +294,27 @@
    <property name="text">
     <string>Stop update</string>
    </property>
+   <property name="toolTip">
+    <string>Stop update, received data will not be lost</string>
+   </property>
+  </action>
+  <action name="actionViewSendInput">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hexadecimal input</string>
+   </property>
+  </action>
+  <action name="actionSend_file">
+   <property name="text">
+    <string>S&amp;end file...</string>
+   </property>
+  </action>
+  <action name="actionSave_log">
+   <property name="text">
+    <string>S&amp;ave log...</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -224,4 +322,7 @@
   <include location="iserterm.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="sendButtonGroup"/>
+ </buttongroups>
 </ui>

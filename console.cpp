@@ -44,6 +44,9 @@
 #include <QSettings>
 #include <QMenu>
 
+#define BACKSPACE 8
+#define DELETE    127
+
 Console::Console(QWidget *parent)
     : QPlainTextEdit(parent)
     , m_dataSizeLimit(32 * 1024 * 1024)
@@ -51,9 +54,11 @@ Console::Console(QWidget *parent)
     , m_updateEnabled(true)
     , m_displayTimestampEnabled(false)
     , m_displayHexValuesEnabled(false)
-    , m_lineEnding("\r\n")
+    , m_lineEndingRx("\r\n")
+    , m_lineEndingTx("\r")
 {
-    document()->setMaximumBlockCount(1000);
+//    setOverwriteMode(true);
+    document()->setMaximumBlockCount(10000); // FIXME this should be configurable
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
     QFont font;
@@ -64,14 +69,19 @@ Console::Console(QWidget *parent)
     QVariant bgcolordef;
     bgcolordef = QColor (Qt::black).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
     QVariant fgcolordef;
-    fgcolordef = QColor (Qt::green).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    fgcolordef = QColor (Qt::lightGray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
     QColor bgcolor = settings.value("console/bgcolor", bgcolordef).toString();
     QColor fgcolor = settings.value("console/fgcolor", fgcolordef).toString();
-    qDebug() << "bgcolor" << bgcolor;
-    qDebug() << "fgcolor" << fgcolor;
+//    qDebug() << "bgcolor" << bgcolor;
+//    qDebug() << "fgcolor" << fgcolor;
     p.setColor(QPalette::Base, bgcolor);
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
+
+    m_keyMap.insert(Qt::Key_Backspace, KeyMap(false, "\x08"));
+    m_keyMap.insert(Qt::Key_Delete,    KeyMap(false, "\x7F"));
+    m_keyMap.insert(Qt::Key_Return,    KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Enter,     KeyMap(true, m_lineEndingTx));
 }
 
 void Console::putData(const QByteArray &data)
@@ -122,14 +132,24 @@ void Console::setUpdateEnabled(bool updateEnabled)
     m_updateEnabled = updateEnabled;
 }
 
-QString Console::getLineEnding() const
+QString Console::getLineEndingRx() const
 {
-    return m_lineEnding;
+    return m_lineEndingRx;
 }
 
-void Console::setLineEnding(const QString &lineEnding)
+void Console::setLineEndingRx(const QString &lineEndingRx)
 {
-    m_lineEnding = lineEnding;
+    m_lineEndingRx = lineEndingRx;
+}
+
+QString Console::getLineEndingTx() const
+{
+  return m_lineEndingTx;
+}
+
+void Console::setLineEndingTx(const QString &lineEndingTx)
+{
+  m_lineEndingTx = lineEndingTx;
 }
 
 bool Console::isDisplayHexValuesEnabled() const
@@ -164,21 +184,67 @@ void Console::setDataSizeLimit(int dataSizeLimit)
 
 void Console::keyPressEvent(QKeyEvent *e)
 {
-    switch (e->key())
+    if (e->key() >= Qt::Key_Space && e->key() <= Qt::Key_ydiaeresis)
     {
+      if (m_localEchoEnabled)
+      {
+        moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+        QPlainTextEdit::keyPressEvent(e);
+      }
+      emit getData(e->text().toLocal8Bit());
+    }
+    else
+    {
+      Qt::Key key = static_cast<Qt::Key> (e->key());
+      if (m_localEchoEnabled)
+      {
+        if ((m_keyMap.contains(key) && m_keyMap[key].m_handleKey) || !m_keyMap.contains(key))
+        {
+          moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+          QPlainTextEdit::keyPressEvent(e);
+        }
+      }
+      if (m_keyMap.contains(key))
+      {
+        emit getData(m_keyMap[key].m_str.toLocal8Bit());
+      }
+#if 0
+      switch (e->key())
+      {
         case Qt::Key_Backspace:
+          if (m_localEchoEnabled)
+          {
+            QPlainTextEdit::keyPressEvent(e);
+          }
+          emit getData("\x08");
+          break;
+        case Qt::Key_Delete:
+          if (m_localEchoEnabled)
+          {
+            QPlainTextEdit::keyPressEvent(e);
+          }
+          emit getData("\x7F");
+          break;
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+          if (m_localEchoEnabled)
+          {
+            QPlainTextEdit::keyPressEvent(e);
+          }
+          qDebug() << __FUNCTION__ << "enter" << e->text().toLocal8Bit();
+          emit getData(m_lineEndingTx.toLocal8Bit());
+          break;
         case Qt::Key_Left:
         case Qt::Key_Right:
         case Qt::Key_Up:
         case Qt::Key_Down:
-            break;
+          QPlainTextEdit::keyPressEvent(e);
+          break;
         default:
-            if (m_localEchoEnabled)
-            {
-                moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
-                QPlainTextEdit::keyPressEvent(e);
-            }
-            emit getData(e->text().toLocal8Bit());
+          QPlainTextEdit::keyPressEvent(e);
+          break;
+      }
+#endif
     }
 }
 
@@ -232,19 +298,29 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
     QByteArray data2;
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
     data2 = data;
-    data2.replace (m_lineEnding, QByteArray("\n"));
-//    if (m_lineEnding.length () > 1)
-    if (m_lineEnding == "\r\n" || m_lineEnding == "\n\r")
+    data2.replace (m_lineEndingRx, QByteArray("\n"));
+    if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
     {
         /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
-        data2.replace (QString (m_lineEnding[0]), QByteArray());
+        data2.replace (QString (m_lineEndingRx[0]), QByteArray());
     }
-//    if (strchr (data2, '\r') != 0)
-//    {
-//        qDebug() << "Line ending found!" << data;
-//        qDebug() << data2;
-//    }
-    insertPlainText(QString(data2));
+    foreach (char c, data2)
+    {
+      if (c == BACKSPACE)
+      {
+        moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+      }
+      else
+      {
+        // TODO emulate keyPressEvent???
+//        QKeyEvent event (QKeyEvent::KeyPress, c, Qt::NoModifier);
+//        QPlainTextEdit::keyPressEvent(&event);
+//        QKeyEvent event2 (QKeyEvent::KeyRelease, c, Qt::NoModifier);
+//        QPlainTextEdit::keyPressEvent(&event2);
+        insertPlainText(QString(c));
+      }
+    }
+//    insertPlainText(QString(data2));
 
     if (scrollToEnd)
     {

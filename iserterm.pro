@@ -14,10 +14,12 @@ SOURCES += \
     console.cpp
 
 HEADERS += \
+    common.h \
+    console.h \
     hexvalidator.h \
     mainwindow.h \
     settingsdialog.h \
-    console.h
+    version.h
 
 FORMS += \
     mainwindow.ui \
@@ -26,3 +28,4 @@ FORMS += \
 RESOURCES += \
     iserterm.qrc
 
+RC_FILE = resources.rc

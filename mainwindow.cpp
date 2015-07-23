@@ -41,6 +41,8 @@
 #include "console.h"
 #include "settingsdialog.h"
 #include "hexvalidator.h"
+#include "common.h"
+#include "version.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -49,40 +51,46 @@
 #include <QColorDialog>
 #include <QtSerialPort/QSerialPort>
 
-//! [0]
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     QSettings settings;
-//! [0]
+
     ui->setupUi(this);
     setWindowIcon (QIcon (":/images/iserterm.png"));
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
     console = new Console;
     enableConsole(false);
     ui->consoleWidget->addWidget(console);
-//! [1]
+    ui->hexRadioButton->setChecked(true); // FIXME load/save value
+    ui->hexRadioButton->hide();
+    ui->decRadioButton->hide();
+    ui->binRadioButton->hide();
+
     serial = new QSerialPort(this);
-//! [1]
+
     serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
+    bool viewSendInput = settings.value("console/viewSendInput", true).toBool();
+    ui->actionViewSendInput->setChecked(viewSendInput);
+    on_actionViewSendInput_triggered(viewSendInput);
     ui->actionQuit->setEnabled(true);
-    ui->hexInputLineEdit->setValidator(new HexValidator (this));
+    ui->sendLineEdit->setValidator(new HexValidator (this));
 
     initActionsConnections();
 
     connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError)));
 
-//! [2]
+
     connect(serial, SIGNAL(readyRead()), this, SLOT(readData()));
-//! [2]
+
     connect(console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray)));
-//! [3]
 }
-//! [3]
+
 
 MainWindow::~MainWindow()
 {
@@ -90,6 +98,7 @@ MainWindow::~MainWindow()
     settings.setValue("window/width", size().width());
     settings.setValue("window/height", size().height());
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
+    settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
     delete serialSettings;
     delete ui;
 }
@@ -98,14 +107,16 @@ void MainWindow::enableConsole(bool enable)
 {
     console->setReadOnly (!enable);
 //    console->setEnabled(enable);
-    ui->hexInputLabel->setEnabled(enable);
-    ui->hexInputLineEdit->setEnabled(enable);
+//    ui->sendLayout->setEnabled(enable);
+    ui->sendLabel->setEnabled(enable);
+    ui->sendLineEdit->setEnabled(enable);
+    ui->sendButton->setEnabled(enable);
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
     ui->actionConfigure->setEnabled(!enable);
 }
 
-//! [4]
+
 void MainWindow::openSerialPort()
 {
     SettingsDialog::SerialSettings p = serialSettings->serialSettings();
@@ -120,9 +131,13 @@ void MainWindow::openSerialPort()
         enableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
-        ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, flow control: %6")
+        ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
                                    .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                                    .arg(p.stringParity[0]).arg(p.stringStopBits).arg(p.stringFlowControl));
+        QString title = QString("%1 - %2, %3, %4%5%6, %7").arg(VER_PRODUCTNAME_STR).arg(p.name)
+            .arg(p.stringBaudRate).arg(p.stringDataBits).arg(p.stringParity[0]).arg(p.stringStopBits)
+            .arg(p.stringFlowControl);
+        setWindowTitle(title);
     }
     else
     {
@@ -131,9 +146,9 @@ void MainWindow::openSerialPort()
         ui->statusBar->showMessage(tr("Open error"));
     }
 }
-//! [4]
 
-//! [5]
+
+
 void MainWindow::closeSerialPort()
 {
     if (serial->isOpen())
@@ -142,13 +157,14 @@ void MainWindow::closeSerialPort()
     }
     enableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
+    setWindowTitle(VER_PRODUCTNAME_STR);
 }
-//! [5]
+
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, tr("About iSerTerm"),
-                       tr("iSerTerm v0.1\n"
+    QMessageBox::about(this, tr("About"),
+                       QString(tr("%1 v%2.%3.%4\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
                           "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015\n"
@@ -156,19 +172,19 @@ void MainWindow::about()
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"
                           "Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>\n"
-                          ));
+                          )).arg(VER_PRODUCTNAME_STR).arg(VER_PRODUCT_MAJOR).arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE));
 }
 
-//! [6]
+
 void MainWindow::writeData(const QByteArray &data)
 {
 //    qDebug() << __FUNCTION__ << data;
     /* Send user input */
     serial->write(data);
 }
-//! [6]
 
-//! [7]
+
+
 void MainWindow::readData()
 {
     QByteArray data = serial->readAll();
@@ -176,9 +192,9 @@ void MainWindow::readData()
     /* Receive serial data and show on console */
     console->putData(data);
 }
-//! [7]
 
-//! [8]
+
+
 void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError)
@@ -187,7 +203,7 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
         closeSerialPort();
     }
 }
-//! [8]
+
 
 void MainWindow::initActionsConnections()
 {
@@ -249,9 +265,9 @@ void MainWindow::on_actionSet_foreground_color_triggered()
     }
 }
 
-void MainWindow::on_hexInputLineEdit_returnPressed()
+void MainWindow::on_sendLineEdit_returnPressed()
 {
-    QString str = ui->hexInputLineEdit->text();
+    QString str = ui->sendLineEdit->text();
     str.remove(' ');
     QByteArray data;
     while (str.length() > 1)
@@ -283,4 +299,16 @@ void MainWindow::on_hexInputLineEdit_returnPressed()
 void MainWindow::on_actionStop_update_triggered(bool checked)
 {
     console->setUpdateEnabled(!checked);
+}
+
+void MainWindow::on_sendButton_clicked()
+{
+    on_sendLineEdit_returnPressed();
+}
+
+void MainWindow::on_actionViewSendInput_triggered(bool checked)
+{
+    ui->sendLabel->setVisible(checked);
+    ui->sendLineEdit->setVisible(checked);
+    ui->sendButton->setVisible(checked);
 }

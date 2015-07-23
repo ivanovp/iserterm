@@ -69,8 +69,11 @@ public:
     bool isDisplayHexValuesEnabled() const;
     void setDisplayHexValuesEnabled(bool displayHexValues = true);
 
-    QString getLineEnding() const;
-    void setLineEnding(const QString &lineEnding);
+    QString getLineEndingRx() const;
+    void setLineEndingRx(const QString &lineEndingRx);
+
+    QString getLineEndingTx() const;
+    void setLineEndingTx(const QString &lineEndingTx);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
@@ -84,11 +87,23 @@ protected:
     int m_dataSizeLimit;
 
 private:
+    class KeyMap
+    {
+    public:
+      KeyMap() : m_handleKey(false), m_str("") {}
+      KeyMap(bool key, QString str) { m_handleKey = key; m_str = str; }
+
+      bool m_handleKey;
+      QString m_str;
+    };
+
     bool m_localEchoEnabled;
     bool m_updateEnabled;
     bool m_displayTimestampEnabled;
     bool m_displayHexValuesEnabled;
-    QString m_lineEnding;
+    QString m_lineEndingRx;
+    QString m_lineEndingTx;
+    QMap<Qt::Key,KeyMap> m_keyMap;
 };
 
 #endif // CONSOLE_H
