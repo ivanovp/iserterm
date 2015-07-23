@@ -37,6 +37,7 @@
 ****************************************************************************/
 
 #include "console.h"
+#include "common.h"
 
 #include <QScrollBar>
 
@@ -49,15 +50,19 @@
 
 Console::Console(QWidget *parent)
     : QPlainTextEdit(parent)
-    , m_dataSizeLimit(32 * 1024 * 1024)
+    , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
     , m_localEchoEnabled(false)
     , m_updateEnabled(true)
     , m_displayTimestampEnabled(false)
     , m_displayHexValuesEnabled(false)
+    , m_hexValuePerLine(16)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
 {
 //    setOverwriteMode(true);
+    m_documentAscii = document ();
+    m_documentHex = new QTextDocument (this);
+    _ASSERT(m_documentHex);
     document()->setMaximumBlockCount(10000); // FIXME this should be configurable
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
@@ -86,12 +91,6 @@ Console::Console(QWidget *parent)
 
 void Console::putData(const QByteArray &data)
 {
-    m_data.append(data);
-    if (m_data.length () > m_dataSizeLimit)
-    {
-        /* Remove unwanted bytes */
-        m_data.remove (0, m_data.length () - m_dataSizeLimit);
-    }
     if (m_updateEnabled)
     {
         QScrollBar *bar = verticalScrollBar();
@@ -100,11 +99,20 @@ void Console::putData(const QByteArray &data)
 
         appendDataToConsole (data, scrollToEnd);
     }
+
+    m_data.append(data);
+    if (m_data.length () > m_dataSizeLimit)
+    {
+        /* Remove unwanted bytes */
+        m_data.remove (0, m_data.length () - m_dataSizeLimit);
+    }
 }
 
 void Console::clear()
 {
-    QPlainTextEdit::clear ();
+//    QPlainTextEdit::clear ();
+    m_documentAscii->clear ();
+    m_documentHex->clear ();
     m_data.clear ();
 }
 
@@ -295,32 +303,64 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
 
 void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 {
-    QByteArray data2;
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
-    data2 = data;
-    data2.replace (m_lineEndingRx, QByteArray("\n"));
-    if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
+
+    if (!m_displayHexValuesEnabled)
     {
-        /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
-        data2.replace (QString (m_lineEndingRx[0]), QByteArray());
+        /* Normal mode */
+        QByteArray data2;
+        data2 = data;
+        data2.replace (m_lineEndingRx, QByteArray("\n"));
+        if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
+        {
+            /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
+            data2.replace (QString (m_lineEndingRx[0]), QByteArray());
+        }
+        foreach (char c, data2)
+        {
+            if (c == BACKSPACE)
+            {
+//                moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+                QTextCursor cursor = textCursor();
+                cursor.movePosition(QTextCursor::End);
+                cursor.deletePreviousChar();
+            }
+            else
+            {
+                // TODO emulate keyPressEvent???
+                //QKeyEvent event (QKeyEvent::KeyPress, c, Qt::NoModifier);
+                //QPlainTextEdit::keyPressEvent(&event);
+                //QKeyEvent event2 (QKeyEvent::KeyRelease, c, Qt::NoModifier);
+                //QPlainTextEdit::keyPressEvent(&event2);
+                insertPlainText(QString(c));
+            }
+        }
     }
-    foreach (char c, data2)
+    else
     {
-      if (c == BACKSPACE)
-      {
-        moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
-      }
-      else
-      {
-        // TODO emulate keyPressEvent???
-//        QKeyEvent event (QKeyEvent::KeyPress, c, Qt::NoModifier);
-//        QPlainTextEdit::keyPressEvent(&event);
-//        QKeyEvent event2 (QKeyEvent::KeyRelease, c, Qt::NoModifier);
-//        QPlainTextEdit::keyPressEvent(&event2);
-        insertPlainText(QString(c));
-      }
+        /* Hexadecimal display mode */
+#if 0
+        /* Delete last line, because it shall be rebuild again. */
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::End);
+        cursor.select(QTextCursor::LineUnderCursor);
+        cursor.removeSelectedText();
+//        cursor.deletePreviousChar(); // Added to trim the newline char when removing last line
+        setTextCursor(cursor);
+#endif
+        int pos = m_data.size ();
+        foreach (char c, data)
+        {
+            QString s;
+            s.sprintf ("%02X ", c);
+            insertPlainText (s);
+            pos++;
+            if ((pos % m_hexValuePerLine) == 0)
+            {
+                insertPlainText ("\n");
+            }
+        }
     }
-//    insertPlainText(QString(data2));
 
     if (scrollToEnd)
     {

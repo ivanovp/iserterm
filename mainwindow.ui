@@ -62,7 +62,7 @@
         <item>
          <widget class="QRadioButton" name="hexRadioButton">
           <property name="text">
-           <string>Hex</string>
+           <string>He&amp;x</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">sendButtonGroup</string>
@@ -108,12 +108,12 @@
      <x>0</x>
      <y>0</y>
      <width>500</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionSend_file"/>
     <addaction name="actionSave_log"/>
@@ -122,12 +122,11 @@
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Serial</string>
+     <string>Se&amp;rial</string>
     </property>
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
     <addaction name="actionConfigure"/>
-    <addaction name="actionLocal_echo"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -139,14 +138,17 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>Console</string>
+     <string>&amp;Console</string>
     </property>
+    <addaction name="actionClear"/>
+    <addaction name="actionStop_update"/>
+    <addaction name="actionLocal_echo"/>
+    <addaction name="actionViewSendInput"/>
+    <addaction name="actionHexadecimal_view"/>
+    <addaction name="separator"/>
     <addaction name="actionSet_font"/>
     <addaction name="actionSet_background_color"/>
     <addaction name="actionSet_foreground_color"/>
-    <addaction name="actionStop_update"/>
-    <addaction name="actionClear"/>
-    <addaction name="actionViewSendInput"/>
    </widget>
    <addaction name="menuCalls"/>
    <addaction name="menuTools"/>
@@ -165,6 +167,8 @@
    <addaction name="actionConfigure"/>
    <addaction name="actionClear"/>
    <addaction name="actionStop_update"/>
+   <addaction name="actionViewSendInput"/>
+   <addaction name="actionHexadecimal_view"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAbout">
@@ -180,7 +184,7 @@
   </action>
   <action name="actionAboutQt">
    <property name="text">
-    <string>About Qt</string>
+    <string>About &amp;Qt</string>
    </property>
   </action>
   <action name="actionConnect">
@@ -280,7 +284,7 @@
   </action>
   <action name="actionSet_foreground_color">
    <property name="text">
-    <string>Set &amp;foreground color...</string>
+    <string>&amp;Set foreground color...</string>
    </property>
   </action>
   <action name="actionStop_update">
@@ -292,18 +296,25 @@
      <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop update</string>
+    <string>Stop &amp;update</string>
    </property>
    <property name="toolTip">
     <string>Stop update, received data will not be lost</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+S</string>
    </property>
   </action>
   <action name="actionViewSendInput">
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/hex-input-24.png</normaloff>:/images/hex-input-24.png</iconset>
+   </property>
    <property name="text">
-    <string>Hexadecimal input</string>
+    <string>&amp;Hexadecimal input</string>
    </property>
   </action>
   <action name="actionSend_file">
@@ -314,6 +325,18 @@
   <action name="actionSave_log">
    <property name="text">
     <string>S&amp;ave log...</string>
+   </property>
+  </action>
+  <action name="actionHexadecimal_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/hex-view-24.png</normaloff>:/images/hex-view-24.png</iconset>
+   </property>
+   <property name="text">
+    <string>Hexadecimal view</string>
    </property>
   </action>
  </widget>

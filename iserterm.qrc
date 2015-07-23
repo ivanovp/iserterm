@@ -7,5 +7,7 @@
         <file>images/clear.png</file>
         <file>images/iserterm.png</file>
         <file>images/stop.png</file>
+        <file>images/hex-input-24.png</file>
+        <file>images/hex-view-24.png</file>
     </qresource>
 </RCC>

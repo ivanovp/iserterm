@@ -83,7 +83,7 @@ protected:
     void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true);
     void rebuildConsole();
 
-    QByteArray m_data;
+    QByteArray m_data;  /**< Raw serial data */
     int m_dataSizeLimit;
 
 private:
@@ -101,9 +101,12 @@ private:
     bool m_updateEnabled;
     bool m_displayTimestampEnabled;
     bool m_displayHexValuesEnabled;
+    int m_hexValuePerLine;
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<Qt::Key,KeyMap> m_keyMap;
+    QTextDocument* m_documentAscii;
+    QTextDocument* m_documentHex;
 };
 
 #endif // CONSOLE_H

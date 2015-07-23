@@ -79,12 +79,10 @@ private slots:
     void on_actionSet_background_color_triggered();
     void on_actionSet_foreground_color_triggered();
     void on_sendLineEdit_returnPressed();
-
     void on_actionStop_update_triggered(bool checked);
-
     void on_sendButton_clicked();
-
     void on_actionViewSendInput_triggered(bool checked);
+    void on_actionHexadecimal_view_triggered(bool checked);
 
 private:
     void initActionsConnections();

@@ -312,3 +312,8 @@ void MainWindow::on_actionViewSendInput_triggered(bool checked)
     ui->sendLineEdit->setVisible(checked);
     ui->sendButton->setVisible(checked);
 }
+
+void MainWindow::on_actionHexadecimal_view_triggered(bool checked)
+{
+    console->setDisplayHexValuesEnabled (checked);
+}
