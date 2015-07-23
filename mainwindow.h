@@ -84,6 +84,8 @@ private slots:
     void on_actionViewSendInput_triggered(bool checked);
     void on_actionHexadecimal_view_triggered(bool checked);
 
+    void on_actionConfigure_console_triggered();
+
 private:
     void initActionsConnections();
 

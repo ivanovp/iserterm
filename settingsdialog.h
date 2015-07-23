@@ -81,7 +81,7 @@ public:
 
 private slots:
     void showPortInfo(int idx);
-    void apply();
+    void okButton();
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
 

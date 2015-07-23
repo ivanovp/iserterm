@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>431</width>
-    <height>216</height>
+    <width>513</width>
+    <height>240</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item row="0" column="1">
     <widget class="QGroupBox" name="parametersBox">
      <property name="title">
-      <string>Select Parameters</string>
+      <string>Parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
@@ -82,7 +82,7 @@
       </size>
      </property>
      <property name="title">
-      <string>Select Serial Port</string>
+      <string>Serial Port</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
@@ -169,9 +169,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="applyButton">
+      <widget class="QPushButton" name="okButton">
        <property name="text">
-        <string>Apply</string>
+        <string>&amp;Ok</string>
        </property>
       </widget>
      </item>

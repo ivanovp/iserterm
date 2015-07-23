@@ -188,7 +188,7 @@ void MainWindow::writeData(const QByteArray &data)
 void MainWindow::readData()
 {
     QByteArray data = serial->readAll();
-    qDebug() << __FUNCTION__ << data;
+//    qDebug() << __FUNCTION__ << data;
     /* Receive serial data and show on console */
     console->putData(data);
 }
@@ -254,7 +254,7 @@ void MainWindow::on_actionSet_foreground_color_triggered()
     QPalette palette = console->palette();
     QColor colorOriginal = palette.color(QPalette::Text).toRgb();
     QColor color;
-    qDebug() << "fgcolor orig" << colorOriginal;
+//    qDebug() << "fgcolor orig" << colorOriginal;
     color = QColorDialog::getColor(colorOriginal, this, "Choose foreground color");
     if (color.isValid())
     {
@@ -316,4 +316,9 @@ void MainWindow::on_actionViewSendInput_triggered(bool checked)
 void MainWindow::on_actionHexadecimal_view_triggered(bool checked)
 {
     console->setDisplayHexValuesEnabled (checked);
+}
+
+void MainWindow::on_actionConfigure_console_triggered()
+{
+
 }

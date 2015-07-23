@@ -149,6 +149,7 @@
     <addaction name="actionSet_font"/>
     <addaction name="actionSet_background_color"/>
     <addaction name="actionSet_foreground_color"/>
+    <addaction name="actionConfigure_console"/>
    </widget>
    <addaction name="menuCalls"/>
    <addaction name="menuTools"/>
@@ -337,6 +338,11 @@
    </property>
    <property name="text">
     <string>Hexadecimal view</string>
+   </property>
+  </action>
+  <action name="actionConfigure_console">
+   <property name="text">
+    <string>C&amp;onfigure console..</string>
    </property>
   </action>
  </widget>

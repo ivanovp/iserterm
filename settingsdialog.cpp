@@ -58,8 +58,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
 
-    connect(ui->applyButton, SIGNAL(clicked()),
-            this, SLOT(apply()));
+    connect(ui->okButton, SIGNAL(clicked()),
+            this, SLOT(okButton()));
     connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(showPortInfo(int)));
     connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
@@ -108,7 +108,7 @@ void SettingsDialog::showPortInfo(int idx)
     ui->pidLabel->setText(tr("Product Identifier: %1").arg(list.count() > 6 ? list.at(6) : tr(blankString)));
 }
 
-void SettingsDialog::apply()
+void SettingsDialog::okButton()
 {
     updateSettings();
     hide();

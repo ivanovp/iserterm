@@ -167,6 +167,10 @@ bool Console::isDisplayHexValuesEnabled() const
 
 void Console::setDisplayHexValuesEnabled(bool displayHexValuesEnabled)
 {
+    if (m_displayHexValuesEnabled != displayHexValuesEnabled)
+    {
+        rebuildConsole();
+    }
     m_displayHexValuesEnabled = displayHexValuesEnabled;
 }
 
@@ -348,16 +352,16 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 //        cursor.deletePreviousChar(); // Added to trim the newline char when removing last line
         setTextCursor(cursor);
 #endif
-        int pos = m_data.size ();
+        int pos = m_data.size();
         foreach (char c, data)
         {
             QString s;
-            s.sprintf ("%02X ", c);
-            insertPlainText (s);
+            s.sprintf("%02X ", c);
+            insertPlainText(s);
             pos++;
             if ((pos % m_hexValuePerLine) == 0)
             {
-                insertPlainText ("\n");
+                insertPlainText("\n");
             }
         }
     }
@@ -371,6 +375,6 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 
 void Console::rebuildConsole()
 {
-    QPlainTextEdit::clear ();
+    QPlainTextEdit::clear();
     appendDataToConsole (m_data, true);
 }

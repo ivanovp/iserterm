@@ -11,7 +11,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     settingsdialog.cpp \
-    console.cpp
+    console.cpp \
+    consolesettingsdialog.cpp
 
 HEADERS += \
     common.h \
@@ -19,11 +20,13 @@ HEADERS += \
     hexvalidator.h \
     mainwindow.h \
     settingsdialog.h \
-    version.h
+    version.h \
+    consolesettingsdialog.h
 
 FORMS += \
     mainwindow.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    consolesettingsdialog.ui
 
 RESOURCES += \
     iserterm.qrc
