@@ -135,9 +135,9 @@ void Console::setUpdateEnabled(bool updateEnabled)
 {
     if (!m_updateEnabled && updateEnabled)
     {
+        m_updateEnabled = updateEnabled;
         rebuildConsole ();
     }
-    m_updateEnabled = updateEnabled;
 }
 
 QString Console::getLineEndingRx() const
@@ -169,9 +169,9 @@ void Console::setDisplayHexValuesEnabled(bool displayHexValuesEnabled)
 {
     if (m_displayHexValuesEnabled != displayHexValuesEnabled)
     {
+        m_displayHexValuesEnabled = displayHexValuesEnabled;
         rebuildConsole();
     }
-    m_displayHexValuesEnabled = displayHexValuesEnabled;
 }
 
 bool Console::isDisplayTimestampEnabled() const
