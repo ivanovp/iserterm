@@ -43,6 +43,7 @@
 #include "hexvalidator.h"
 #include "common.h"
 #include "version.h"
+#include "consolesettingsdialog.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     setWindowIcon (QIcon (":/images/iserterm.png"));
+    setWindowTitle(VER_PRODUCTNAME_STR);
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
     console = new Console;
     enableConsole(false);
@@ -68,6 +70,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->hexRadioButton->hide();
     ui->decRadioButton->hide();
     ui->binRadioButton->hide();
+    console->setLineEndingRx (settings.value("serial/lineEndingRx", console->getLineEndingRx ()).toString ());
+    console->setLineEndingTx (settings.value("serial/lineEndingTx", console->getLineEndingTx ()).toString ());
+    console->setDataSizeLimit (settings.value("serial/dataSizeLimit", console->getDataSizeLimit ()).toInt ());
+    console->setDisplaySize (settings.value("serial/displaySize", console->getDisplaySize ()).toInt ());
 
     serial = new QSerialPort(this);
 
@@ -82,13 +88,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initActionsConnections();
 
-    connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
-            SLOT(handleError(QSerialPort::SerialPortError)));
+    MY_ASSERT(connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
+            SLOT(handleError(QSerialPort::SerialPortError))));
 
 
-    connect(serial, SIGNAL(readyRead()), this, SLOT(readData()));
+    MY_ASSERT(connect(serial, SIGNAL(readyRead()), this, SLOT(readData())));
 
-    connect(console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray)));
+    MY_ASSERT(connect(console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
 
 
@@ -207,13 +213,13 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 
 void MainWindow::initActionsConnections()
 {
-    connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort()));
-    connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
-    connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(ui->actionConfigure, SIGNAL(triggered()), serialSettings, SLOT(show()));
-    connect(ui->actionClear, SIGNAL(triggered()), console, SLOT(clear()));
-    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
-    connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+    MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
+    MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
+    MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
+    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), serialSettings, SLOT(show())));
+    MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), console, SLOT(clear())));
+    MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
+    MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 }
 
 void MainWindow::on_actionLocal_echo_triggered(bool checked)
@@ -320,5 +326,32 @@ void MainWindow::on_actionHexadecimal_view_triggered(bool checked)
 
 void MainWindow::on_actionConfigure_console_triggered()
 {
+    ConsoleSettingsDialog *dialog = new ConsoleSettingsDialog(this);
 
+    dialog->setLineEndingRx(console->getLineEndingRx ());
+    dialog->setLineEndingTx(console->getLineEndingTx ());
+    dialog->setDataBufferSize(console->getDataSizeLimit () >> 20);
+    dialog->setDisplaySize(console->getDisplaySize ());
+
+    int result = dialog->exec();
+    qDebug() << __PRETTY_FUNCTION__ << result;
+
+    if (result == ConsoleSettingsDialog::Accepted)
+    {
+        QString lineEndingRx = dialog->getLineEndingRx();
+        QString lineEndingTx = dialog->getLineEndingTx();
+        int dataSizeLimit = dialog->getDataBufferSize() << 20;
+        int displaySize = dialog->getDisplaySize();
+        console->setLineEndingRx(lineEndingRx);
+        console->setLineEndingTx(lineEndingTx);
+        console->setDataSizeLimit(dataSizeLimit);
+        console->setDisplaySize (displaySize);
+        QSettings settings;
+        settings.setValue("serial/lineEndingRx", lineEndingRx);
+        settings.setValue("serial/lineEndingTx", lineEndingTx);
+        settings.setValue("serial/dataSizeLimit", dataSizeLimit);
+        settings.setValue("serial/displaySize", displaySize);
+    }
+
+    delete dialog;
 }

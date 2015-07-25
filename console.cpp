@@ -45,9 +45,6 @@
 #include <QSettings>
 #include <QMenu>
 
-#define BACKSPACE 8
-#define DELETE    127
-
 Console::Console(QWidget *parent)
     : QPlainTextEdit(parent)
     , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
@@ -62,7 +59,7 @@ Console::Console(QWidget *parent)
 //    setOverwriteMode(true);
     m_documentAscii = document ();
     m_documentHex = new QTextDocument (this);
-    _ASSERT(m_documentHex);
+    MY_ASSERT(m_documentHex);
     document()->setMaximumBlockCount(10000); // FIXME this should be configurable
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
@@ -158,6 +155,8 @@ QString Console::getLineEndingTx() const
 void Console::setLineEndingTx(const QString &lineEndingTx)
 {
   m_lineEndingTx = lineEndingTx;
+  m_keyMap.insert(Qt::Key_Return,    KeyMap(true, m_lineEndingTx));
+  m_keyMap.insert(Qt::Key_Enter,     KeyMap(true, m_lineEndingTx));
 }
 
 bool Console::isDisplayHexValuesEnabled() const
@@ -192,6 +191,16 @@ int Console::getDataSizeLimit() const
 void Console::setDataSizeLimit(int dataSizeLimit)
 {
     m_dataSizeLimit = dataSizeLimit;
+}
+
+int Console::getDisplaySize() const
+{
+    return document ()->maximumBlockCount ();
+}
+
+void Console::setDisplaySize(int displaySize)
+{
+    document ()->setMaximumBlockCount (displaySize);
 }
 
 void Console::keyPressEvent(QKeyEvent *e)

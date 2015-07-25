@@ -41,6 +41,7 @@
 
 #include <QDialog>
 #include <QtSerialPort/QSerialPort>
+#include <QAbstractButton>
 
 QT_USE_NAMESPACE
 
@@ -81,7 +82,7 @@ public:
 
 private slots:
     void showPortInfo(int idx);
-    void okButton();
+    void on_buttonBox_clicked(QAbstractButton*);
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
 

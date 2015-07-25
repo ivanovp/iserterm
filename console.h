@@ -63,6 +63,9 @@ public:
     int getDataSizeLimit() const;
     void setDataSizeLimit(int dataSizeLimit);
 
+    int getDisplaySize() const;
+    void setDisplaySize(int displaySize);
+
     bool isDisplayTimestampEnabled() const;
     void setDisplayTimestampEnabled(bool displayTimestampEnabled = true);
 

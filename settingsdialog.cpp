@@ -38,6 +38,7 @@
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
+#include "common.h"
 
 #include <QtSerialPort/QSerialPortInfo>
 #include <QIntValidator>
@@ -58,14 +59,14 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
 
-    connect(ui->okButton, SIGNAL(clicked()),
-            this, SLOT(okButton()));
-    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(showPortInfo(int)));
-    connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomBaudRatePolicy(int)));
-    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomDevicePathPolicy(int)));
+//    MY_ASSERT(connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),
+//            this, SLOT(on_buttonBox_clicked(QAbstractButton*))));
+    MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(showPortInfo(int))));
+    MY_ASSERT(connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(checkCustomBaudRatePolicy(int))));
+    MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(checkCustomDevicePathPolicy(int))));
 
     fillPortsParameters();
     fillPortsInfo();
@@ -108,19 +109,23 @@ void SettingsDialog::showPortInfo(int idx)
     ui->pidLabel->setText(tr("Product Identifier: %1").arg(list.count() > 6 ? list.at(6) : tr(blankString)));
 }
 
-void SettingsDialog::okButton()
+void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
-    updateSettings();
     hide();
 
-    QSettings settings;
-    settings.setValue ("serial/name", currentSettings.name);
-    settings.setValue ("serial/baudRate", currentSettings.baudRate);
-    settings.setValue ("serial/dataBits", currentSettings.dataBits);
-    settings.setValue ("serial/parity", currentSettings.stringParity);
-    settings.setValue ("serial/stopBits", currentSettings.stopBits);
-    settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
-    settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
+    if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
+    {
+        /* Ok button was pressed */
+        updateSettings();
+        QSettings settings;
+        settings.setValue ("serial/name", currentSettings.name);
+        settings.setValue ("serial/baudRate", currentSettings.baudRate);
+        settings.setValue ("serial/dataBits", currentSettings.dataBits);
+        settings.setValue ("serial/parity", currentSettings.stringParity);
+        settings.setValue ("serial/stopBits", currentSettings.stopBits);
+        settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
+        settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
+    }
 }
 
 void SettingsDialog::checkCustomBaudRatePolicy(int idx)

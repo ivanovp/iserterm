@@ -5,8 +5,8 @@
 **
 ****************************************************************************/
 
-#ifndef __INCLUDE_HEXVALIDATOR_H
-#define __INCLUDE_HEXVALIDATOR_H
+#ifndef HEXVALIDATOR_H
+#define HEXVALIDATOR_H
 
 #include <QDebug>
 #include <QValidator>
@@ -23,4 +23,4 @@ public:
     virtual State validate(QString &input, int &pos) const;
 };
 
-#endif // __INCLUDE_HEXVALIDATOR_H
+#endif // HEXVALIDATOR_H
