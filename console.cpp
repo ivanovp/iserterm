@@ -250,58 +250,8 @@ void Console::keyPressEvent(QKeyEvent *e)
       {
         emit getData(m_keyMap[key].m_str.toLocal8Bit());
       }
-#if 0
-      switch (e->key())
-      {
-        case Qt::Key_Backspace:
-          if (m_localEchoEnabled)
-          {
-            QPlainTextEdit::keyPressEvent(e);
-          }
-          emit getData("\x08");
-          break;
-        case Qt::Key_Delete:
-          if (m_localEchoEnabled)
-          {
-            QPlainTextEdit::keyPressEvent(e);
-          }
-          emit getData("\x7F");
-          break;
-        case Qt::Key_Return:
-        case Qt::Key_Enter:
-          if (m_localEchoEnabled)
-          {
-            QPlainTextEdit::keyPressEvent(e);
-          }
-          qDebug() << __FUNCTION__ << "enter" << e->text().toLocal8Bit();
-          emit getData(m_lineEndingTx.toLocal8Bit());
-          break;
-        case Qt::Key_Left:
-        case Qt::Key_Right:
-        case Qt::Key_Up:
-        case Qt::Key_Down:
-          QPlainTextEdit::keyPressEvent(e);
-          break;
-        default:
-          QPlainTextEdit::keyPressEvent(e);
-          break;
-      }
-#endif
     }
 }
-
-#if 0
-void Console::mousePressEvent(QMouseEvent *e)
-{
-    Q_UNUSED(e)
-    setFocus();
-}
-
-void Console::mouseDoubleClickEvent(QMouseEvent *e)
-{
-    Q_UNUSED(e)
-}
-#endif
 
 void Console::contextMenuEvent(QContextMenuEvent *e)
 {
@@ -392,18 +342,6 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
         data2 += data;
 
         insertPlainText (dumpBuf (data2, m_hexWrap));
-//        int pos = 0;
-//        foreach (char c, data)
-//        {
-//            QString s;
-//            s.sprintf("%02X ", c);
-//            insertPlainText(s);
-//            pos++;
-//            if ((pos % m_hexWrap) == 0)
-//            {
-//                insertPlainText("\n");
-//            }
-//        }
     }
 
     if (scrollToEnd)
@@ -426,7 +364,7 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
     int i, j, s;
     int bufSize = buf.length ();
 
-    /* Extend buffer size to be dividable with bufWrap */
+    /* Extend buffer size to be dividable with hexWrap */
     if (bufSize % hexWrap == 0)
     {
         s = bufSize;
@@ -473,6 +411,6 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
             str += "\n";
         }
     }
-//    str += "\n";
+
     return str;
 }
