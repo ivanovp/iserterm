@@ -57,8 +57,6 @@ Console::Console(QWidget *parent)
     , m_lineEndingTx("\r")
 {
 //    setOverwriteMode(true);
-    m_documentAscii = document ();
-    m_documentHex = new QTextDocument (this);
     MY_ASSERT(m_documentHex);
     document()->setMaximumBlockCount(10000); // FIXME this should be configurable
     QSettings settings;
@@ -107,9 +105,7 @@ void Console::putData(const QByteArray &data)
 
 void Console::clear()
 {
-//    QPlainTextEdit::clear ();
-    m_documentAscii->clear ();
-    m_documentHex->clear ();
+    QPlainTextEdit::clear ();
     m_data.clear ();
 }
 

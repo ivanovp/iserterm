@@ -110,8 +110,6 @@ private:
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<Qt::Key,KeyMap> m_keyMap;
-    QTextDocument* m_documentAscii;
-    QTextDocument* m_documentHex;
 };
 
 #endif // CONSOLE_H
