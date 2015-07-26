@@ -125,6 +125,16 @@ void ConsoleSettingsDialog::setDisplaySize(const int displaySize)
     ui->displaySizeSpinBox->setValue (displaySize);
 }
 
+int ConsoleSettingsDialog::getHexWrap()
+{
+    return ui->hexWrapSpinBox->value ();
+}
+
+void ConsoleSettingsDialog::setHexWrap(const int hexWrap)
+{
+    ui->hexWrapSpinBox->setValue (hexWrap);
+}
+
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)
 {
     bool isCustomLineEndingTx = (index == ui->lineEndingTxComboBox->count() - 1);

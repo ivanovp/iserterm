@@ -34,6 +34,9 @@ public:
     int getDisplaySize();
     void setDisplaySize(const int displayLines);
 
+    int getHexWrap();
+    void setHexWrap(const int hexWrap);
+
 private slots:
     void on_lineEndingTxComboBox_currentIndexChanged(int index);
     void on_lineEndingRxComboBox_currentIndexChanged(int index);

@@ -52,7 +52,7 @@ Console::Console(QWidget *parent)
     , m_updateEnabled(true)
     , m_displayTimestampEnabled(false)
     , m_displayHexValuesEnabled(false)
-    , m_hexValuePerLine(16)
+    , m_hexWrap(16)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
 {
@@ -203,6 +203,27 @@ void Console::setDisplaySize(int displaySize)
     document ()->setMaximumBlockCount (displaySize);
 }
 
+int Console::getHexWrap() const
+{
+    return m_hexWrap;
+}
+
+void Console::setHexWrap(int hexWrap)
+{
+    Q_ASSERT(hexWrap >= 1 && hexWrap <= 1024);
+    if (hexWrap >= 1 && hexWrap <= 1024)
+    {
+        if (m_hexWrap != hexWrap)
+        {
+            m_hexWrap = hexWrap;
+            if (isDisplayHexValuesEnabled ())
+            {
+                rebuildConsole ();
+            }
+        }
+    }
+}
+
 void Console::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() >= Qt::Key_Space && e->key() <= Qt::Key_ydiaeresis)
@@ -314,6 +335,7 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
     delete menu;
 }
 
+
 void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 {
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
@@ -333,6 +355,9 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
         {
             if (c == BACKSPACE)
             {
+                /* Not good solution: backspace should not clear character
+                 * only move cursor left.
+                 */
 //                moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
                 QTextCursor cursor = textCursor();
                 cursor.movePosition(QTextCursor::End);
@@ -340,39 +365,45 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
             }
             else
             {
-                // TODO emulate keyPressEvent???
-                //QKeyEvent event (QKeyEvent::KeyPress, c, Qt::NoModifier);
-                //QPlainTextEdit::keyPressEvent(&event);
-                //QKeyEvent event2 (QKeyEvent::KeyRelease, c, Qt::NoModifier);
-                //QPlainTextEdit::keyPressEvent(&event2);
                 insertPlainText(QString(c));
             }
         }
     }
     else
     {
+        int size = m_data.size ();
+        int mod = size % m_hexWrap;
+
         /* Hexadecimal display mode */
-#if 0
-        /* Delete last line, because it shall be rebuild again. */
-        QTextCursor cursor = textCursor();
-        cursor.movePosition(QTextCursor::End);
-        cursor.select(QTextCursor::LineUnderCursor);
-        cursor.removeSelectedText();
-//        cursor.deletePreviousChar(); // Added to trim the newline char when removing last line
-        setTextCursor(cursor);
-#endif
-        int pos = m_data.size();
-        foreach (char c, data)
+        if (mod > 0)
         {
-            QString s;
-            s.sprintf("%02X ", c);
-            insertPlainText(s);
-            pos++;
-            if ((pos % m_hexValuePerLine) == 0)
-            {
-                insertPlainText("\n");
-            }
+            /* Delete last line, because it shall be rebuild again. */
+            QTextCursor cursor = textCursor();
+            cursor.movePosition(QTextCursor::End);
+            cursor.deletePreviousChar();
+            cursor.select(QTextCursor::LineUnderCursor);
+            cursor.removeSelectedText();
+            setTextCursor(cursor);
         }
+
+        /* Get data which was in last line */
+        QByteArray data2;
+        data2 = m_data.mid (size - mod, mod);
+        data2 += data;
+
+        insertPlainText (dumpBuf (data2, m_hexWrap));
+//        int pos = 0;
+//        foreach (char c, data)
+//        {
+//            QString s;
+//            s.sprintf("%02X ", c);
+//            insertPlainText(s);
+//            pos++;
+//            if ((pos % m_hexWrap) == 0)
+//            {
+//                insertPlainText("\n");
+//            }
+//        }
     }
 
     if (scrollToEnd)
@@ -386,4 +417,62 @@ void Console::rebuildConsole()
 {
     QPlainTextEdit::clear();
     appendDataToConsole (m_data, true);
+}
+
+QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
+{
+    QString str;
+    QString str2;
+    int i, j, s;
+    int bufSize = buf.length ();
+
+    /* Extend buffer size to be dividable with bufWrap */
+    if (bufSize % hexWrap == 0)
+    {
+        s = bufSize;
+    }
+    else
+    {
+        s = bufSize + hexWrap - bufSize % hexWrap;
+    }
+    for (i = 0; i < s; i++)
+    {
+        /* Print buffer in hexadecimal format */
+        if (i < bufSize)
+        {
+            str2.sprintf ("%02X", buf[i]);
+            str += str2;
+        }
+        else
+        {
+            str += "  ";
+        }
+        str += " ";
+        if ((i + 1) % hexWrap == 0)
+        {
+            /* Print buffer in ASCII format */
+            str += "  ";
+            for (j = i - (hexWrap - 1); j <= i; j++)
+            {
+                if (j < bufSize)
+                {
+                    if (buf[j] >= 0x20 && buf[j] <= 0x7F)
+                    {
+                        str += buf[j];
+                    }
+                    else
+                    {
+                        str += ".";
+                    }
+                }
+                else
+                {
+                    str += " ";
+                }
+            }
+            str += "\n";
+        }
+    }
+//    str += "\n";
+    return str;
 }

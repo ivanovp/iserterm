@@ -166,6 +166,7 @@
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
    <addaction name="actionConfigure"/>
+   <addaction name="separator"/>
    <addaction name="actionClear"/>
    <addaction name="actionStop_update"/>
    <addaction name="actionViewSendInput"/>
@@ -337,7 +338,7 @@
      <normaloff>:/images/hex-view-24.png</normaloff>:/images/hex-view-24.png</iconset>
    </property>
    <property name="text">
-    <string>Hexadecimal view</string>
+    <string>Hexadecimal &amp;view</string>
    </property>
   </action>
   <action name="actionConfigure_console">

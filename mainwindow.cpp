@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     console->setLineEndingTx (settings.value("serial/lineEndingTx", console->getLineEndingTx ()).toString ());
     console->setDataSizeLimit (settings.value("serial/dataSizeLimit", console->getDataSizeLimit ()).toInt ());
     console->setDisplaySize (settings.value("serial/displaySize", console->getDisplaySize ()).toInt ());
+    console->setHexWrap (settings.value("serial/hexWrap", console->getHexWrap ()).toInt ());
 
     serial = new QSerialPort(this);
 
@@ -332,6 +333,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setLineEndingTx(console->getLineEndingTx ());
     dialog->setDataBufferSize(console->getDataSizeLimit () >> 20);
     dialog->setDisplaySize(console->getDisplaySize ());
+    dialog->setHexWrap (console->getHexWrap ());
 
     int result = dialog->exec();
     qDebug() << __PRETTY_FUNCTION__ << result;
@@ -342,15 +344,18 @@ void MainWindow::on_actionConfigure_console_triggered()
         QString lineEndingTx = dialog->getLineEndingTx();
         int dataSizeLimit = dialog->getDataBufferSize() << 20;
         int displaySize = dialog->getDisplaySize();
+        int hexWrap = dialog->getHexWrap();
         console->setLineEndingRx(lineEndingRx);
         console->setLineEndingTx(lineEndingTx);
         console->setDataSizeLimit(dataSizeLimit);
         console->setDisplaySize (displaySize);
+        console->setHexWrap (hexWrap);
         QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);
         settings.setValue("serial/displaySize", displaySize);
+        settings.setValue("serial/hexWrap", hexWrap);
     }
 
     delete dialog;

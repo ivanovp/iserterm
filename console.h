@@ -66,6 +66,9 @@ public:
     int getDisplaySize() const;
     void setDisplaySize(int displaySize);
 
+    int getHexWrap() const;
+    void setHexWrap(int hexWrap);
+
     bool isDisplayTimestampEnabled() const;
     void setDisplayTimestampEnabled(bool displayTimestampEnabled = true);
 
@@ -85,6 +88,7 @@ protected:
     virtual void contextMenuEvent(QContextMenuEvent *e);
     void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true);
     void rebuildConsole();
+    QString dumpBuf(const QByteArray& buf, int hexWrap);
 
     QByteArray m_data;  /**< Raw serial data */
     int m_dataSizeLimit;
@@ -104,7 +108,7 @@ private:
     bool m_updateEnabled;
     bool m_displayTimestampEnabled;
     bool m_displayHexValuesEnabled;
-    int m_hexValuePerLine;
+    int m_hexWrap;
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<Qt::Key,KeyMap> m_keyMap;
