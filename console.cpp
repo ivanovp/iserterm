@@ -57,7 +57,6 @@ Console::Console(QWidget *parent)
     , m_lineEndingTx("\r")
 {
 //    setOverwriteMode(true);
-    MY_ASSERT(m_documentHex);
     document()->setMaximumBlockCount(10000); // FIXME this should be configurable
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
