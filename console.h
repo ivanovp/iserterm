@@ -84,7 +84,7 @@ public:
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);
-    void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true);
+    void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true, bool rebuild = false);
     void rebuildConsole();
     QString dumpBuf(const QByteArray& buf, int hexWrap);
 

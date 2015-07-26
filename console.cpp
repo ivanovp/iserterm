@@ -155,8 +155,8 @@ QString Console::getLineEndingTx() const
 void Console::setLineEndingTx(const QString &lineEndingTx)
 {
   m_lineEndingTx = lineEndingTx;
-  m_keyMap.insert(Qt::Key_Return,    KeyMap(true, m_lineEndingTx));
-  m_keyMap.insert(Qt::Key_Enter,     KeyMap(true, m_lineEndingTx));
+  m_keyMap.insert(Qt::Key_Return, KeyMap(true, m_lineEndingTx));
+  m_keyMap.insert(Qt::Key_Enter,  KeyMap(true, m_lineEndingTx));
 }
 
 bool Console::isDisplayHexValuesEnabled() const
@@ -286,7 +286,7 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
 }
 
 
-void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
+void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool rebuild)
 {
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 
@@ -319,6 +319,11 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
             }
         }
     }
+    else if (rebuild)
+    {
+        /* Hexadecimal display mode, rebuild console */
+        insertPlainText (dumpBuf (data, m_hexWrap));
+    }
     else
     {
         int size = m_data.size ();
@@ -338,8 +343,8 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 
         /* Get data which was in last line */
         QByteArray data2;
-        data2 = m_data.mid (size - mod, mod);
-        data2 += data;
+        data2 = m_data.right (mod);
+        data2.append (data);
 
         insertPlainText (dumpBuf (data2, m_hexWrap));
     }
@@ -354,7 +359,7 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd)
 void Console::rebuildConsole()
 {
     QPlainTextEdit::clear();
-    appendDataToConsole (m_data, true);
+    appendDataToConsole (m_data, true, true);
 }
 
 QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
@@ -371,7 +376,7 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
     }
     else
     {
-        s = bufSize + hexWrap - bufSize % hexWrap;
+        s = bufSize + hexWrap - (bufSize % hexWrap);
     }
     for (i = 0; i < s; i++)
     {
