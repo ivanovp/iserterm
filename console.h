@@ -109,7 +109,7 @@ private:
     int m_hexWrap;
     QString m_lineEndingRx;
     QString m_lineEndingTx;
-    QMap<Qt::Key,KeyMap> m_keyMap;
+    QMap<unsigned int,KeyMap> m_keyMap;
 };
 
 #endif // CONSOLE_H

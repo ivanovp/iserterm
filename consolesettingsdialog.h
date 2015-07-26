@@ -37,6 +37,9 @@ public:
     int getHexWrap();
     void setHexWrap(const int hexWrap);
 
+    int getWaitAfterSendByte();
+    void setWaitAfterSendByte(const int hexWrap);
+
 private slots:
     void on_lineEndingTxComboBox_currentIndexChanged(int index);
     void on_lineEndingRxComboBox_currentIndexChanged(int index);

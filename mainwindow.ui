@@ -246,7 +246,7 @@
     <string>Clear data</string>
    </property>
    <property name="shortcut">
-    <string>Alt+L</string>
+    <string>Alt+V</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -268,6 +268,9 @@
    <property name="text">
     <string>Local &amp;echo</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+E</string>
+   </property>
   </action>
   <action name="actionSet_font">
    <property name="icon">
@@ -286,7 +289,7 @@
   </action>
   <action name="actionSet_foreground_color">
    <property name="text">
-    <string>&amp;Set foreground color...</string>
+    <string>Set foreground &amp;color...</string>
    </property>
   </action>
   <action name="actionStop_update">
@@ -298,7 +301,7 @@
      <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
    </property>
    <property name="text">
-    <string>Stop &amp;update</string>
+    <string>&amp;Stop update</string>
    </property>
    <property name="toolTip">
     <string>Stop update, received data will not be lost</string>
@@ -318,15 +321,24 @@
    <property name="text">
     <string>&amp;Hexadecimal input</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+H</string>
+   </property>
   </action>
   <action name="actionSend_file">
    <property name="text">
-    <string>S&amp;end file...</string>
+    <string>Se&amp;nd file...</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+N</string>
    </property>
   </action>
   <action name="actionSave_log">
    <property name="text">
     <string>S&amp;ave log...</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+A</string>
    </property>
   </action>
   <action name="actionHexadecimal_view">
@@ -340,6 +352,9 @@
    <property name="text">
     <string>Hexadecimal &amp;view</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+M</string>
+   </property>
   </action>
   <action name="actionConfigure_console">
    <property name="text">
@@ -348,6 +363,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>sendLineEdit</tabstop>
+  <tabstop>hexRadioButton</tabstop>
+  <tabstop>decRadioButton</tabstop>
+  <tabstop>binRadioButton</tabstop>
+  <tabstop>sendButton</tabstop>
+ </tabstops>
  <resources>
   <include location="iserterm.qrc"/>
  </resources>

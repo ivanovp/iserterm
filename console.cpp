@@ -40,6 +40,8 @@
 #include "common.h"
 
 #include <QScrollBar>
+#include <QApplication>
+#include <QClipboard>
 
 #include <QtCore/QDebug>
 #include <QSettings>
@@ -77,10 +79,14 @@ Console::Console(QWidget *parent)
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
 
-    m_keyMap.insert(Qt::Key_Backspace, KeyMap(false, "\x08"));
-    m_keyMap.insert(Qt::Key_Delete,    KeyMap(false, "\x7F"));
-    m_keyMap.insert(Qt::Key_Return,    KeyMap(true, m_lineEndingTx));
-    m_keyMap.insert(Qt::Key_Enter,     KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Backspace,                      KeyMap(false, "\x08"));
+    m_keyMap.insert(Qt::Key_Delete,                         KeyMap(false, "\x7F"));
+    m_keyMap.insert(Qt::Key_Return,                         KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Enter,                          KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Enter | Qt::KeypadModifier,     KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_C | Qt::ControlModifier,        KeyMap(true, ""));
+    m_keyMap.insert(Qt::Key_V | Qt::ControlModifier,        KeyMap(true, ""));
+    m_keyMap.insert(Qt::Key_A | Qt::ControlModifier,        KeyMap(true, ""));
 }
 
 void Console::putData(const QByteArray &data)
@@ -144,14 +150,15 @@ void Console::setLineEndingRx(const QString &lineEndingRx)
 
 QString Console::getLineEndingTx() const
 {
-  return m_lineEndingTx;
+    return m_lineEndingTx;
 }
 
 void Console::setLineEndingTx(const QString &lineEndingTx)
 {
-  m_lineEndingTx = lineEndingTx;
-  m_keyMap.insert(Qt::Key_Return, KeyMap(true, m_lineEndingTx));
-  m_keyMap.insert(Qt::Key_Enter,  KeyMap(true, m_lineEndingTx));
+    m_lineEndingTx = lineEndingTx;
+    m_keyMap.insert(Qt::Key_Return,                         KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Enter,                          KeyMap(true, m_lineEndingTx));
+    m_keyMap.insert(Qt::Key_Enter | Qt::KeypadModifier,     KeyMap(true, m_lineEndingTx));
 }
 
 bool Console::isDisplayHexValuesEnabled() const
@@ -221,30 +228,58 @@ void Console::setHexWrap(int hexWrap)
 
 void Console::keyPressEvent(QKeyEvent *e)
 {
-    if (e->key() >= Qt::Key_Space && e->key() <= Qt::Key_ydiaeresis)
+    int key = e->key();
+    int modifier = static_cast<int> (e->modifiers ());
+//    qDebug() << __PRETTY_FUNCTION__ << key;
+    if (modifier == Qt::ControlModifier && (key == Qt::Key_C || key == Qt::Key_V || key == Qt::Key_A))
     {
-      if (m_localEchoEnabled)
-      {
-        moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
-        QPlainTextEdit::keyPressEvent(e);
-      }
-      emit getData(e->text().toLocal8Bit());
+        if (key == Qt::Key_C || key == Qt::Key_A)
+        {
+            /* Ctrl-C (Copy) and Ctrl-A (Select all) can be forwarded anytime */
+            QPlainTextEdit::keyPressEvent(e);
+        }
+        else
+        {
+            /* Ctrl-V (Paste) */
+            if (m_localEchoEnabled)
+            {
+                moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+                QPlainTextEdit::keyPressEvent(e);
+            }
+            QClipboard *clipboard = QApplication::clipboard();
+            QString originalText = clipboard->text();
+            emit getData(originalText.toLocal8Bit ());
+        }
+    }
+    else if ((key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis)
+            && (modifier == Qt::NoModifier || modifier == Qt::ShiftModifier || modifier == Qt::KeypadModifier ))
+    {
+        if (m_localEchoEnabled)
+        {
+            moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+            QPlainTextEdit::keyPressEvent(e);
+        }
+        emit getData(e->text().toLocal8Bit());
     }
     else
     {
-      Qt::Key key = static_cast<Qt::Key> (e->key());
-      if (m_localEchoEnabled)
-      {
-        if ((m_keyMap.contains(key) && m_keyMap[key].m_handleKey) || !m_keyMap.contains(key))
+        key |= modifier;
+        if (m_localEchoEnabled)
         {
-          moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
-          QPlainTextEdit::keyPressEvent(e);
+            if ((m_keyMap.contains(key) && m_keyMap[key].m_handleKey) || !m_keyMap.contains(key))
+            {
+                moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+                QPlainTextEdit::keyPressEvent(e);
+            }
         }
-      }
-      if (m_keyMap.contains(key))
-      {
-        emit getData(m_keyMap[key].m_str.toLocal8Bit());
-      }
+        if (m_keyMap.contains(key))
+        {
+            QByteArray data = m_keyMap[key].m_str.toLocal8Bit();
+            if (data.length () > 0)
+            {
+                emit getData(data);
+            }
+        }
     }
 }
 
@@ -280,7 +315,14 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
     delete menu;
 }
 
-
+/**
+ * @brief Console::appendDataToConsole
+ * Append serial data to console document.
+ *
+ * @param data Data to append.
+ * @param scrollToEnd Scroll to end of document.
+ * @param rebuild Rebuild whole text document.
+ */
 void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool rebuild)
 {
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
@@ -351,12 +393,24 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
     }
 }
 
+/**
+ * @brief Console::rebuildConsole
+ * Regenerate console document.
+ */
 void Console::rebuildConsole()
 {
     QPlainTextEdit::clear();
     appendDataToConsole (m_data, true, true);
 }
 
+/**
+ * @brief Console::dumpBuf
+ * Creates hexadecimal dump of a buffer.
+ *
+ * @param buf Buffer to convert hexadecimal ASCII.
+ * @param hexWrap Wrap size. Usual values: 8, 16.
+ * @return ASCII text.
+ */
 QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
 {
     QString str;

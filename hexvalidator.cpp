@@ -38,7 +38,7 @@ void HexValidator::fixup(QString &input) const
 
 HexValidator::State HexValidator::validate(QString &input, int &pos) const
 {
-    qDebug() << __PRETTY_FUNCTION__ << input << pos;
+//    qDebug() << __PRETTY_FUNCTION__ << input << pos;
     if (!input.isEmpty())
     {
         const int char_pos = pos - input.left(pos).count(' ');

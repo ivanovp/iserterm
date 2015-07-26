@@ -289,10 +289,11 @@ void MainWindow::on_sendLineEdit_returnPressed()
         }
         else
         {
-            qDebug() << "Cannot convert string to number!";
+            qWarning() << "Cannot convert string to number!";
         }
         str.remove(0, 2);
     }
+//    qDebug() << __PRETTY_FUNCTION__ << data;
     if (data.length())
     {
         serial->write(data);
@@ -336,7 +337,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setHexWrap (console->getHexWrap ());
 
     int result = dialog->exec();
-    qDebug() << __PRETTY_FUNCTION__ << result;
+//    qDebug() << __PRETTY_FUNCTION__ << result;
 
     if (result == ConsoleSettingsDialog::Accepted)
     {

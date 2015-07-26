@@ -135,6 +135,16 @@ void ConsoleSettingsDialog::setHexWrap(const int hexWrap)
     ui->hexWrapSpinBox->setValue (hexWrap);
 }
 
+int ConsoleSettingsDialog::getWaitAfterSendByte()
+{
+    return ui->waitAfterSendByteSpinBox->value ();
+}
+
+void ConsoleSettingsDialog::setWaitAfterSendByte(const int waitAfterSendByte)
+{
+    ui->waitAfterSendByteSpinBox->setValue (waitAfterSendByte);
+}
+
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)
 {
     bool isCustomLineEndingTx = (index == ui->lineEndingTxComboBox->count() - 1);
@@ -174,7 +184,7 @@ QString ConsoleSettingsDialog::hexString2Bin(const QString &hexString)
         }
         else
         {
-            qDebug() << "Cannot convert string to number!";
+            qWarning() << "Cannot convert string to number!";
         }
         str.remove(0, 2);
     }
