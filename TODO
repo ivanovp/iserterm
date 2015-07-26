@@ -1,8 +1,8 @@
 . Rescan serial ports every time when configure dialog opened
-. Menu point to set color of console
-. Menu point to set lines of console
++ Menu point to set color of console
++ Menu point to set lines of console
 . Menu point to send/receive binary/Intel HEX files
-. Menu point to view received data in hexadecimal
++ Menu point to view received data in hexadecimal
 . Timestamp on console
 . Logging to file
 . Use more tabs/windows
