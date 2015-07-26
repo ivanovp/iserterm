@@ -55,6 +55,7 @@ QT_END_NAMESPACE
 
 class Console;
 class SettingsDialog;
+class SerialThread;
 
 class MainWindow : public QMainWindow
 {
@@ -91,9 +92,10 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    Console *console;
-    SettingsDialog *serialSettings;
-    QSerialPort *serial;
+    Console *m_console;
+    SettingsDialog *m_serialSettings;
+    QSerialPort *m_serial;
+    SerialThread *m_serialThread;
 };
 
 #endif // MAINWINDOW_H

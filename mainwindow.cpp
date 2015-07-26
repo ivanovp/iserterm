@@ -44,6 +44,7 @@
 #include "common.h"
 #include "version.h"
 #include "consolesettingsdialog.h"
+#include "serialthread.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -63,22 +64,25 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon (QIcon (":/images/iserterm.png"));
     setWindowTitle(VER_PRODUCTNAME_STR);
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
-    console = new Console;
+    m_console = new Console;
     enableConsole(false);
-    ui->consoleWidget->addWidget(console);
+    ui->consoleWidget->addWidget(m_console);
     ui->hexRadioButton->setChecked(true); // FIXME load/save value
     ui->hexRadioButton->hide();
     ui->decRadioButton->hide();
     ui->binRadioButton->hide();
-    console->setLineEndingRx (settings.value("serial/lineEndingRx", console->getLineEndingRx ()).toString ());
-    console->setLineEndingTx (settings.value("serial/lineEndingTx", console->getLineEndingTx ()).toString ());
-    console->setDataSizeLimit (settings.value("serial/dataSizeLimit", console->getDataSizeLimit ()).toInt ());
-    console->setDisplaySize (settings.value("serial/displaySize", console->getDisplaySize ()).toInt ());
-    console->setHexWrap (settings.value("serial/hexWrap", console->getHexWrap ()).toInt ());
+    m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
+    m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
+    m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
+    m_console->setDisplaySize (settings.value("serial/displaySize", m_console->getDisplaySize ()).toInt ());
+    m_console->setHexWrap (settings.value("serial/hexWrap", m_console->getHexWrap ()).toInt ());
 
-    serial = new QSerialPort(this);
-
-    serialSettings = new SettingsDialog;
+    m_serial = new QSerialPort(this);
+    m_serialThread = new SerialThread;
+    m_serialThread->setSerialDevice (m_serial);
+    m_serialThread->setDelayAfterBytes_us (settings.value ("serial/delayAfterBytes_us", m_serialThread->getDelayAfterBytes_us ()).toInt());
+    m_serialThread->start ();
+    m_serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
     bool viewSendInput = settings.value("console/viewSendInput", true).toBool();
@@ -89,13 +93,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initActionsConnections();
 
-    MY_ASSERT(connect(serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
+    MY_ASSERT(connect(m_serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
 
 
-    MY_ASSERT(connect(serial, SIGNAL(readyRead()), this, SLOT(readData())));
+    MY_ASSERT(connect(m_serial, SIGNAL(readyRead()), this, SLOT(readData())));
 
-    MY_ASSERT(connect(console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
+    MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
 
 
@@ -106,13 +110,18 @@ MainWindow::~MainWindow()
     settings.setValue("window/height", size().height());
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
     settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
-    delete serialSettings;
+    if (m_serialThread)
+    {
+        m_serialThread->stop(100);
+    }
+    delete m_serialThread;
+    delete m_serialSettings;
     delete ui;
 }
 
 void MainWindow::enableConsole(bool enable)
 {
-    console->setReadOnly (!enable);
+    m_console->setReadOnly (!enable);
 //    console->setEnabled(enable);
 //    ui->sendLayout->setEnabled(enable);
     ui->sendLabel->setEnabled(enable);
@@ -126,18 +135,18 @@ void MainWindow::enableConsole(bool enable)
 
 void MainWindow::openSerialPort()
 {
-    SettingsDialog::SerialSettings p = serialSettings->serialSettings();
-    serial->setPortName(p.name);
-    serial->setBaudRate(p.baudRate);
-    serial->setDataBits(p.dataBits);
-    serial->setParity(p.parity);
-    serial->setStopBits(p.stopBits);
-    serial->setFlowControl(p.flowControl);
-    if (serial->open(QIODevice::ReadWrite))
+    SettingsDialog::SerialSettings p = m_serialSettings->serialSettings();
+    m_serial->setPortName(p.name);
+    m_serial->setBaudRate(p.baudRate);
+    m_serial->setDataBits(p.dataBits);
+    m_serial->setParity(p.parity);
+    m_serial->setStopBits(p.stopBits);
+    m_serial->setFlowControl(p.flowControl);
+    if (m_serial->open(QIODevice::ReadWrite))
     {
         enableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
-        console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
+        m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
         ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
                                    .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                                    .arg(p.stringParity[0]).arg(p.stringStopBits).arg(p.stringFlowControl));
@@ -148,7 +157,7 @@ void MainWindow::openSerialPort()
     }
     else
     {
-        QMessageBox::critical(this, tr("Error"), serial->errorString());
+        QMessageBox::critical(this, tr("Error"), m_serial->errorString());
 
         ui->statusBar->showMessage(tr("Open error"));
     }
@@ -158,9 +167,9 @@ void MainWindow::openSerialPort()
 
 void MainWindow::closeSerialPort()
 {
-    if (serial->isOpen())
+    if (m_serial->isOpen())
     {
-        serial->close();
+        m_serial->close();
     }
     enableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
@@ -187,17 +196,18 @@ void MainWindow::writeData(const QByteArray &data)
 {
 //    qDebug() << __FUNCTION__ << data;
     /* Send user input */
-    serial->write(data);
+    m_serialThread->addData (data);
+//    m_serial->write(data);
 }
 
 
 
 void MainWindow::readData()
 {
-    QByteArray data = serial->readAll();
+    QByteArray data = m_serial->readAll();
 //    qDebug() << __FUNCTION__ << data;
     /* Receive serial data and show on console */
-    console->putData(data);
+    m_console->putData(data);
 }
 
 
@@ -206,7 +216,7 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError)
     {
-        QMessageBox::critical(this, tr("Critical Error"), serial->errorString());
+        QMessageBox::critical(this, tr("Critical Error"), m_serial->errorString());
         closeSerialPort();
     }
 }
@@ -217,25 +227,25 @@ void MainWindow::initActionsConnections()
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
     MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
-    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), serialSettings, SLOT(show())));
-    MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), console, SLOT(clear())));
+    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
+    MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), m_console, SLOT(clear())));
     MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
     MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 }
 
 void MainWindow::on_actionLocal_echo_triggered(bool checked)
 {
-    console->setLocalEchoEnabled(checked);
+    m_console->setLocalEchoEnabled(checked);
 }
 
 void MainWindow::on_actionSet_font_triggered()
 {
     bool ok;
-    QFont font = QFontDialog::getFont(&ok, console->document()->defaultFont());
+    QFont font = QFontDialog::getFont(&ok, m_console->document()->defaultFont());
 
     if (ok)
     {
-        console->document()->setDefaultFont(font);
+        m_console->document()->setDefaultFont(font);
         QSettings settings;
         settings.setValue("console/font", font.toString());
     }
@@ -243,7 +253,7 @@ void MainWindow::on_actionSet_font_triggered()
 
 void MainWindow::on_actionSet_background_color_triggered()
 {
-    QPalette palette = console->palette();
+    QPalette palette = m_console->palette();
     QColor colorOriginal = palette.color(QPalette::Base).toRgb();
     QColor color;
     color = QColorDialog::getColor(colorOriginal, this, "Choose background color");
@@ -252,13 +262,13 @@ void MainWindow::on_actionSet_background_color_triggered()
         QSettings settings;
         settings.setValue("console/bgcolor", color.name(QColor::HexArgb));
         palette.setColor(QPalette::Base, color);
-        console->setPalette(palette);
+        m_console->setPalette(palette);
     }
 }
 
 void MainWindow::on_actionSet_foreground_color_triggered()
 {
-    QPalette palette = console->palette();
+    QPalette palette = m_console->palette();
     QColor colorOriginal = palette.color(QPalette::Text).toRgb();
     QColor color;
 //    qDebug() << "fgcolor orig" << colorOriginal;
@@ -268,7 +278,7 @@ void MainWindow::on_actionSet_foreground_color_triggered()
         QSettings settings;
         settings.setValue("console/fgcolor", color.name(QColor::HexArgb));
         palette.setColor(QPalette::Text, color);
-        console->setPalette(palette);
+        m_console->setPalette(palette);
     }
 }
 
@@ -296,17 +306,17 @@ void MainWindow::on_sendLineEdit_returnPressed()
 //    qDebug() << __PRETTY_FUNCTION__ << data;
     if (data.length())
     {
-        serial->write(data);
+        m_serial->write(data);
         if (ui->actionLocal_echo->isChecked())
         {
-            console->putData(data);
+            m_console->putData(data);
         }
     }
 }
 
 void MainWindow::on_actionStop_update_triggered(bool checked)
 {
-    console->setUpdateEnabled(!checked);
+    m_console->setUpdateEnabled(!checked);
 }
 
 void MainWindow::on_sendButton_clicked()
@@ -323,18 +333,19 @@ void MainWindow::on_actionViewSendInput_triggered(bool checked)
 
 void MainWindow::on_actionHexadecimal_view_triggered(bool checked)
 {
-    console->setDisplayHexValuesEnabled (checked);
+    m_console->setDisplayHexValuesEnabled (checked);
 }
 
 void MainWindow::on_actionConfigure_console_triggered()
 {
     ConsoleSettingsDialog *dialog = new ConsoleSettingsDialog(this);
 
-    dialog->setLineEndingRx(console->getLineEndingRx ());
-    dialog->setLineEndingTx(console->getLineEndingTx ());
-    dialog->setDataBufferSize(console->getDataSizeLimit () >> 20);
-    dialog->setDisplaySize(console->getDisplaySize ());
-    dialog->setHexWrap (console->getHexWrap ());
+    dialog->setLineEndingRx(m_console->getLineEndingRx ());
+    dialog->setLineEndingTx(m_console->getLineEndingTx ());
+    dialog->setDataBufferSize(m_console->getDataSizeLimit () >> 20);
+    dialog->setDisplaySize(m_console->getDisplaySize ());
+    dialog->setHexWrap(m_console->getHexWrap ());
+    dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_us());
 
     int result = dialog->exec();
 //    qDebug() << __PRETTY_FUNCTION__ << result;
@@ -346,17 +357,20 @@ void MainWindow::on_actionConfigure_console_triggered()
         int dataSizeLimit = dialog->getDataBufferSize() << 20;
         int displaySize = dialog->getDisplaySize();
         int hexWrap = dialog->getHexWrap();
-        console->setLineEndingRx(lineEndingRx);
-        console->setLineEndingTx(lineEndingTx);
-        console->setDataSizeLimit(dataSizeLimit);
-        console->setDisplaySize (displaySize);
-        console->setHexWrap (hexWrap);
+        int delayAfterBytes_us = dialog->getDelayAfterSendByte();
+        m_console->setLineEndingRx(lineEndingRx);
+        m_console->setLineEndingTx(lineEndingTx);
+        m_console->setDataSizeLimit(dataSizeLimit);
+        m_console->setDisplaySize (displaySize);
+        m_console->setHexWrap (hexWrap);
+        m_serialThread->setDelayAfterBytes_us(delayAfterBytes_us);
         QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);
         settings.setValue("serial/displaySize", displaySize);
         settings.setValue("serial/hexWrap", hexWrap);
+        settings.setValue("serial/delayAfterBytes_us", delayAfterBytes_us);
     }
 
     delete dialog;

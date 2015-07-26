@@ -161,6 +161,18 @@ void Console::setLineEndingTx(const QString &lineEndingTx)
     m_keyMap.insert(Qt::Key_Enter | Qt::KeypadModifier,     KeyMap(true, m_lineEndingTx));
 }
 
+void Console::paste()
+{
+    if (m_localEchoEnabled)
+    {
+        moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+        QPlainTextEdit::paste();
+    }
+    QClipboard *clipboard = QApplication::clipboard();
+    QString originalText = clipboard->text();
+    emit getData(originalText.toLocal8Bit ());
+}
+
 bool Console::isDisplayHexValuesEnabled() const
 {
     return m_displayHexValuesEnabled;

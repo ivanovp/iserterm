@@ -124,7 +124,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         settings.setValue ("serial/parity", currentSettings.stringParity);
         settings.setValue ("serial/stopBits", currentSettings.stopBits);
         settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
-        settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
+//        settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
     }
 }
 

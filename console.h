@@ -81,6 +81,9 @@ public:
     QString getLineEndingTx() const;
     void setLineEndingTx(const QString &lineEndingTx);
 
+public slots:
+    void paste();
+
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);

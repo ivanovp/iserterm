@@ -135,14 +135,14 @@ void ConsoleSettingsDialog::setHexWrap(const int hexWrap)
     ui->hexWrapSpinBox->setValue (hexWrap);
 }
 
-int ConsoleSettingsDialog::getWaitAfterSendByte()
+int ConsoleSettingsDialog::getDelayAfterSendByte()
 {
-    return ui->waitAfterSendByteSpinBox->value ();
+    return ui->delayAfterSendByteSpinBox->value ();
 }
 
-void ConsoleSettingsDialog::setWaitAfterSendByte(const int waitAfterSendByte)
+void ConsoleSettingsDialog::setDelayAfterSendByte(const int delayAfterSendByte)
 {
-    ui->waitAfterSendByteSpinBox->setValue (waitAfterSendByte);
+    ui->delayAfterSendByteSpinBox->setValue (delayAfterSendByte);
 }
 
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)
@@ -200,7 +200,7 @@ QString ConsoleSettingsDialog::bin2hexString(const QString &binString)
         {
             hexString += " ";
         }
-        s.sprintf ("%02X", binString[i]);
+        s.sprintf ("%02X", static_cast<int> (binString[i].toLatin1 ()));
         hexString += s;
     }
 
