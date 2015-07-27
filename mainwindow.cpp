@@ -81,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_serialThread = new SerialThread;
     m_serialThread->setSerialDevice (m_serial);
     m_serialThread->setDelayAfterBytes_us (settings.value ("serial/delayAfterBytes_us", m_serialThread->getDelayAfterBytes_us ()).toInt());
+    m_serialThread->setDelayAfterChr_us(settings.value ("serial/delayAfterNewline_us", m_serialThread->getDelayAfterChr_us()).toInt(),
+                                        m_console->getLineEndingTx().toLatin1());
     m_serialThread->start ();
     m_serialSettings = new SettingsDialog;
 
@@ -346,6 +348,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setDisplaySize(m_console->getDisplaySize ());
     dialog->setHexWrap(m_console->getHexWrap ());
     dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_us());
+    dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_us());
 
     int result = dialog->exec();
 //    qDebug() << __PRETTY_FUNCTION__ << result;
@@ -358,12 +361,14 @@ void MainWindow::on_actionConfigure_console_triggered()
         int displaySize = dialog->getDisplaySize();
         int hexWrap = dialog->getHexWrap();
         int delayAfterBytes_us = dialog->getDelayAfterSendByte();
+        int delayAfterNewline_us = dialog->getDelayAfterSendNewLine();
         m_console->setLineEndingRx(lineEndingRx);
         m_console->setLineEndingTx(lineEndingTx);
         m_console->setDataSizeLimit(dataSizeLimit);
         m_console->setDisplaySize (displaySize);
         m_console->setHexWrap (hexWrap);
         m_serialThread->setDelayAfterBytes_us(delayAfterBytes_us);
+        m_serialThread->setDelayAfterChr_us(delayAfterBytes_us, lineEndingTx.right(1).toLatin1());
         QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
@@ -371,6 +376,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         settings.setValue("serial/displaySize", displaySize);
         settings.setValue("serial/hexWrap", hexWrap);
         settings.setValue("serial/delayAfterBytes_us", delayAfterBytes_us);
+        settings.setValue("serial/delayAfterNewline_us", delayAfterNewline_us);
     }
 
     delete dialog;

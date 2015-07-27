@@ -40,6 +40,8 @@ public:
     int getDelayAfterSendByte();
     void setDelayAfterSendByte(const int delayAfterSendByte);
 
+    int getDelayAfterSendNewLine();
+    void setDelayAfterSendNewLine(const int delayAfterSendNewline);
 private slots:
     void on_lineEndingTxComboBox_currentIndexChanged(int index);
     void on_lineEndingRxComboBox_currentIndexChanged(int index);

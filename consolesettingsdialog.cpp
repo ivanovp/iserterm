@@ -145,6 +145,16 @@ void ConsoleSettingsDialog::setDelayAfterSendByte(const int delayAfterSendByte)
     ui->delayAfterSendByteSpinBox->setValue (delayAfterSendByte);
 }
 
+int ConsoleSettingsDialog::getDelayAfterSendNewLine()
+{
+    return ui->delayAfterSendNewLineSpinBox->value ();
+}
+
+void ConsoleSettingsDialog::setDelayAfterSendNewLine(const int delayAfterSendNewline)
+{
+    ui->delayAfterSendNewLineSpinBox->setValue (delayAfterSendNewline);
+}
+
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)
 {
     bool isCustomLineEndingTx = (index == ui->lineEndingTxComboBox->count() - 1);

@@ -31,17 +31,23 @@ public:
     int getDelayAfterBytes_us() const;
     void setDelayAfterBytes_us(int delayAfterBytes_us);
 
+    int getDelayAfterChr_us() const;
+    QByteArray getChr() const;
+    int setDelayAfterChr_us(int delayAfterChr_us, QByteArray chr);
+
 signals:
 
 public slots:
 
 protected:
-    QIODevice* m_device;
-    QByteArray m_data;      /**< Data to send */
-    bool m_running;
-    QMutex m_mutex;
-    QWaitCondition m_dataAdded;
-    int m_delayAfterBytes_us;
+    QIODevice* m_device;        /**< Serial device */
+    QByteArray m_data;          /**< Data to send */
+    bool m_running;             /**< Thread is running, used to stop thread gently. */
+    QMutex m_mutex;             /**< Mutex to protect m_data. */
+    QWaitCondition m_dataAdded; /**< Thread waits for this condition. */
+    int m_delayAfterBytes_us;   /**< After sending a byte this delay will be applied. */
+    int m_delayAfterChr_us;
+    QByteArray m_chr;           /**< After this character m_delayAfterChr_us microseconds delay will be applied instead of m_delayAfterBytes_us. */
 };
 
 #endif // SERIALTHREAD_H
