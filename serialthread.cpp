@@ -28,14 +28,15 @@ void SerialThread::run()
         m_dataAdded.wait(&m_mutex);
         /* Mutex locked and data received */
 //        qDebug() << __PRETTY_FUNCTION__ << "sending" << m_data.length () << "bytes";
+        emit progress(QString("Sending %i bytes").arg(m_data.length()), 0);
         /* Send data while thread should run */
         while (m_data.length () > 0 && m_running)
         {
             QByteArray c = m_data.left (1);
             m_data.remove (0, 1);
-//            qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
+            qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
             m_device->write(c);
-            m_mutex.unlock ();
+            m_mutex.unlock();
             if (m_chr.length() > 0 && c == m_chr)
             {
                 usleep (m_delayAfterChr_us);

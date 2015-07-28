@@ -1,3 +1,5 @@
+. Convert '\n' to correct line ending when sending clipboard data (Paste)
+. Display and set CTS, RTS...
 . Rescan serial ports every time when configure dialog opened
 + Menu point to set color of console
 + Menu point to set lines of console

@@ -82,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_serialThread->setSerialDevice (m_serial);
     m_serialThread->setDelayAfterBytes_us (settings.value ("serial/delayAfterBytes_us", m_serialThread->getDelayAfterBytes_us ()).toInt());
     m_serialThread->setDelayAfterChr_us(settings.value ("serial/delayAfterNewline_us", m_serialThread->getDelayAfterChr_us()).toInt(),
-                                        m_console->getLineEndingTx().toLatin1());
+                                        m_console->getLineEndingTx().right(1).toLatin1());
     m_serialThread->start ();
     m_serialSettings = new SettingsDialog;
 
@@ -368,7 +368,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_console->setDisplaySize (displaySize);
         m_console->setHexWrap (hexWrap);
         m_serialThread->setDelayAfterBytes_us(delayAfterBytes_us);
-        m_serialThread->setDelayAfterChr_us(delayAfterBytes_us, lineEndingTx.right(1).toLatin1());
+        m_serialThread->setDelayAfterChr_us(delayAfterNewline_us, lineEndingTx.right(1).toLatin1());
         QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);

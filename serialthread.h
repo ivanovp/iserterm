@@ -36,6 +36,8 @@ public:
     int setDelayAfterChr_us(int delayAfterChr_us, QByteArray chr);
 
 signals:
+    void progress(QString message, int percent);
+    void finished();
 
 public slots:
 
