@@ -77,9 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_console->setDisplaySize (settings.value("serial/displaySize", m_console->getDisplaySize ()).toInt ());
     m_console->setHexWrap (settings.value("serial/hexWrap", m_console->getHexWrap ()).toInt ());
 
-    m_serial = new QSerialPort(this);
     m_serialThread = new SerialThread;
-    m_serialThread->setSerialDevice (m_serial);
     m_serialThread->setDelayAfterBytes_us (settings.value ("serial/delayAfterBytes_us", m_serialThread->getDelayAfterBytes_us ()).toInt());
     m_serialThread->setDelayAfterChr_us(settings.value ("serial/delayAfterNewline_us", m_serialThread->getDelayAfterChr_us()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
@@ -95,11 +93,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initActionsConnections();
 
-    MY_ASSERT(connect(m_serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
+    MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
 
 
-    MY_ASSERT(connect(m_serial, SIGNAL(readyRead()), this, SLOT(readData())));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
 
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
@@ -138,13 +136,13 @@ void MainWindow::enableConsole(bool enable)
 void MainWindow::openSerialPort()
 {
     SettingsDialog::SerialSettings p = m_serialSettings->serialSettings();
-    m_serial->setPortName(p.name);
-    m_serial->setBaudRate(p.baudRate);
-    m_serial->setDataBits(p.dataBits);
-    m_serial->setParity(p.parity);
-    m_serial->setStopBits(p.stopBits);
-    m_serial->setFlowControl(p.flowControl);
-    if (m_serial->open(QIODevice::ReadWrite))
+    m_serialThread->setPortName(p.name);
+    m_serialThread->setBaudRate(p.baudRate);
+    m_serialThread->setDataBits(p.dataBits);
+    m_serialThread->setParity(p.parity);
+    m_serialThread->setStopBits(p.stopBits);
+    m_serialThread->setFlowControl(p.flowControl);
+    if (m_serialThread->open(QIODevice::ReadWrite))
     {
         enableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
@@ -159,7 +157,7 @@ void MainWindow::openSerialPort()
     }
     else
     {
-        QMessageBox::critical(this, tr("Error"), m_serial->errorString());
+        QMessageBox::critical(this, tr("Error"), m_serialThread->errorString());
 
         ui->statusBar->showMessage(tr("Open error"));
     }
@@ -169,9 +167,9 @@ void MainWindow::openSerialPort()
 
 void MainWindow::closeSerialPort()
 {
-    if (m_serial->isOpen())
+    if (m_serialThread->isOpen())
     {
-        m_serial->close();
+        m_serialThread->close();
     }
     enableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
@@ -198,7 +196,7 @@ void MainWindow::writeData(const QByteArray &data)
 {
 //    qDebug() << __FUNCTION__ << data;
     /* Send user input */
-    m_serialThread->addData (data);
+    m_serialThread->write (data);
 //    m_serial->write(data);
 }
 
@@ -206,7 +204,7 @@ void MainWindow::writeData(const QByteArray &data)
 
 void MainWindow::readData()
 {
-    QByteArray data = m_serial->readAll();
+    QByteArray data = m_serialThread->readAll();
 //    qDebug() << __FUNCTION__ << data;
     /* Receive serial data and show on console */
     m_console->putData(data);
@@ -218,7 +216,7 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError)
     {
-        QMessageBox::critical(this, tr("Critical Error"), m_serial->errorString());
+        QMessageBox::critical(this, tr("Critical Error"), m_serialThread->errorString());
         closeSerialPort();
     }
 }
@@ -308,7 +306,7 @@ void MainWindow::on_sendLineEdit_returnPressed()
 //    qDebug() << __PRETTY_FUNCTION__ << data;
     if (data.length())
     {
-        m_serial->write(data);
+        m_serialThread->write(data);
         if (ui->actionLocal_echo->isChecked())
         {
             m_console->putData(data);
@@ -380,4 +378,16 @@ void MainWindow::on_actionConfigure_console_triggered()
     }
 
     delete dialog;
+}
+
+void MainWindow::serialProgress(QString message, int percent)
+{
+    if (message.length())
+    {
+        ui->statusBar->showMessage(message);
+    }
+}
+
+void MainWindow::serialFinished()
+{
 }

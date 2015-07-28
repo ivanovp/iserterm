@@ -87,6 +87,9 @@ private slots:
 
     void on_actionConfigure_console_triggered();
 
+    void serialProgress(QString message, int percent);
+    void serialFinished();
+
 private:
     void initActionsConnections();
 
@@ -94,7 +97,6 @@ private:
     Ui::MainWindow *ui;
     Console *m_console;
     SettingsDialog *m_serialSettings;
-    QSerialPort *m_serial;
     SerialThread *m_serialThread;
 };
 
