@@ -13,15 +13,18 @@
 #include "serialthread.h"
 
 Q_DECLARE_METATYPE(QSerialPort::SerialPortError)
+Q_DECLARE_METATYPE(QSerialPort::PinoutSignals)
 
 SerialThread::SerialThread(QObject *parent)
     : QThread(parent)
     , m_serialPort(NULL)
     , m_writeDataLength(0)
+    , m_writeDataSent(0)
     , m_delayAfterBytes_ms(1)
     , m_delayAfterChr_ms(1)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
+    qRegisterMetaType<QSerialPort::PinoutSignals>("QSerialPort::PinoutSignals");
 }
 
 SerialThread::~SerialThread()
@@ -29,12 +32,10 @@ SerialThread::~SerialThread()
     delete m_serialPort;
 }
 
+
+
 void SerialThread::run()
 {
-    const int progressLimit = 10;
-    float progress_percent = 0.0f;
-    int bytes_sent = 0;
-
     m_serialPort = new QSerialPort;
     Q_ASSERT(m_serialPort);
 
@@ -53,100 +54,24 @@ void SerialThread::run()
     {
         m_mutex.lock();
         /* Unlocks mutex and waits for event! */
-        if (m_commandEvent.wait(&m_mutex, 10))
+        if (m_running && m_commandEvent.wait(&m_mutex, 10))
         {
-            /* Mutex locked and data received */
-            //qDebug() << __PRETTY_FUNCTION__ << "sending" << m_data.length () << "bytes";
-            if (m_running)
-            {
-                if (m_command == CMD_write)
-                {
-                    progress_percent = 0.0f;
-                    if (m_writeData.length())
-                    {
-                        if (m_writeDataLength > progressLimit)
-                        {
-                            emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
-                        }
-                        /* Send data while thread should run */
-                        while (m_writeData.length() > 0 && m_running)
-                        {
-                            QByteArray c = m_writeData.left(1);
-                            m_writeData.remove(0, 1);
-                            qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
-                            m_serialPort->write(c);
-                            bytes_sent++;
-                            progress_percent = 100.0f * bytes_sent / m_writeDataLength;
-                            if (m_writeDataLength > progressLimit)
-                            {
-                                emit progress(QString("%1 bytes of %2 bytes sent").arg(bytes_sent).arg(m_writeDataLength), progress_percent);
-                            }
-                            /* Character sent, delay for specified time. Meanwhile check if
-                             * data can be received.
-                             */
-                            int delay_ms = 0;
-                            if (m_chr.length() > 0 && c == m_chr)
-                            {
-                                delay_ms = m_delayAfterChr_ms;
-                            }
-                            else
-                            {
-                                delay_ms = m_delayAfterBytes_ms;
-                            }
-                            //qDebug() << __PRETTY_FUNCTION__ << "delay_ms" << delay_ms;
-                            QElapsedTimer timer;
-                            int elapsed_ms;
-                            timer.start();
-                            /* Check if data can be received and measure time of
-                             * operation. waitForReadyRead() can block running
-                             * up to delay_ms time.
-                             */
-                            if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
-                            {
-                                m_readData.append(m_serialPort->readAll());
-                                emit readyRead();
-                            }
-                            m_mutex.unlock();
-                            elapsed_ms = timer.elapsed();
-                            //qDebug() << __PRETTY_FUNCTION__ << "elapsed_ms" << elapsed_ms;
-                            if (elapsed_ms < delay_ms)
-                            {
-                                /* Not enough time elapsed, another delay needed */
-                                msleep (delay_ms - elapsed_ms);
-                            }
-                            m_mutex.lock();
-                        }
-                        if (bytes_sent > progressLimit)
-                        {
-                            emit progress(QString("%1 bytes sent").arg(bytes_sent), 100.0f);
-                        }
-                        emit finished();
-                        bytes_sent = 0;
-                        m_writeDataLength = 0;
-                    }
-                    m_command = CMD_undefined;
-                }
-                else if (m_command == CMD_open)
-                {
-                    m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
-                    m_command = CMD_undefined;
-                }
-                else if (m_command == CMD_close)
-                {
-                    m_serialPort->close();
-                    m_command = CMD_undefined;
-                }
-                else
-                {
-                    qDebug() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
-                    Q_ASSERT(0);
-                }
-            }
+            /* Mutex locked and command received */
+            processCommand();
         }
         if (m_running && m_serialPort->waitForReadyRead(10))
         {
             m_readData.append(m_serialPort->readAll());
             emit readyRead();
+        }
+        if (m_running && m_serialPort->isOpen())
+        {
+            QSerialPort::PinoutSignals pinoutSignals = m_serialPort->pinoutSignals();
+            if (pinoutSignals != m_pinoutSignals)
+            {
+                emit pinoutSignalsChanged(pinoutSignals);
+                m_pinoutSignals = pinoutSignals;
+            }
         }
         m_mutex.unlock();
     }
@@ -380,4 +305,93 @@ QByteArray SerialThread::readAll()
     QByteArray data = m_readData;
     m_readData.clear();
     return data;
+}
+
+void SerialThread::processCommand()
+{
+    const int progressLimit = 10;
+    float progress_percent = 0.0f;
+
+    if (m_command == CMD_write)
+    {
+        progress_percent = 0.0f;
+        if (m_writeData.length())
+        {
+            if (m_writeDataLength > progressLimit)
+            {
+                emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
+            }
+            /* Send data while thread should run */
+            while (m_writeData.length() > 0 && m_running)
+            {
+                QByteArray c = m_writeData.left(1);
+                m_writeData.remove(0, 1);
+                qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
+                m_serialPort->write(c);
+                m_writeDataSent++;
+                progress_percent = 100.0f * m_writeDataSent / m_writeDataLength;
+                if (m_writeDataLength > progressLimit)
+                {
+                    emit progress(QString("%1 bytes of %2 bytes sent").arg(m_writeDataSent).arg(m_writeDataLength), progress_percent);
+                }
+                /* Character sent, delay for specified time. Meanwhile check if
+                             * data can be received.
+                             */
+                int delay_ms = 0;
+                if (m_chr.length() > 0 && c == m_chr)
+                {
+                    delay_ms = m_delayAfterChr_ms;
+                }
+                else
+                {
+                    delay_ms = m_delayAfterBytes_ms;
+                }
+                //qDebug() << __PRETTY_FUNCTION__ << "delay_ms" << delay_ms;
+                QElapsedTimer timer;
+                int elapsed_ms;
+                timer.start();
+                /* Check if data can be received and measure time of
+                             * operation. waitForReadyRead() can block running
+                             * up to delay_ms time.
+                             */
+                if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
+                {
+                    m_readData.append(m_serialPort->readAll());
+                    emit readyRead();
+                }
+                m_mutex.unlock();
+                elapsed_ms = timer.elapsed();
+                //qDebug() << __PRETTY_FUNCTION__ << "elapsed_ms" << elapsed_ms;
+                if (elapsed_ms < delay_ms)
+                {
+                    /* Not enough time elapsed, another delay needed */
+                    msleep (delay_ms - elapsed_ms);
+                }
+                m_mutex.lock();
+            }
+            if (m_writeDataSent > progressLimit)
+            {
+                emit progress(QString("%1 bytes sent").arg(m_writeDataSent), 100.0f);
+            }
+            emit finished();
+            m_writeDataSent = 0;
+            m_writeDataLength = 0;
+        }
+        m_command = CMD_undefined;
+    }
+    else if (m_command == CMD_open)
+    {
+        m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+        m_command = CMD_undefined;
+    }
+    else if (m_command == CMD_close)
+    {
+        m_serialPort->close();
+        m_command = CMD_undefined;
+    }
+    else
+    {
+        qDebug() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
+        Q_ASSERT(0);
+    }
 }

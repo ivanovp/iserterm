@@ -83,11 +83,13 @@ private slots:
     void on_sendButton_clicked();
     void on_actionViewSendInput_triggered(bool checked);
     void on_actionHexadecimal_view_triggered(bool checked);
-
     void on_actionConfigure_console_triggered();
 
     void serialProgress(QString message, int percent);
     void serialFinished();
+    void serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals);
+
+    void on_actionShow_line_status_triggered(bool checked);
 
 private:
     void initActionsConnections();

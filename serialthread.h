@@ -20,6 +20,18 @@ class SerialThread : public QThread
 {
     Q_OBJECT
 public:
+    typedef enum
+    {
+        LINE_rx,
+        LINE_tx,
+        LINE_dsr,
+        LINE_cts,
+        LINE_dcd,
+        LINE_ri,
+        LINE_dtr,
+        LINE_rts,
+        LINE_brk
+    } lines_t;
     explicit SerialThread(QObject *parent = 0);
     ~SerialThread();
 
@@ -78,8 +90,12 @@ signals:
     void readyRead();
     void progress(QString message, int percent);
     void finished();
+    void pinoutSignalsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
 public slots:
+
+protected:
+   void processCommand();
 
 protected:
     typedef enum
@@ -95,6 +111,7 @@ protected:
     QSerialPort* m_serialPort;  /**< Serial device */
     QByteArray m_writeData;     /**< Data to send */
     int m_writeDataLength;
+    int m_writeDataSent;
     QByteArray m_readData;      /**< Received data */
     bool m_running;             /**< Thread is running, used to stop thread gently. */
     QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
@@ -102,6 +119,7 @@ protected:
     int m_delayAfterBytes_ms;   /**< After sending a byte this delay will be applied. */
     int m_delayAfterChr_ms;
     QByteArray m_chr;           /**< After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms. */
+    QSerialPort::PinoutSignals m_pinoutSignals;
 };
 
 #endif // SERIALTHREAD_H

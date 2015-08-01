@@ -53,10 +53,11 @@
 #include <QColorDialog>
 #include <QtSerialPort/QSerialPort>
 #include <QProgressBar>
+#include <QFlags>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
     QSettings settings;
 
@@ -85,6 +86,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
+    bool viewLineStatus = settings.value("console/showLineStatus", true).toBool();
+    ui->actionShow_line_status->setChecked(viewLineStatus);
+    on_actionShow_line_status_triggered(viewLineStatus);
     bool viewSendInput = settings.value("console/viewSendInput", true).toBool();
     ui->actionViewSendInput->setChecked(viewSendInput);
     on_actionViewSendInput_triggered(viewSendInput);
@@ -101,6 +105,8 @@ MainWindow::MainWindow(QWidget *parent) :
     MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(progress(QString,int)), this, SLOT(serialProgress(QString,int))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(finished()), this, SLOT(serialFinished())));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(pinoutSignalsChanged(QSerialPort::PinoutSignals)),
+                      this, SLOT(serialPinoutsChanged(QSerialPort::PinoutSignals))));
 
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
@@ -113,6 +119,7 @@ MainWindow::~MainWindow()
     settings.setValue("window/height", size().height());
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
     settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
+    settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
     if (m_serialThread)
     {
         m_serialThread->stop(100);
@@ -396,4 +403,41 @@ void MainWindow::serialProgress(QString message, int percent)
 void MainWindow::serialFinished()
 {
     m_progressBar->hide();
+}
+
+void MainWindow::serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals)
+{
+    /*
+        TransmittedDataSignal = 0x01,
+        ReceivedDataSignal = 0x02,
+        DataTerminalReadySignal = 0x04,
+        DataCarrierDetectSignal = 0x08,
+        DataSetReadySignal = 0x10,
+        RingIndicatorSignal = 0x20,
+        RequestToSendSignal = 0x40,
+        ClearToSendSignal = 0x80,
+        SecondaryTransmittedDataSignal = 0x100,
+        SecondaryReceivedDataSignal = 0x200
+     */
+    ui->rxLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::TransmittedDataSignal));
+    ui->txLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::ReceivedDataSignal));
+    ui->dtrLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::DataTerminalReadySignal));
+    ui->dcdLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::DataCarrierDetectSignal));
+    ui->dsrLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::DataSetReadySignal));
+    ui->riLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RingIndicatorSignal));
+    ui->rtsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RequestToSendSignal));
+    ui->ctsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::ClearToSendSignal));
+}
+
+void MainWindow::on_actionShow_line_status_triggered(bool checked)
+{
+    ui->rxLabel->setHidden(!checked);
+    ui->txLabel->setHidden(!checked);
+    ui->dsrLabel->setHidden(!checked);
+    ui->ctsLabel->setHidden(!checked);
+    ui->dcdLabel->setHidden(!checked);
+    ui->riLabel->setHidden(!checked);
+    ui->dtrLabel->setHidden(!checked);
+    ui->rtsLabel->setHidden(!checked);
+    ui->brkLabel->setHidden(!checked);
 }

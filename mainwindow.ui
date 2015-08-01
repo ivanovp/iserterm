@@ -28,14 +28,21 @@
      <number>0</number>
     </property>
     <item>
-     <layout class="QGridLayout" name="gridLayout" rowstretch="1,0">
+     <layout class="QGridLayout" name="gridLayout" rowstretch="1,0,0">
       <property name="spacing">
        <number>0</number>
       </property>
-      <item row="0" column="0">
+      <item row="2" column="6">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="10">
        <layout class="QVBoxLayout" name="consoleWidget"/>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="10">
        <layout class="QHBoxLayout" name="sendLayout">
         <property name="leftMargin">
          <number>6</number>
@@ -98,6 +105,69 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="5">
+       <widget class="QLabel" name="riLabel">
+        <property name="text">
+         <string>RI</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLabel" name="ctsLabel">
+        <property name="text">
+         <string>CTS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="9">
+       <widget class="QLabel" name="brkLabel">
+        <property name="text">
+         <string>BRK</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="8">
+       <widget class="QLabel" name="rtsLabel">
+        <property name="text">
+         <string>RTS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="txLabel">
+        <property name="text">
+         <string>TX</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="dsrLabel">
+        <property name="text">
+         <string>DSR</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="7">
+       <widget class="QLabel" name="dtrLabel">
+        <property name="text">
+         <string>DTR</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QLabel" name="dcdLabel">
+        <property name="text">
+         <string>DCD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="rxLabel">
+        <property name="text">
+         <string>RX</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -133,6 +203,7 @@
     <addaction name="actionLocal_echo"/>
     <addaction name="actionViewSendInput"/>
     <addaction name="actionHexadecimal_view"/>
+    <addaction name="actionShow_line_status"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -378,10 +449,18 @@
   </action>
   <action name="actionPaste">
    <property name="text">
-    <string>Paste</string>
+    <string>&amp;Paste</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionShow_line_status">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sho&amp;w line status</string>
    </property>
   </action>
  </widget>
