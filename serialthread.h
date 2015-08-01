@@ -91,8 +91,9 @@ protected:
     int m_commandParam;
     QSerialPort* m_serialPort;  /**< Serial device */
     QByteArray m_writeData;     /**< Data to send */
+    QByteArray m_readData;      /**< Received data */
     bool m_running;             /**< Thread is running, used to stop thread gently. */
-    QMutex m_mutex;             /**< Mutex to protect m_data. */
+    QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
     QWaitCondition m_commandEvent; /**< Thread waits for this condition. */
     int m_delayAfterBytes_us;   /**< After sending a byte this delay will be applied. */
     int m_delayAfterChr_us;
