@@ -52,7 +52,7 @@
 #include <QSettings>
 #include <QColorDialog>
 #include <QtSerialPort/QSerialPort>
-
+#include <QProgressBar>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -90,14 +90,17 @@ MainWindow::MainWindow(QWidget *parent) :
     on_actionViewSendInput_triggered(viewSendInput);
     ui->actionQuit->setEnabled(true);
     ui->sendLineEdit->setValidator(new HexValidator (this));
+    m_progressBar = new QProgressBar(this);
+    m_progressBar->hide();
+    ui->statusBar->addPermanentWidget(m_progressBar);
 
     initActionsConnections();
 
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
-
-
     MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(progress(QString,int)), this, SLOT(serialProgress(QString,int))));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(finished()), this, SLOT(serialFinished())));
 
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
@@ -386,8 +389,11 @@ void MainWindow::serialProgress(QString message, int percent)
     {
         ui->statusBar->showMessage(message);
     }
+    m_progressBar->show();
+    m_progressBar->setValue(percent);
 }
 
 void MainWindow::serialFinished()
 {
+    m_progressBar->hide();
 }

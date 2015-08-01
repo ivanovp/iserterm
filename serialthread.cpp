@@ -17,17 +17,23 @@ Q_DECLARE_METATYPE(QSerialPort::SerialPortError)
 SerialThread::SerialThread(QObject *parent)
     : QThread(parent)
     , m_serialPort(NULL)
+    , m_writeDataLength(0)
     , m_delayAfterBytes_ms(1)
     , m_delayAfterChr_ms(1)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
 }
 
+SerialThread::~SerialThread()
+{
+    delete m_serialPort;
+}
+
 void SerialThread::run()
 {
-    float progress_percent;
-    int length_orig;
-    int bytes_sent;
+    const int progressLimit = 10;
+    float progress_percent = 0.0f;
+    int bytes_sent = 0;
 
     m_serialPort = new QSerialPort;
     Q_ASSERT(m_serialPort);
@@ -56,10 +62,12 @@ void SerialThread::run()
                 if (m_command == CMD_write)
                 {
                     progress_percent = 0.0f;
-                    length_orig = m_writeData.length();
-                    if (length_orig)
+                    if (m_writeData.length())
                     {
-                        emit progress(QString("Sending %1 bytes").arg(length_orig), progress_percent);
+                        if (m_writeDataLength > progressLimit)
+                        {
+                            emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
+                        }
                         /* Send data while thread should run */
                         while (m_writeData.length() > 0 && m_running)
                         {
@@ -68,8 +76,11 @@ void SerialThread::run()
                             qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
                             m_serialPort->write(c);
                             bytes_sent++;
-                            progress_percent = 100.0f * bytes_sent / length_orig;
-                            emit progress(QString("%1 bytes sent").arg(bytes_sent), progress_percent);
+                            progress_percent = 100.0f * bytes_sent / m_writeDataLength;
+                            if (m_writeDataLength > progressLimit)
+                            {
+                                emit progress(QString("%1 bytes of %2 bytes sent").arg(bytes_sent).arg(m_writeDataLength), progress_percent);
+                            }
                             /* Character sent, delay for specified time. Meanwhile check if
                              * data can be received.
                              */
@@ -105,7 +116,13 @@ void SerialThread::run()
                             }
                             m_mutex.lock();
                         }
+                        if (bytes_sent > progressLimit)
+                        {
+                            emit progress(QString("%1 bytes sent").arg(bytes_sent), 100.0f);
+                        }
                         emit finished();
+                        bytes_sent = 0;
+                        m_writeDataLength = 0;
                     }
                     m_command = CMD_undefined;
                 }
@@ -122,16 +139,21 @@ void SerialThread::run()
                 else
                 {
                     qDebug() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
+                    Q_ASSERT(0);
                 }
             }
         }
-        if (m_serialPort->waitForReadyRead(10))
+        if (m_running && m_serialPort->waitForReadyRead(10))
         {
             m_readData.append(m_serialPort->readAll());
             emit readyRead();
         }
         m_mutex.unlock();
     }
+//    if (m_serialPort->isOpen())
+//    {
+//        m_serialPort->close();
+//    }
 }
 
 /**
@@ -174,7 +196,9 @@ qint64 SerialThread::write(const QByteArray &data)
     m_command = CMD_write;
     m_commandParam = 0;
     m_commandEvent.wakeAll();
-    return data.length();
+    int length = data.length();
+    m_writeDataLength += length;
+    return length;
 }
 
 qint64 SerialThread::write(const char *data, qint64 len)
@@ -330,6 +354,12 @@ bool SerialThread::isRequestToSend()
 {
     QMutexLocker mutexLocker(&m_mutex);
     return m_serialPort->isRequestToSend();
+}
+
+QSerialPort::PinoutSignals SerialThread::pinoutSignals()
+{
+    QMutexLocker mutexLocker(&m_mutex);
+    return m_serialPort->pinoutSignals();
 }
 
 QString SerialThread::errorString()

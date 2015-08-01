@@ -40,10 +40,9 @@
 #define MAINWINDOW_H
 
 #include <QtCore/QtGlobal>
-
 #include <QMainWindow>
-
 #include <QtSerialPort/QSerialPort>
+#include <QProgressBar>
 
 QT_BEGIN_NAMESPACE
 
@@ -98,6 +97,7 @@ private:
     Console *m_console;
     SettingsDialog *m_serialSettings;
     SerialThread *m_serialThread;
+    QProgressBar *m_progressBar;
 };
 
 #endif // MAINWINDOW_H

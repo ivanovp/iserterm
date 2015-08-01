@@ -21,6 +21,7 @@ class SerialThread : public QThread
     Q_OBJECT
 public:
     explicit SerialThread(QObject *parent = 0);
+    ~SerialThread();
 
     void run();
     void stop(int timeout = 0);
@@ -64,6 +65,8 @@ public:
     bool setRequestToSend(bool set);
     bool isRequestToSend();
 
+    QSerialPort::PinoutSignals pinoutSignals();
+
     QString errorString();
 
     bool isOpen();
@@ -91,6 +94,7 @@ protected:
     int m_commandParam;
     QSerialPort* m_serialPort;  /**< Serial device */
     QByteArray m_writeData;     /**< Data to send */
+    int m_writeDataLength;
     QByteArray m_readData;      /**< Received data */
     bool m_running;             /**< Thread is running, used to stop thread gently. */
     QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
