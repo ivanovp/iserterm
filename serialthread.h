@@ -28,12 +28,12 @@ public:
     qint64 write(const QByteArray& data);
     qint64 write(const char *data, qint64 len);
 
-    int getDelayAfterBytes_us() const;
-    void setDelayAfterBytes_us(int delayAfterBytes_us);
+    int getDelayAfterBytes_ms() const;
+    void setDelayAfterBytes_ms(int delayAfterBytes_ms);
 
-    int getDelayAfterChr_us() const;
+    int getDelayAfterChr_ms() const;
     QByteArray getChr() const;
-    void setDelayAfterChr_us(int delayAfterChr_us, QByteArray chr);
+    void setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr);
 
     void setPortName(const QString &name);
     QString portName();
@@ -95,9 +95,9 @@ protected:
     bool m_running;             /**< Thread is running, used to stop thread gently. */
     QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
     QWaitCondition m_commandEvent; /**< Thread waits for this condition. */
-    int m_delayAfterBytes_us;   /**< After sending a byte this delay will be applied. */
-    int m_delayAfterChr_us;
-    QByteArray m_chr;           /**< After this character m_delayAfterChr_us microseconds delay will be applied instead of m_delayAfterBytes_us. */
+    int m_delayAfterBytes_ms;   /**< After sending a byte this delay will be applied. */
+    int m_delayAfterChr_ms;
+    QByteArray m_chr;           /**< After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms. */
 };
 
 #endif // SERIALTHREAD_H

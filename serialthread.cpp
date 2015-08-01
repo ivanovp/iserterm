@@ -7,6 +7,7 @@
 #include <QMutexLocker>
 #include <QSerialPort>
 #include <QDebug>
+#include <QElapsedTimer>
 
 #include "common.h"
 #include "serialthread.h"
@@ -16,8 +17,8 @@ Q_DECLARE_METATYPE(QSerialPort::SerialPortError)
 SerialThread::SerialThread(QObject *parent)
     : QThread(parent)
     , m_serialPort(NULL)
-    , m_delayAfterBytes_us(1000)
-    , m_delayAfterChr_us(1000)
+    , m_delayAfterBytes_ms(1)
+    , m_delayAfterChr_ms(1)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
 }
@@ -39,7 +40,6 @@ void SerialThread::run()
 
     MY_ASSERT(connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SIGNAL(error(QSerialPort::SerialPortError))));
-//    MY_ASSERT(connect(m_serialPort, SIGNAL(readyRead()), this, SIGNAL(readyRead())));
 
     m_running = true;
 
@@ -70,14 +70,38 @@ void SerialThread::run()
                             bytes_sent++;
                             progress_percent = 100.0f * bytes_sent / length_orig;
                             emit progress(QString("%1 bytes sent").arg(bytes_sent), progress_percent);
-                            m_mutex.unlock();
+                            /* Character sent, delay for specified time. Meanwhile check if
+                             * data can be received.
+                             */
+                            int delay_ms = 0;
                             if (m_chr.length() > 0 && c == m_chr)
                             {
-                                usleep(m_delayAfterChr_us);
+                                delay_ms = m_delayAfterChr_ms;
                             }
                             else
                             {
-                                usleep(m_delayAfterBytes_us);
+                                delay_ms = m_delayAfterBytes_ms;
+                            }
+                            //qDebug() << __PRETTY_FUNCTION__ << "delay_ms" << delay_ms;
+                            QElapsedTimer timer;
+                            int elapsed_ms;
+                            timer.start();
+                            /* Check if data can be received and measure time of
+                             * operation. waitForReadyRead() can block running
+                             * up to delay_ms time.
+                             */
+                            if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
+                            {
+                                m_readData.append(m_serialPort->readAll());
+                                emit readyRead();
+                            }
+                            m_mutex.unlock();
+                            elapsed_ms = timer.elapsed();
+                            //qDebug() << __PRETTY_FUNCTION__ << "elapsed_ms" << elapsed_ms;
+                            if (elapsed_ms < delay_ms)
+                            {
+                                /* Not enough time elapsed, another delay needed */
+                                msleep (delay_ms - elapsed_ms);
                             }
                             m_mutex.lock();
                         }
@@ -101,13 +125,10 @@ void SerialThread::run()
                 }
             }
         }
-        else
+        if (m_serialPort->waitForReadyRead(10))
         {
-            if (m_serialPort->waitForReadyRead(10))
-            {
-                m_readData.append(m_serialPort->readAll());
-                emit readyRead();
-            }
+            m_readData.append(m_serialPort->readAll());
+            emit readyRead();
         }
         m_mutex.unlock();
     }
@@ -166,19 +187,19 @@ qint64 SerialThread::write(const char *data, qint64 len)
     return write(data_);
 }
 
-int SerialThread::getDelayAfterBytes_us() const
+int SerialThread::getDelayAfterBytes_ms() const
 {
-    return m_delayAfterBytes_us;
+    return m_delayAfterBytes_ms;
 }
 
-void SerialThread::setDelayAfterBytes_us(int delayAfterBytes_us)
+void SerialThread::setDelayAfterBytes_ms(int delayAfterBytes_ms)
 {
-    m_delayAfterBytes_us = delayAfterBytes_us;
+    m_delayAfterBytes_ms = delayAfterBytes_ms;
 }
 
-int SerialThread::getDelayAfterChr_us() const
+int SerialThread::getDelayAfterChr_ms() const
 {
-    return m_delayAfterChr_us;
+    return m_delayAfterChr_ms;
 }
 
 QByteArray SerialThread::getChr() const
@@ -186,9 +207,9 @@ QByteArray SerialThread::getChr() const
     return m_chr;
 }
 
-void SerialThread::setDelayAfterChr_us(int delayAfterChr_us, QByteArray chr)
+void SerialThread::setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr)
 {
-    m_delayAfterChr_us = delayAfterChr_us;
+    m_delayAfterChr_ms = delayAfterChr_ms;
     m_chr = chr;
 }
 

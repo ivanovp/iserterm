@@ -78,8 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_console->setHexWrap (settings.value("serial/hexWrap", m_console->getHexWrap ()).toInt ());
 
     m_serialThread = new SerialThread;
-    m_serialThread->setDelayAfterBytes_us (settings.value ("serial/delayAfterBytes_us", m_serialThread->getDelayAfterBytes_us ()).toInt());
-    m_serialThread->setDelayAfterChr_us(settings.value ("serial/delayAfterNewline_us", m_serialThread->getDelayAfterChr_us()).toInt(),
+    m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
+    m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
     m_serialThread->start ();
     m_serialSettings = new SettingsDialog;
@@ -345,8 +345,8 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setDataBufferSize(m_console->getDataSizeLimit () >> 20);
     dialog->setDisplaySize(m_console->getDisplaySize ());
     dialog->setHexWrap(m_console->getHexWrap ());
-    dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_us());
-    dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_us());
+    dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_ms());
+    dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_ms());
 
     int result = dialog->exec();
 //    qDebug() << __PRETTY_FUNCTION__ << result;
@@ -358,23 +358,23 @@ void MainWindow::on_actionConfigure_console_triggered()
         int dataSizeLimit = dialog->getDataBufferSize() << 20;
         int displaySize = dialog->getDisplaySize();
         int hexWrap = dialog->getHexWrap();
-        int delayAfterBytes_us = dialog->getDelayAfterSendByte();
-        int delayAfterNewline_us = dialog->getDelayAfterSendNewLine();
+        int delayAfterBytes_ms = dialog->getDelayAfterSendByte();
+        int delayAfterNewline_ms = dialog->getDelayAfterSendNewLine();
         m_console->setLineEndingRx(lineEndingRx);
         m_console->setLineEndingTx(lineEndingTx);
         m_console->setDataSizeLimit(dataSizeLimit);
         m_console->setDisplaySize (displaySize);
         m_console->setHexWrap (hexWrap);
-        m_serialThread->setDelayAfterBytes_us(delayAfterBytes_us);
-        m_serialThread->setDelayAfterChr_us(delayAfterNewline_us, lineEndingTx.right(1).toLatin1());
+        m_serialThread->setDelayAfterBytes_ms(delayAfterBytes_ms);
+        m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
         QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);
         settings.setValue("serial/displaySize", displaySize);
         settings.setValue("serial/hexWrap", hexWrap);
-        settings.setValue("serial/delayAfterBytes_us", delayAfterBytes_us);
-        settings.setValue("serial/delayAfterNewline_us", delayAfterNewline_us);
+        settings.setValue("serial/delayAfterBytes_ms", delayAfterBytes_ms);
+        settings.setValue("serial/delayAfterNewline_ms", delayAfterNewline_ms);
     }
 
     delete dialog;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>352</width>
-    <height>260</height>
+    <width>356</width>
+    <height>270</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,7 +56,7 @@
      <item row="5" column="2">
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>us</string>
+        <string>ms</string>
        </property>
       </widget>
      </item>
@@ -117,7 +117,7 @@
      <item row="5" column="1">
       <widget class="QSpinBox" name="delayAfterSendByteSpinBox">
        <property name="maximum">
-        <number>10000000</number>
+        <number>10000</number>
        </property>
       </widget>
      </item>
@@ -145,14 +145,14 @@
      <item row="6" column="2">
       <widget class="QLabel" name="label_12">
        <property name="text">
-        <string>us</string>
+        <string>ms</string>
        </property>
       </widget>
      </item>
      <item row="6" column="1">
       <widget class="QSpinBox" name="delayAfterSendNewLineSpinBox">
        <property name="maximum">
-        <number>10000000</number>
+        <number>10000</number>
        </property>
       </widget>
      </item>
