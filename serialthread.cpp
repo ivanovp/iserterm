@@ -41,7 +41,7 @@ void SerialThread::run()
 
     if (!m_serialPort)
     {
-        qDebug() << __PRETTY_FUNCTION__ << "not enough memory";
+        qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
         return;
     }
 
@@ -320,11 +320,11 @@ void SerialThread::processCommand()
                 emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
             }
             /* Send data while thread should run */
-            while (m_writeData.length() > 0 && m_running)
+            while (m_writeData.length() > 0 && m_running && m_serialPort->isOpen() && m_serialPort->isWritable())
             {
                 QByteArray c = m_writeData.left(1);
                 m_writeData.remove(0, 1);
-                qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
+                //qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
                 m_serialPort->write(c);
                 m_writeDataSent++;
                 progress_percent = 100.0f * m_writeDataSent / m_writeDataLength;

@@ -465,7 +465,7 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
             {
                 if (j < bufSize)
                 {
-                    if (buf[j] >= 0x20 && buf[j] <= 0x7F)
+                    if (buf[j] >= 0x20u && buf[j] <= 0x7Fu)
                     {
                         str += buf[j];
                     }
