@@ -52,7 +52,6 @@ public:
     explicit Console(QWidget *parent = 0);
 
     void putData(const QByteArray &data);
-    void clear();
 
     bool isLocalEchoEnabled() const;
     void setLocalEchoEnabled(bool localEchoEnabled = true);
@@ -82,6 +81,7 @@ public:
     void setLineEndingTx(const QString &lineEndingTx);
 
 public slots:
+    void clear();
     void paste();
 
 protected:

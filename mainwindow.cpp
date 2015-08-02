@@ -98,7 +98,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
 
-    initActionsConnections();
+    MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
+    MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
+    MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
+    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
+    MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), m_console, SLOT(clear())));
+    MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
+    MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
@@ -122,7 +128,7 @@ MainWindow::~MainWindow()
     settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
     if (m_serialThread)
     {
-        m_serialThread->stop(100);
+        m_serialThread->stop(250);
     }
     delete m_serialThread;
     delete m_serialSettings;
@@ -140,8 +146,20 @@ void MainWindow::enableConsole(bool enable)
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
     ui->actionConfigure->setEnabled(!enable);
-}
 
+    if (!enable)
+    {
+        ui->rxLabel->setEnabled(false);
+        ui->txLabel->setEnabled(false);
+        ui->dtrLabel->setEnabled(false);
+        ui->dcdLabel->setEnabled(false);
+        ui->dsrLabel->setEnabled(false);
+        ui->riLabel->setEnabled(false);
+        ui->rtsLabel->setEnabled(false);
+        ui->ctsLabel->setEnabled(false);
+        ui->brkLabel->setEnabled(false);
+    }
+}
 
 void MainWindow::openSerialPort()
 {
@@ -173,8 +191,6 @@ void MainWindow::openSerialPort()
     }
 }
 
-
-
 void MainWindow::closeSerialPort()
 {
     if (m_serialThread->isOpen())
@@ -185,7 +201,6 @@ void MainWindow::closeSerialPort()
     ui->statusBar->showMessage(tr("Disconnected"));
     setWindowTitle(VER_PRODUCTNAME_STR);
 }
-
 
 void MainWindow::about()
 {
@@ -201,13 +216,10 @@ void MainWindow::about()
                           )).arg(VER_PRODUCTNAME_STR).arg(VER_PRODUCT_MAJOR).arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE));
 }
 
-
 void MainWindow::writeData(const QByteArray &data)
 {
-//    qDebug() << __FUNCTION__ << data;
     /* Send user input */
     m_serialThread->write (data);
-//    m_serial->write(data);
 }
 
 
@@ -215,12 +227,9 @@ void MainWindow::writeData(const QByteArray &data)
 void MainWindow::readData()
 {
     QByteArray data = m_serialThread->readAll();
-//    qDebug() << __FUNCTION__ << data;
     /* Receive serial data and show on console */
     m_console->putData(data);
 }
-
-
 
 void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
@@ -229,18 +238,6 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
         QMessageBox::critical(this, tr("Critical Error"), m_serialThread->errorString());
         closeSerialPort();
     }
-}
-
-
-void MainWindow::initActionsConnections()
-{
-    MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
-    MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
-    MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
-    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
-    MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), m_console, SLOT(clear())));
-    MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
-    MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 }
 
 void MainWindow::on_actionLocal_echo_triggered(bool checked)
@@ -390,6 +387,19 @@ void MainWindow::on_actionConfigure_console_triggered()
     delete dialog;
 }
 
+void MainWindow::on_actionShow_line_status_triggered(bool checked)
+{
+    ui->rxLabel->setHidden(!checked);
+    ui->txLabel->setHidden(!checked);
+    ui->dsrLabel->setHidden(!checked);
+    ui->ctsLabel->setHidden(!checked);
+    ui->dcdLabel->setHidden(!checked);
+    ui->riLabel->setHidden(!checked);
+    ui->dtrLabel->setHidden(!checked);
+    ui->rtsLabel->setHidden(!checked);
+    ui->brkLabel->setHidden(!checked);
+}
+
 void MainWindow::serialProgress(QString message, int percent)
 {
     if (message.length())
@@ -407,18 +417,6 @@ void MainWindow::serialFinished()
 
 void MainWindow::serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals)
 {
-    /*
-        TransmittedDataSignal = 0x01,
-        ReceivedDataSignal = 0x02,
-        DataTerminalReadySignal = 0x04,
-        DataCarrierDetectSignal = 0x08,
-        DataSetReadySignal = 0x10,
-        RingIndicatorSignal = 0x20,
-        RequestToSendSignal = 0x40,
-        ClearToSendSignal = 0x80,
-        SecondaryTransmittedDataSignal = 0x100,
-        SecondaryReceivedDataSignal = 0x200
-     */
     ui->rxLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::TransmittedDataSignal));
     ui->txLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::ReceivedDataSignal));
     ui->dtrLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::DataTerminalReadySignal));
@@ -427,17 +425,4 @@ void MainWindow::serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals)
     ui->riLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RingIndicatorSignal));
     ui->rtsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RequestToSendSignal));
     ui->ctsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::ClearToSendSignal));
-}
-
-void MainWindow::on_actionShow_line_status_triggered(bool checked)
-{
-    ui->rxLabel->setHidden(!checked);
-    ui->txLabel->setHidden(!checked);
-    ui->dsrLabel->setHidden(!checked);
-    ui->ctsLabel->setHidden(!checked);
-    ui->dcdLabel->setHidden(!checked);
-    ui->riLabel->setHidden(!checked);
-    ui->dtrLabel->setHidden(!checked);
-    ui->rtsLabel->setHidden(!checked);
-    ui->brkLabel->setHidden(!checked);
 }

@@ -66,6 +66,7 @@ void SerialThread::run()
         }
         if (m_running && m_serialPort->isOpen())
         {
+            /* Check if CTS, RTS, etc. signals changed */
             QSerialPort::PinoutSignals pinoutSignals = m_serialPort->pinoutSignals();
             if (pinoutSignals != m_pinoutSignals)
             {
@@ -75,10 +76,6 @@ void SerialThread::run()
         }
         m_mutex.unlock();
     }
-//    if (m_serialPort->isOpen())
-//    {
-//        m_serialPort->close();
-//    }
 }
 
 /**
@@ -90,6 +87,7 @@ void SerialThread::run()
 void SerialThread::stop(int timeout)
 {
     m_running = false;
+    m_command = CMD_stop;
     m_commandEvent.wakeAll();
     if (timeout > 0)
     {
@@ -384,14 +382,21 @@ void SerialThread::processCommand()
         m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
         m_command = CMD_undefined;
     }
-    else if (m_command == CMD_close)
+    else if (m_command == CMD_close || m_command == CMD_stop)
     {
-        m_serialPort->close();
+        if (m_serialPort->isOpen())
+        {
+            m_serialPort->close();
+        }
         m_command = CMD_undefined;
+    }
+    else if (m_command == CMD_undefined)
+    {
+        qDebug() << __PRETTY_FUNCTION__ << "undefined command";
     }
     else
     {
-        qDebug() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
+        qCritical() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
         Q_ASSERT(0);
     }
 }

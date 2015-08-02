@@ -58,8 +58,7 @@ Console::Console(QWidget *parent)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
 {
-//    setOverwriteMode(true);
-    document()->setMaximumBlockCount(10000); // FIXME this should be configurable
+    document()->setMaximumBlockCount(10000);
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
     QFont font;
@@ -110,6 +109,7 @@ void Console::putData(const QByteArray &data)
 
 void Console::clear()
 {
+    qDebug() << __PRETTY_FUNCTION__;
     QPlainTextEdit::clear ();
     m_data.clear ();
 }
@@ -266,7 +266,7 @@ void Console::keyPressEvent(QKeyEvent *e)
     else if ((key >= Qt::Key_Space && key <= Qt::Key_ydiaeresis)
             && (modifier == Qt::NoModifier || modifier == Qt::ShiftModifier || modifier == Qt::KeypadModifier ))
     {
-        if (m_localEchoEnabled)
+        if (m_localEchoEnabled && !m_displayHexValuesEnabled)
         {
             moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
             QPlainTextEdit::keyPressEvent(e);
@@ -276,7 +276,7 @@ void Console::keyPressEvent(QKeyEvent *e)
     else
     {
         key |= modifier;
-        if (m_localEchoEnabled)
+        if (m_localEchoEnabled && !m_displayHexValuesEnabled)
         {
             if ((m_keyMap.contains(key) && m_keyMap[key].m_handleKey) || !m_keyMap.contains(key))
             {
