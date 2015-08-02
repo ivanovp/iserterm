@@ -161,6 +161,11 @@ void Console::setLineEndingTx(const QString &lineEndingTx)
     m_keyMap.insert(Qt::Key_Enter | Qt::KeypadModifier,     KeyMap(true, m_lineEndingTx));
 }
 
+QByteArray Console::getAllData() const
+{
+    return m_data;
+}
+
 void Console::paste()
 {
     if (m_localEchoEnabled)

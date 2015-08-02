@@ -54,6 +54,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QProgressBar>
 #include <QFlags>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -425,4 +426,71 @@ void MainWindow::serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals)
     ui->riLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RingIndicatorSignal));
     ui->rtsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::RequestToSendSignal));
     ui->ctsLabel->setEnabled(pinoutSignals.testFlag(QSerialPort::ClearToSendSignal));
+}
+
+void MainWindow::on_actionSend_file_triggered()
+{
+    if (m_serialThread->isOpen())
+    {
+        QSettings settings;
+        QString dir = settings.value ("console/sendFileDir").toString();
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Send file"), dir, tr("Text files (*.log *.txt);;All files (*.*)"));
+        if (fileName.length())
+        {
+            QFileInfo fileInfo (fileName);
+            dir = fileInfo.absolutePath();
+            settings.setValue("console/sendFileDir", dir);
+            QFile file (fileName);
+
+            if (file.open(QFile::ReadOnly))
+            {
+                QByteArray data = file.readAll();
+                if (data.length() > 0)
+                {
+                    m_serialThread->write(data);
+                }
+                else
+                {
+                    QMessageBox::critical(this, tr("Cannot read file"), file.errorString());
+                }
+                file.close();
+            }
+            else
+            {
+                QMessageBox::critical(this, tr("Cannot open file for reading"), file.errorString());
+            }
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Cannot send file"), tr("Cannot send file if serial port is not opened."));
+    }
+}
+
+void MainWindow::on_actionSave_file_triggered()
+{
+    QSettings settings;
+    QString dir = settings.value ("console/saveDir").toString();
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save raw serial data"), dir, tr("Text files (*.log *.txt);;All files (*.*)"));
+    if (fileName.length())
+    {
+        QFileInfo fileInfo (fileName);
+        dir = fileInfo.absolutePath();
+        settings.setValue("console/saveDir", dir);
+        QFile file (fileName);
+
+        if (file.open(QFile::WriteOnly))
+        {
+            QByteArray data = m_console->getAllData();
+            if (file.write(data) != data.length())
+            {
+                QMessageBox::critical(this, tr("Cannot write file"), file.errorString());
+            }
+            file.close();
+        }
+        else
+        {
+            QMessageBox::critical(this, tr("Cannot open file for writing"), file.errorString());
+        }
+    }
 }

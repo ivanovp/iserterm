@@ -90,6 +90,10 @@ private slots:
     void serialFinished();
     void serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
+    void on_actionSend_file_triggered();
+
+    void on_actionSave_file_triggered();
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;

@@ -324,7 +324,7 @@
     <string>Clear console's content</string>
    </property>
    <property name="shortcut">
-    <string>Alt+V</string>
+    <string>Alt+L</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -408,7 +408,7 @@
     <string>Se&amp;nd file...</string>
    </property>
    <property name="shortcut">
-    <string>Alt+N</string>
+    <string>F3</string>
    </property>
   </action>
   <action name="actionSave_file">
@@ -416,7 +416,7 @@
     <string>S&amp;ave file...</string>
    </property>
    <property name="shortcut">
-    <string>Alt+A</string>
+    <string>F2</string>
    </property>
   </action>
   <action name="actionHexadecimal_view">
@@ -431,12 +431,15 @@
     <string>Hexadecimal &amp;view</string>
    </property>
    <property name="shortcut">
-    <string>Alt+M</string>
+    <string>Alt+V</string>
    </property>
   </action>
   <action name="actionConfigure_console">
    <property name="text">
     <string>C&amp;onsole..</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+O</string>
    </property>
   </action>
   <action name="actionCopy">
@@ -461,6 +464,9 @@
    </property>
    <property name="text">
     <string>Sho&amp;w line status</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+W</string>
    </property>
   </action>
  </widget>

@@ -80,6 +80,8 @@ public:
     QString getLineEndingTx() const;
     void setLineEndingTx(const QString &lineEndingTx);
 
+    QByteArray getAllData() const;
+
 public slots:
     void clear();
     void paste();
