@@ -17,6 +17,7 @@ Q_DECLARE_METATYPE(QSerialPort::PinoutSignals)
 
 SerialThread::SerialThread(QObject *parent)
     : QThread(parent)
+    , m_command(CMD_undefined)
     , m_serialPort(NULL)
     , m_writeDataLength(0)
     , m_writeDataSent(0)
@@ -54,7 +55,11 @@ void SerialThread::run()
     {
         m_mutex.lock();
         /* Unlocks mutex and waits for event! */
+#ifdef __WIN32__
+        if (m_running && m_command != CMD_undefined)
+#else
         if (m_running && m_commandEvent.wait(&m_mutex, 10))
+#endif
         {
             /* Mutex locked and command received */
             processCommand();
@@ -88,7 +93,9 @@ void SerialThread::stop(int timeout)
 {
     m_running = false;
     m_command = CMD_stop;
+#ifndef __WIN32__
     m_commandEvent.wakeAll();
+#endif
     if (timeout > 0)
     {
         if (!wait(timeout))
@@ -118,7 +125,9 @@ qint64 SerialThread::write(const QByteArray &data)
     m_writeData.append(data);
     m_command = CMD_write;
     m_commandParam = 0;
+#ifndef __WIN32__
     m_commandEvent.wakeAll();
+#endif
     int length = data.length();
     m_writeDataLength += length;
     return length;
@@ -183,7 +192,9 @@ bool SerialThread::open(QIODevice::OpenMode mode) Q_DECL_OVERRIDE
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_open;
     m_commandParam = mode;
+#ifndef __WIN32__
     m_commandEvent.wakeAll();
+#endif
     return true;
 }
 
@@ -192,7 +203,9 @@ void SerialThread::close() Q_DECL_OVERRIDE
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_close;
     m_commandParam = 0;
+#ifndef __WIN32__
     m_commandEvent.wakeAll();
+#endif
 }
 
 bool SerialThread::setBaudRate(qint32 baudRate, QSerialPort::Directions directions)
@@ -320,12 +333,14 @@ void SerialThread::processCommand()
                 emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
             }
             /* Send data while thread should run */
+            //qDebug() << __PRETTY_FUNCTION__ << m_writeData.length() << m_running << m_serialPort->isOpen() << m_serialPort->isWritable();
             while (m_writeData.length() > 0 && m_running && m_serialPort->isOpen() && m_serialPort->isWritable())
             {
                 QByteArray c = m_writeData.left(1);
                 m_writeData.remove(0, 1);
                 //qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
                 m_serialPort->write(c);
+                m_serialPort->flush();
                 m_writeDataSent++;
                 progress_percent = 100.0f * m_writeDataSent / m_writeDataLength;
                 if (m_writeDataLength > progressLimit)
@@ -371,7 +386,7 @@ void SerialThread::processCommand()
             {
                 emit progress(QString("%1 bytes sent").arg(m_writeDataSent), 100.0f);
             }
-            emit finished();
+            emit finish();
             m_writeDataSent = 0;
             m_writeDataLength = 0;
         }
@@ -387,6 +402,20 @@ void SerialThread::processCommand()
         if (m_serialPort->isOpen())
         {
             m_serialPort->close();
+#ifdef __WIN32__
+            /* On MingW32/Win7 serial port's handle cannot be reused.
+             * "The handle is invalid" error occurs.
+             */
+            delete m_serialPort;
+            m_serialPort = new QSerialPort;
+            Q_ASSERT(m_serialPort);
+
+            if (!m_serialPort)
+            {
+              qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
+              m_running = false;
+            }
+#endif
         }
         m_command = CMD_undefined;
     }

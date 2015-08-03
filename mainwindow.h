@@ -87,7 +87,7 @@ private slots:
     void on_actionShow_line_status_triggered(bool checked);
 
     void serialProgress(QString message, int percent);
-    void serialFinished();
+    void serialFinish();
     void serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
     void on_actionSend_file_triggered();

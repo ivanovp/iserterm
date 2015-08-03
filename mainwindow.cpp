@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
-    m_serialThread->start ();
+    m_serialThread->start (QThread::HighPriority);
     m_serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
             SLOT(handleError(QSerialPort::SerialPortError))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(progress(QString,int)), this, SLOT(serialProgress(QString,int))));
-    MY_ASSERT(connect(m_serialThread, SIGNAL(finished()), this, SLOT(serialFinished())));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(finish()), this, SLOT(serialFinish())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(pinoutSignalsChanged(QSerialPort::PinoutSignals)),
                       this, SLOT(serialPinoutsChanged(QSerialPort::PinoutSignals))));
 
@@ -194,10 +194,7 @@ void MainWindow::openSerialPort()
 
 void MainWindow::closeSerialPort()
 {
-    if (m_serialThread->isOpen())
-    {
-        m_serialThread->close();
-    }
+    m_serialThread->close();
     enableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
     setWindowTitle(VER_PRODUCTNAME_STR);
@@ -238,6 +235,10 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
     {
         QMessageBox::critical(this, tr("Critical Error"), m_serialThread->errorString());
         closeSerialPort();
+    }
+    else
+    {
+//      qDebug() << __PRETTY_FUNCTION__ << error;
     }
 }
 
@@ -390,6 +391,7 @@ void MainWindow::on_actionConfigure_console_triggered()
 
 void MainWindow::on_actionShow_line_status_triggered(bool checked)
 {
+    ui->line->setHidden(!checked);
     ui->rxLabel->setHidden(!checked);
     ui->txLabel->setHidden(!checked);
     ui->dsrLabel->setHidden(!checked);
@@ -411,7 +413,7 @@ void MainWindow::serialProgress(QString message, int percent)
     m_progressBar->setValue(percent);
 }
 
-void MainWindow::serialFinished()
+void MainWindow::serialFinish()
 {
     m_progressBar->hide();
 }

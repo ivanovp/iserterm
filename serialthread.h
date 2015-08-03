@@ -89,7 +89,7 @@ signals:
     void error(QSerialPort::SerialPortError);
     void readyRead();
     void progress(QString message, int percent);
-    void finished();
+    void finish();
     void pinoutSignalsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
 public slots:
@@ -115,7 +115,9 @@ protected:
     QByteArray m_readData;      /**< Received data */
     bool m_running;             /**< Thread is running, used to stop thread gently. */
     QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
+#ifndef __WIN32__
     QWaitCondition m_commandEvent; /**< Thread waits for this condition. */
+#endif
     int m_delayAfterBytes_ms;   /**< After sending a byte this delay will be applied. */
     int m_delayAfterChr_ms;
     QByteArray m_chr;           /**< After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms. */
