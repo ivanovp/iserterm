@@ -449,7 +449,7 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
         /* Print buffer in hexadecimal format */
         if (i < bufSize)
         {
-            str2.sprintf ("%02X", buf[i]);
+            str2.sprintf ("%02X", (quint8) buf[i]);
             str += str2;
         }
         else
