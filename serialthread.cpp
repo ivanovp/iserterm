@@ -394,7 +394,10 @@ void SerialThread::processCommand()
     }
     else if (m_command == CMD_open)
     {
-        m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+        if (!m_serialPort->isOpen())
+        {
+            m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+        }
         m_command = CMD_undefined;
     }
     else if (m_command == CMD_close || m_command == CMD_stop)
