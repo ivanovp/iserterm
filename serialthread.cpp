@@ -64,13 +64,13 @@ void SerialThread::run()
             /* Mutex locked and command received */
             processCommand();
         }
-        if (m_running && m_serialPort->waitForReadyRead(10))
-        {
-            m_readData.append(m_serialPort->readAll());
-            emit readyRead();
-        }
         if (m_running && m_serialPort->isOpen())
         {
+            if (m_serialPort->waitForReadyRead(10))
+            {
+                m_readData.append(m_serialPort->readAll());
+                emit readyRead();
+            }
             /* Check if CTS, RTS, etc. signals changed */
             QSerialPort::PinoutSignals pinoutSignals = m_serialPort->pinoutSignals();
             if (pinoutSignals != m_pinoutSignals)

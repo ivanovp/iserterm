@@ -192,7 +192,9 @@ void SettingsDialog::fillPortsInfo()
         QStringList list;
         description = info.description();
         manufacturer = info.manufacturer();
+#if QT_VERSION >= 0x050300
         serialNumber = info.serialNumber();
+#endif
         list << info.portName()
              << (!description.isEmpty() ? description : blankString)
              << (!manufacturer.isEmpty() ? manufacturer : blankString)
