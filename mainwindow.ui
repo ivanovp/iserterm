@@ -204,6 +204,8 @@
     <addaction name="actionViewSendInput"/>
     <addaction name="actionHexadecimal_view"/>
     <addaction name="actionShow_line_status"/>
+    <addaction name="actionToggle_DTR"/>
+    <addaction name="actionToggle_RTS"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -467,6 +469,22 @@
    </property>
    <property name="shortcut">
     <string>Alt+W</string>
+   </property>
+  </action>
+  <action name="actionToggle_DTR">
+   <property name="text">
+    <string>Toggle DT&amp;R</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionToggle_RTS">
+   <property name="text">
+    <string>Tog&amp;gle RTS</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
  </widget>

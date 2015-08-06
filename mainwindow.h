@@ -91,8 +91,9 @@ private slots:
     void serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
     void on_actionSend_file_triggered();
-
     void on_actionSave_file_triggered();
+    void on_actionToggle_DTR_triggered();
+    void on_actionToggle_RTS_triggered();
 
 private:
     Ui::MainWindow *ui;

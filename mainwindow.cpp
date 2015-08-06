@@ -166,13 +166,14 @@ void MainWindow::openSerialPort()
 {
     SettingsDialog::SerialSettings p = m_serialSettings->serialSettings();
     m_serialThread->setPortName(p.name);
-    m_serialThread->setBaudRate(p.baudRate);
-    m_serialThread->setDataBits(p.dataBits);
-    m_serialThread->setParity(p.parity);
-    m_serialThread->setStopBits(p.stopBits);
-    m_serialThread->setFlowControl(p.flowControl);
     if (m_serialThread->open(QIODevice::ReadWrite))
     {
+        // Parameters shall be set after open on Qt 5.3!
+        m_serialThread->setBaudRate(p.baudRate);
+        m_serialThread->setDataBits(p.dataBits);
+        m_serialThread->setParity(p.parity);
+        m_serialThread->setStopBits(p.stopBits);
+        m_serialThread->setFlowControl(p.flowControl);
         enableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
@@ -494,5 +495,21 @@ void MainWindow::on_actionSave_file_triggered()
         {
             QMessageBox::critical(this, tr("Cannot open file for writing"), file.errorString());
         }
+    }
+}
+
+void MainWindow::on_actionToggle_DTR_triggered()
+{
+    if (m_serialThread->flowControl() != QSerialPort::HardwareControl)
+    {
+        m_serialThread->setDataTerminalReady(!m_serialThread->isDataTerminalReady());
+    }
+}
+
+void MainWindow::on_actionToggle_RTS_triggered()
+{
+    if (m_serialThread->flowControl() != QSerialPort::HardwareControl)
+    {
+        m_serialThread->setRequestToSend(!m_serialThread->isRequestToSend());
     }
 }
