@@ -513,3 +513,33 @@ void MainWindow::on_actionToggle_RTS_triggered()
         m_serialThread->setRequestToSend(!m_serialThread->isRequestToSend());
     }
 }
+
+void MainWindow::on_actionSend_custom_text_1_triggered()
+{
+
+}
+
+void MainWindow::on_actionSend_custom_text_2_triggered()
+{
+
+}
+
+void MainWindow::on_actionSend_custom_text_3_triggered()
+{
+
+}
+
+void MainWindow::on_actionSend_custom_text_4_triggered()
+{
+
+}
+
+void MainWindow::on_actionSend_custom_text_5_triggered()
+{
+
+}
+
+void MainWindow::on_actionSend_custom_text_6_triggered()
+{
+
+}

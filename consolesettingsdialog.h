@@ -42,6 +42,12 @@ public:
 
     int getDelayAfterSendNewLine();
     void setDelayAfterSendNewLine(const int delayAfterSendNewline);
+
+    QString getCustomText(int idx);
+    void setCustomText(int idx, const QString& customText);
+
+    bool isCustomTextEnabled(int idx);
+    void setCustomTextEnabled(int idx, bool enable = true);
 private slots:
     void on_lineEndingTxComboBox_currentIndexChanged(int index);
     void on_lineEndingRxComboBox_currentIndexChanged(int index);

@@ -1,12 +1,12 @@
 . Convert '\n' to correct line ending when sending clipboard data (Paste)
-. Display and set CTS, RTS...
++ Display and set CTS, RTS...
 . Rescan serial ports every time when configure dialog opened
 + Menu point to set color of console
 + Menu point to set lines of console
 . Menu point to send/receive binary/Intel HEX files
 + Menu point to view received data in hexadecimal
 . Timestamp on console
-. Logging to file
++ Logging to file (File/Save file)
 . Use more tabs/windows
 . Use profiles (baud rate, data bits, parity)
 . Custom texts to send

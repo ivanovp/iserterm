@@ -95,6 +95,18 @@ private slots:
     void on_actionToggle_DTR_triggered();
     void on_actionToggle_RTS_triggered();
 
+    void on_actionSend_custom_text_1_triggered();
+
+    void on_actionSend_custom_text_2_triggered();
+
+    void on_actionSend_custom_text_3_triggered();
+
+    void on_actionSend_custom_text_4_triggered();
+
+    void on_actionSend_custom_text_5_triggered();
+
+    void on_actionSend_custom_text_6_triggered();
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;

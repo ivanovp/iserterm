@@ -9,5 +9,11 @@
         <file>images/stop.png</file>
         <file>images/hex-input-24.png</file>
         <file>images/hex-view-24.png</file>
+        <file>images/text1.png</file>
+        <file>images/text2.png</file>
+        <file>images/text3.png</file>
+        <file>images/text4.png</file>
+        <file>images/text5.png</file>
+        <file>images/text6.png</file>
     </qresource>
 </RCC>

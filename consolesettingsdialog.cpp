@@ -9,6 +9,7 @@
 #include "ui_consolesettingsdialog.h"
 #include "hexvalidator.h"
 
+#include <QDebug>
 #include <QLineEdit>
 
 ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
@@ -153,6 +154,130 @@ int ConsoleSettingsDialog::getDelayAfterSendNewLine()
 void ConsoleSettingsDialog::setDelayAfterSendNewLine(const int delayAfterSendNewline)
 {
     ui->delayAfterSendNewLineSpinBox->setValue (delayAfterSendNewline);
+}
+
+QString ConsoleSettingsDialog::getCustomText(int idx)
+{
+    QString customText;
+
+    switch (idx)
+    {
+        case 0:
+            customText = ui->text1LineEdit->text();
+            break;
+        case 1:
+            customText = ui->text2LineEdit->text();
+            break;
+        case 2:
+            customText = ui->text3LineEdit->text();
+            break;
+        case 3:
+            customText = ui->text4LineEdit->text();
+            break;
+        case 4:
+            customText = ui->text5LineEdit->text();
+            break;
+        case 5:
+            customText = ui->text6LineEdit->text();
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid index!";
+            Q_ASSERT(0);
+            break;
+    }
+
+    return customText;
+}
+
+void ConsoleSettingsDialog::setCustomText(int idx, const QString &customText)
+{
+    switch (idx)
+    {
+        case 0:
+            ui->text1LineEdit->setText(customText);
+            break;
+        case 1:
+            ui->text2LineEdit->setText(customText);
+            break;
+        case 2:
+            ui->text3LineEdit->setText(customText);
+            break;
+        case 3:
+            ui->text4LineEdit->setText(customText);
+            break;
+        case 4:
+            ui->text5LineEdit->setText(customText);
+            break;
+        case 5:
+            ui->text6LineEdit->setText(customText);
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid index!";
+            Q_ASSERT(0);
+            break;
+    }
+}
+
+bool ConsoleSettingsDialog::isCustomTextEnabled(int idx)
+{
+    bool enabled = false;
+
+    switch (idx)
+    {
+        case 0:
+            enabled = ui->text1CheckBox->isChecked();
+            break;
+        case 1:
+            enabled = ui->text2CheckBox->isChecked();
+            break;
+        case 2:
+            enabled = ui->text3CheckBox->isChecked();
+            break;
+        case 3:
+            enabled = ui->text4CheckBox->isChecked();
+            break;
+        case 4:
+            enabled = ui->text5CheckBox->isChecked();
+            break;
+        case 5:
+            enabled = ui->text6CheckBox->isChecked();
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid index!";
+            Q_ASSERT(0);
+            break;
+    }
+
+    return enabled;
+}
+
+void ConsoleSettingsDialog::setCustomTextEnabled(int idx, bool enable)
+{
+    switch (idx)
+    {
+        case 0:
+            ui->text1CheckBox->setChecked(enable);
+            break;
+        case 1:
+            ui->text2CheckBox->setChecked(enable);
+            break;
+        case 2:
+            ui->text3CheckBox->setChecked(enable);
+            break;
+        case 3:
+            ui->text4CheckBox->setChecked(enable);
+            break;
+        case 4:
+            ui->text5CheckBox->setChecked(enable);
+            break;
+        case 5:
+            ui->text6CheckBox->setChecked(enable);
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid index!";
+            Q_ASSERT(0);
+            break;
+    }
 }
 
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)

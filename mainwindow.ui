@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>510</width>
     <height>300</height>
    </rect>
   </property>
@@ -177,7 +177,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>500</width>
+     <width>510</width>
      <height>23</height>
     </rect>
    </property>
@@ -194,6 +194,17 @@
     <property name="title">
      <string>Se&amp;rial</string>
     </property>
+    <widget class="QMenu" name="menuSend_custom_text">
+     <property name="title">
+      <string>Send custom text</string>
+     </property>
+     <addaction name="actionSend_custom_text_1"/>
+     <addaction name="actionSend_custom_text_2"/>
+     <addaction name="actionSend_custom_text_3"/>
+     <addaction name="actionSend_custom_text_4"/>
+     <addaction name="actionSend_custom_text_5"/>
+     <addaction name="actionSend_custom_text_6"/>
+    </widget>
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
     <addaction name="actionConfigure"/>
@@ -206,6 +217,7 @@
     <addaction name="actionShow_line_status"/>
     <addaction name="actionToggle_DTR"/>
     <addaction name="actionToggle_RTS"/>
+    <addaction name="menuSend_custom_text"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -251,6 +263,13 @@
    <addaction name="actionStop_update"/>
    <addaction name="actionViewSendInput"/>
    <addaction name="actionHexadecimal_view"/>
+   <addaction name="separator"/>
+   <addaction name="actionSend_custom_text_1"/>
+   <addaction name="actionSend_custom_text_2"/>
+   <addaction name="actionSend_custom_text_3"/>
+   <addaction name="actionSend_custom_text_4"/>
+   <addaction name="actionSend_custom_text_5"/>
+   <addaction name="actionSend_custom_text_6"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionAbout">
@@ -485,6 +504,78 @@
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_1">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text1.png</normaloff>:/images/text1.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 1</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+1</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_2">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text2.png</normaloff>:/images/text2.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 2</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+2</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_3">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text3.png</normaloff>:/images/text3.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 3</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_4">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text4.png</normaloff>:/images/text4.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 4</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+4</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_5">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text5.png</normaloff>:/images/text5.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 5</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+5</string>
+   </property>
+  </action>
+  <action name="actionSend_custom_text_6">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/text6.png</normaloff>:/images/text6.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send custom text 6</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+6</string>
    </property>
   </action>
  </widget>
