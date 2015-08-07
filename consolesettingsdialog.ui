@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>378</width>
-    <height>320</height>
+    <width>372</width>
+    <height>308</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -203,8 +203,19 @@
        </item>
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout_4">
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="text3LineEdit"/>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="text6CheckBox">
+           <property name="text">
+            <string>Text 6</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QToolButton" name="text4Button">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
          </item>
          <item row="4" column="0">
           <widget class="QCheckBox" name="text5CheckBox">
@@ -234,10 +245,10 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
-          <widget class="QCheckBox" name="text6CheckBox">
+         <item row="1" column="2">
+          <widget class="QToolButton" name="text2Button">
            <property name="text">
-            <string>Text 6</string>
+            <string>...</string>
            </property>
           </widget>
          </item>
@@ -247,19 +258,6 @@
             <string>Text 2</string>
            </property>
           </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QToolButton" name="text2Button">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="text2LineEdit"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="text1LineEdit"/>
          </item>
          <item row="0" column="2">
           <widget class="QToolButton" name="text1Button">
@@ -282,13 +280,6 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
-          <widget class="QToolButton" name="text4Button">
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
          <item row="5" column="2">
           <widget class="QToolButton" name="text6Button">
            <property name="text">
@@ -296,14 +287,65 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="1">
+          <widget class="QPlainTextEdit" name="text1Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPlainTextEdit" name="text2Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QPlainTextEdit" name="text3Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="text4LineEdit"/>
+          <widget class="QPlainTextEdit" name="text4Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QLineEdit" name="text5LineEdit"/>
+          <widget class="QPlainTextEdit" name="text5Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item row="5" column="1">
-          <widget class="QLineEdit" name="text6LineEdit"/>
+          <widget class="QPlainTextEdit" name="text6Edit">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -332,22 +374,16 @@
   <tabstop>delayAfterSendByteSpinBox</tabstop>
   <tabstop>delayAfterSendNewLineSpinBox</tabstop>
   <tabstop>text1CheckBox</tabstop>
-  <tabstop>text1LineEdit</tabstop>
   <tabstop>text1Button</tabstop>
   <tabstop>text2CheckBox</tabstop>
-  <tabstop>text2LineEdit</tabstop>
   <tabstop>text2Button</tabstop>
   <tabstop>text3CheckBox</tabstop>
-  <tabstop>text3LineEdit</tabstop>
   <tabstop>text3Button</tabstop>
   <tabstop>text4CheckBox</tabstop>
-  <tabstop>text4LineEdit</tabstop>
   <tabstop>text4Button</tabstop>
   <tabstop>text5CheckBox</tabstop>
-  <tabstop>text5LineEdit</tabstop>
   <tabstop>text5Button</tabstop>
   <tabstop>text6CheckBox</tabstop>
-  <tabstop>text6LineEdit</tabstop>
   <tabstop>text6Button</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>

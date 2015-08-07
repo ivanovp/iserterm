@@ -21,7 +21,8 @@
 #define MY_ASSERT(x)    x
 #endif
 
-#define CUSTOM_TEXT_NUM 6
+#define CUSTOM_TEXT_NUM     6
+#define NATIVE_LINEENDNG    "\n"
 
 #define BACKSPACE       8u
 #define DELETE          127u

@@ -124,11 +124,16 @@ QSerialPort *SerialThread::getSerialPort()
  * @brief SerialThread::write
  * Add data to queue. Data will be sent with specified delay between bytes.
  * @param data Data to add to queue.
+ * @param lineEnding If empty: do not convert line ending.
  */
-qint64 SerialThread::write(const QByteArray &data)
+qint64 SerialThread::write(QByteArray data, const QString& lineEnding)
 {
     QMutexLocker mutexLocker(&m_mutex);
 //    qDebug() << __PRETTY_FUNCTION__ << "adding" << data.length () << "bytes";
+    if (lineEnding.length())
+    {
+        data.replace(QString(NATIVE_LINEENDNG), lineEnding.toLocal8Bit());
+    }
     m_writeData.append(data);
     m_command = CMD_write;
     m_commandParam = 0;

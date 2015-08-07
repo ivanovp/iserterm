@@ -11,12 +11,16 @@
 
 #include <QDebug>
 #include <QLineEdit>
+#include <QSettings>
 
 ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ConsoleSettingsDialog)
 {
     ui->setupUi(this);
+
+    QSettings settings;
+    resize(settings.value("consolesettingsdialog/width", 356).toInt(), settings.value("consolesettingsdialog/height", 260).toInt());
 
     ui->lineEndingTxComboBox->addItem ("CR LF", "\r\n");
     ui->lineEndingTxComboBox->addItem ("LF CR", "\n\r");
@@ -37,6 +41,10 @@ ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
 
 ConsoleSettingsDialog::~ConsoleSettingsDialog()
 {
+    QSettings settings;
+    settings.setValue("consolesettingsdialog/width", size().width());
+    settings.setValue("consolesettingsdialog/height", size().height());
+
     delete ui;
 }
 
@@ -163,22 +171,22 @@ QString ConsoleSettingsDialog::getCustomText(int idx)
     switch (idx)
     {
         case 0:
-            customText = ui->text1LineEdit->text();
+            customText = ui->text1Edit->toPlainText();
             break;
         case 1:
-            customText = ui->text2LineEdit->text();
+            customText = ui->text2Edit->toPlainText();
             break;
         case 2:
-            customText = ui->text3LineEdit->text();
+            customText = ui->text3Edit->toPlainText();
             break;
         case 3:
-            customText = ui->text4LineEdit->text();
+            customText = ui->text4Edit->toPlainText();
             break;
         case 4:
-            customText = ui->text5LineEdit->text();
+            customText = ui->text5Edit->toPlainText();
             break;
         case 5:
-            customText = ui->text6LineEdit->text();
+            customText = ui->text6Edit->toPlainText();
             break;
         default:
             qCritical() << __PRETTY_FUNCTION__ << "invalid index!";
@@ -194,22 +202,22 @@ void ConsoleSettingsDialog::setCustomText(int idx, const QString &customText)
     switch (idx)
     {
         case 0:
-            ui->text1LineEdit->setText(customText);
+            ui->text1Edit->setPlainText(customText);
             break;
         case 1:
-            ui->text2LineEdit->setText(customText);
+            ui->text2Edit->setPlainText(customText);
             break;
         case 2:
-            ui->text3LineEdit->setText(customText);
+            ui->text3Edit->setPlainText(customText);
             break;
         case 3:
-            ui->text4LineEdit->setText(customText);
+            ui->text4Edit->setPlainText(customText);
             break;
         case 4:
-            ui->text5LineEdit->setText(customText);
+            ui->text5Edit->setPlainText(customText);
             break;
         case 5:
-            ui->text6LineEdit->setText(customText);
+            ui->text6Edit->setPlainText(customText);
             break;
         default:
             qCritical() << __PRETTY_FUNCTION__ << "invalid index!";

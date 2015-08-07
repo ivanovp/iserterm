@@ -615,7 +615,7 @@ void MainWindow::on_actionSend_custom_text_1_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText1", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }
 
@@ -626,7 +626,7 @@ void MainWindow::on_actionSend_custom_text_2_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText2", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }
 
@@ -637,7 +637,7 @@ void MainWindow::on_actionSend_custom_text_3_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText3", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }
 
@@ -648,7 +648,7 @@ void MainWindow::on_actionSend_custom_text_4_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText4", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }
 
@@ -659,7 +659,7 @@ void MainWindow::on_actionSend_custom_text_5_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText5", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }
 
@@ -670,6 +670,6 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     if (enabled)
     {
         QString text = settings.value("serial/customText6", "").toString();
-        m_serialThread->write(text.toLocal8Bit());
+        m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
 }

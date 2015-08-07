@@ -38,7 +38,7 @@ public:
     void run();
     void stop(int timeout = 0);
     QSerialPort *getSerialPort();
-    qint64 write(const QByteArray& data);
+    qint64 write(QByteArray data, const QString &lineEnding = "");
     qint64 write(const char *data, qint64 len);
 
     int getDelayAfterBytes_ms() const;
