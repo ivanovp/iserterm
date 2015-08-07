@@ -63,11 +63,24 @@ MainWindow::MainWindow(QWidget *parent)
     QSettings settings;
 
     ui->setupUi(this);
+
+    m_customTexts.reserve(CUSTOM_TEXT_NUM);
+    m_customTextsEnabled.reserve(CUSTOM_TEXT_NUM);
+    for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
+    {
+        QString text = settings.value(QString("serial/customText%1").arg(i + 1), "").toString();
+        bool enabled = settings.value(QString("serial/customText%1Enabled").arg(i + 1), false).toBool();
+        m_customTexts.append(text);
+        m_customTextsEnabled.append(enabled);
+        setEnableCustomText(i, false);
+        setVisibleCustomText(i, enabled);
+    }
+
     setWindowIcon (QIcon (":/images/iserterm.png"));
     setWindowTitle(VER_PRODUCTNAME_STR);
     resize(settings.value("window/width", 500).toInt(), settings.value("window/height", 300).toInt());
     m_console = new Console;
-    enableConsole(false);
+    setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
     ui->hexRadioButton->setChecked(true); // FIXME load/save value
     ui->hexRadioButton->hide();
@@ -98,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
+
 
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
@@ -136,7 +150,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::enableConsole(bool enable)
+void MainWindow::setEnableConsole(bool enable)
 {
     m_console->setReadOnly (!enable);
 //    console->setEnabled(enable);
@@ -147,6 +161,12 @@ void MainWindow::enableConsole(bool enable)
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
     ui->actionConfigure->setEnabled(!enable);
+
+    for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
+    {
+        setVisibleCustomText(i, m_customTextsEnabled[i]);
+        setEnableCustomText(i, enable);
+    }
 
     if (!enable)
     {
@@ -162,6 +182,64 @@ void MainWindow::enableConsole(bool enable)
     }
 }
 
+void MainWindow::setEnableCustomText(int idx, bool enable)
+{
+    switch (idx)
+    {
+        case 0:
+            ui->actionSend_custom_text_1->setEnabled(enable);
+            break;
+        case 1:
+            ui->actionSend_custom_text_2->setEnabled(enable);
+            break;
+        case 2:
+            ui->actionSend_custom_text_3->setEnabled(enable);
+            break;
+        case 3:
+            ui->actionSend_custom_text_4->setEnabled(enable);
+            break;
+        case 4:
+            ui->actionSend_custom_text_5->setEnabled(enable);
+            break;
+        case 5:
+            ui->actionSend_custom_text_6->setEnabled(enable);
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid text index";
+            Q_ASSERT(0);
+            break;
+    }
+}
+
+void MainWindow::setVisibleCustomText(int idx, bool visible)
+{
+    switch (idx)
+    {
+        case 0:
+            ui->actionSend_custom_text_1->setVisible(visible);
+            break;
+        case 1:
+            ui->actionSend_custom_text_2->setVisible(visible);
+            break;
+        case 2:
+            ui->actionSend_custom_text_3->setVisible(visible);
+            break;
+        case 3:
+            ui->actionSend_custom_text_4->setVisible(visible);
+            break;
+        case 4:
+            ui->actionSend_custom_text_5->setVisible(visible);
+            break;
+        case 5:
+            ui->actionSend_custom_text_6->setVisible(visible);
+            break;
+        default:
+            qCritical() << __PRETTY_FUNCTION__ << "invalid text index";
+            Q_ASSERT(0);
+            break;
+    }
+}
+
 void MainWindow::openSerialPort()
 {
     SettingsDialog::SerialSettings p = m_serialSettings->serialSettings();
@@ -174,7 +252,7 @@ void MainWindow::openSerialPort()
         m_serialThread->setParity(p.parity);
         m_serialThread->setStopBits(p.stopBits);
         m_serialThread->setFlowControl(p.flowControl);
-        enableConsole(true);
+        setEnableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
         ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
@@ -196,7 +274,7 @@ void MainWindow::openSerialPort()
 void MainWindow::closeSerialPort()
 {
     m_serialThread->close();
-    enableConsole(false);
+    setEnableConsole(false);
     ui->statusBar->showMessage(tr("Disconnected"));
     setWindowTitle(VER_PRODUCTNAME_STR);
 }
@@ -349,6 +427,7 @@ void MainWindow::on_actionHexadecimal_view_triggered(bool checked)
 void MainWindow::on_actionConfigure_console_triggered()
 {
     ConsoleSettingsDialog *dialog = new ConsoleSettingsDialog(this);
+    QSettings settings;
 
     dialog->setLineEndingRx(m_console->getLineEndingRx ());
     dialog->setLineEndingTx(m_console->getLineEndingTx ());
@@ -357,6 +436,13 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setHexWrap(m_console->getHexWrap ());
     dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_ms());
     dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_ms());
+    for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
+    {
+        QString text = settings.value(QString("serial/customText%1").arg(i + 1), "").toString();
+        bool enabled = settings.value(QString("serial/customText%1Enabled").arg(i + 1), false).toBool();
+        dialog->setCustomText(i, text);
+        dialog->setCustomTextEnabled(i, enabled);
+    }
 
     int result = dialog->exec();
 //    qDebug() << __PRETTY_FUNCTION__ << result;
@@ -370,6 +456,15 @@ void MainWindow::on_actionConfigure_console_triggered()
         int hexWrap = dialog->getHexWrap();
         int delayAfterBytes_ms = dialog->getDelayAfterSendByte();
         int delayAfterNewline_ms = dialog->getDelayAfterSendNewLine();
+        QSettings settings;
+        for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
+        {
+            m_customTexts[i] = dialog->getCustomText(i);
+            m_customTextsEnabled[i] = dialog->isCustomTextEnabled(i);
+            setVisibleCustomText(i, m_customTextsEnabled[i]);
+            settings.setValue(QString("serial/customText%1").arg(i + 1), m_customTexts[i]);
+            settings.setValue(QString("serial/customText%1Enabled").arg(i + 1), m_customTextsEnabled[i]);
+        }
         m_console->setLineEndingRx(lineEndingRx);
         m_console->setLineEndingTx(lineEndingTx);
         m_console->setDataSizeLimit(dataSizeLimit);
@@ -377,7 +472,6 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_console->setHexWrap (hexWrap);
         m_serialThread->setDelayAfterBytes_ms(delayAfterBytes_ms);
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
-        QSettings settings;
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);
@@ -516,30 +610,66 @@ void MainWindow::on_actionToggle_RTS_triggered()
 
 void MainWindow::on_actionSend_custom_text_1_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText1Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText1", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }
 
 void MainWindow::on_actionSend_custom_text_2_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText2Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText2", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }
 
 void MainWindow::on_actionSend_custom_text_3_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText3Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText3", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }
 
 void MainWindow::on_actionSend_custom_text_4_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText4Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText4", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }
 
 void MainWindow::on_actionSend_custom_text_5_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText5Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText5", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }
 
 void MainWindow::on_actionSend_custom_text_6_triggered()
 {
-
+    QSettings settings;
+    bool enabled = settings.value("serial/customText6Enabled", false).toBool();
+    if (enabled)
+    {
+        QString text = settings.value("serial/customText6", "").toString();
+        m_serialThread->write(text.toLocal8Bit());
+    }
 }

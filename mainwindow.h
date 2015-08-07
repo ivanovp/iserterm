@@ -64,7 +64,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void enableConsole(bool enable);
+    void setEnableConsole(bool enable);
+    void setEnableCustomText(int idx, bool enable = true);
+    void setVisibleCustomText(int idx, bool visible = true);
 private slots:
     void openSerialPort();
     void closeSerialPort();
@@ -94,17 +96,11 @@ private slots:
     void on_actionSave_file_triggered();
     void on_actionToggle_DTR_triggered();
     void on_actionToggle_RTS_triggered();
-
     void on_actionSend_custom_text_1_triggered();
-
     void on_actionSend_custom_text_2_triggered();
-
     void on_actionSend_custom_text_3_triggered();
-
     void on_actionSend_custom_text_4_triggered();
-
     void on_actionSend_custom_text_5_triggered();
-
     void on_actionSend_custom_text_6_triggered();
 
 private:
@@ -113,6 +109,8 @@ private:
     SettingsDialog *m_serialSettings;
     SerialThread *m_serialThread;
     QProgressBar *m_progressBar;
+    QVector<QString> m_customTexts;
+    QVector<bool> m_customTextsEnabled;
 };
 
 #endif // MAINWINDOW_H
