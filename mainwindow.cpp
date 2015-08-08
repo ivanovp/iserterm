@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
         m_customTexts.append(text);
         m_customTextsEnabled.append(enabled);
         setEnableCustomText(i, false);
-        setVisibleCustomText(i, enabled);
+        setVisibleCustomText(i, enabled, text);
     }
 
     setWindowIcon (QIcon (":/images/iserterm.png"));
@@ -164,7 +164,7 @@ void MainWindow::setEnableConsole(bool enable)
 
     for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
     {
-        setVisibleCustomText(i, m_customTextsEnabled[i]);
+        setVisibleCustomText(i, m_customTextsEnabled[i], m_customTexts[i]);
         setEnableCustomText(i, enable);
     }
 
@@ -211,32 +211,42 @@ void MainWindow::setEnableCustomText(int idx, bool enable)
     }
 }
 
-void MainWindow::setVisibleCustomText(int idx, bool visible)
+void MainWindow::setVisibleCustomText(int idx, bool visible, const QString& text)
 {
+    QAction* action = NULL;
     switch (idx)
     {
         case 0:
-            ui->actionSend_custom_text_1->setVisible(visible);
+            action = ui->actionSend_custom_text_1;
             break;
         case 1:
-            ui->actionSend_custom_text_2->setVisible(visible);
+            action = ui->actionSend_custom_text_2;
             break;
         case 2:
-            ui->actionSend_custom_text_3->setVisible(visible);
+            action = ui->actionSend_custom_text_3;
             break;
         case 3:
-            ui->actionSend_custom_text_4->setVisible(visible);
+            action = ui->actionSend_custom_text_4;
             break;
         case 4:
-            ui->actionSend_custom_text_5->setVisible(visible);
+            action = ui->actionSend_custom_text_5;
             break;
         case 5:
-            ui->actionSend_custom_text_6->setVisible(visible);
+            action = ui->actionSend_custom_text_6;
             break;
         default:
             qCritical() << __PRETTY_FUNCTION__ << "invalid text index";
             Q_ASSERT(0);
             break;
+    }
+    if (action)
+    {
+        action->setVisible(visible);
+        if (text.length())
+        {
+            QString s = QString("Send custom text %1:\n%2").arg(idx).arg(text);
+            action->setToolTip(s);
+        }
     }
 }
 
@@ -461,7 +471,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         {
             m_customTexts[i] = dialog->getCustomText(i);
             m_customTextsEnabled[i] = dialog->isCustomTextEnabled(i);
-            setVisibleCustomText(i, m_customTextsEnabled[i]);
+            setVisibleCustomText(i, m_customTextsEnabled[i], m_customTexts[i]);
             settings.setValue(QString("serial/customText%1").arg(i + 1), m_customTexts[i]);
             settings.setValue(QString("serial/customText%1Enabled").arg(i + 1), m_customTextsEnabled[i]);
         }

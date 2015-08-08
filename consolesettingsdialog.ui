@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
-    <height>308</height>
+    <width>378</width>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -374,16 +374,22 @@
   <tabstop>delayAfterSendByteSpinBox</tabstop>
   <tabstop>delayAfterSendNewLineSpinBox</tabstop>
   <tabstop>text1CheckBox</tabstop>
+  <tabstop>text1Edit</tabstop>
   <tabstop>text1Button</tabstop>
   <tabstop>text2CheckBox</tabstop>
+  <tabstop>text2Edit</tabstop>
   <tabstop>text2Button</tabstop>
   <tabstop>text3CheckBox</tabstop>
+  <tabstop>text3Edit</tabstop>
   <tabstop>text3Button</tabstop>
   <tabstop>text4CheckBox</tabstop>
+  <tabstop>text4Edit</tabstop>
   <tabstop>text4Button</tabstop>
   <tabstop>text5CheckBox</tabstop>
+  <tabstop>text5Edit</tabstop>
   <tabstop>text5Button</tabstop>
   <tabstop>text6CheckBox</tabstop>
+  <tabstop>text6Edit</tabstop>
   <tabstop>text6Button</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>

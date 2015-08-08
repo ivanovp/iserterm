@@ -124,7 +124,7 @@ QSerialPort *SerialThread::getSerialPort()
  * @brief SerialThread::write
  * Add data to queue. Data will be sent with specified delay between bytes.
  * @param data Data to add to queue.
- * @param lineEnding If empty: do not convert line ending.
+ * @param lineEnding Line ending to be converted. If empty: do not convert line ending.
  */
 qint64 SerialThread::write(QByteArray data, const QString& lineEnding)
 {

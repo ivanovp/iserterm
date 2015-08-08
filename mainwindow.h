@@ -66,7 +66,7 @@ public:
 
     void setEnableConsole(bool enable);
     void setEnableCustomText(int idx, bool enable = true);
-    void setVisibleCustomText(int idx, bool visible = true);
+    void setVisibleCustomText(int idx, bool visible = true, const QString &text = "");
 private slots:
     void openSerialPort();
     void closeSerialPort();
