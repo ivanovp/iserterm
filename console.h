@@ -40,6 +40,7 @@
 #define CONSOLE_H
 
 #include <QPlainTextEdit>
+#include <QDateTime>
 
 class Console : public QPlainTextEdit
 {
@@ -82,21 +83,20 @@ public:
 
     QByteArray getAllData() const;
 
+    QString getTimestamp() const;
+    void setTimestampFormat(const QString& format);
+
 public slots:
     void clear();
     void paste();
 
-protected:
+private:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);
     void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true, bool rebuild = false);
     void rebuildConsole();
     QString dumpBuf(const QByteArray& buf, int hexWrap);
 
-    QByteArray m_data;  /**< Raw serial data */
-    int m_dataSizeLimit;
-
-private:
     class KeyMap
     {
     public:
@@ -115,6 +115,10 @@ private:
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<unsigned int,KeyMap> m_keyMap;
+    QByteArray m_data;  /**< Raw serial data */
+    int m_dataSizeLimit;
+    QMap<unsigned int,QDateTime> m_dataTimestamp;
+    QString m_timestampFormat;
 };
 
 #endif // CONSOLE_H

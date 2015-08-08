@@ -42,6 +42,7 @@
 #include <QScrollBar>
 #include <QApplication>
 #include <QClipboard>
+#include <QDateTime>
 
 #include <QtCore/QDebug>
 #include <QSettings>
@@ -49,7 +50,6 @@
 
 Console::Console(QWidget *parent)
     : QPlainTextEdit(parent)
-    , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
     , m_localEchoEnabled(false)
     , m_updateEnabled(true)
     , m_displayTimestampEnabled(false)
@@ -57,6 +57,8 @@ Console::Console(QWidget *parent)
     , m_hexWrap(16)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
+    , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
+    , m_timestampFormat("HH:mm:ss.zzz")
 {
     document()->setMaximumBlockCount(10000);
     QSettings settings;
@@ -77,6 +79,8 @@ Console::Console(QWidget *parent)
     p.setColor(QPalette::Base, bgcolor);
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
+
+    setDisplayTimestampEnabled(); // FIXME test
 
     m_keyMap.insert(Qt::Key_Backspace,                      KeyMap(false, "\x08"));
     m_keyMap.insert(Qt::Key_Delete,                         KeyMap(false, "\x7F"));
@@ -99,6 +103,8 @@ void Console::putData(const QByteArray &data)
         appendDataToConsole (data, scrollToEnd);
     }
 
+    // FIXME error when unwanted data is removed!
+    m_dataTimestamp[m_data.length()] = QDateTime::currentDateTime();
     m_data.append(data);
     if (m_data.length () > m_dataSizeLimit)
     {
@@ -112,6 +118,7 @@ void Console::clear()
     qDebug() << __PRETTY_FUNCTION__;
     QPlainTextEdit::clear ();
     m_data.clear ();
+    m_dataTimestamp.clear();
 }
 
 bool Console::isLocalEchoEnabled() const
@@ -164,6 +171,17 @@ void Console::setLineEndingTx(const QString &lineEndingTx)
 QByteArray Console::getAllData() const
 {
     return m_data;
+}
+
+QString Console::getTimestamp() const
+{
+    QDateTime now = QDateTime::currentDateTime();
+    return now.toString(m_timestampFormat);
+}
+
+void Console::setTimestampFormat(const QString &format)
+{
+    m_timestampFormat = format;
 }
 
 void Console::paste()
@@ -347,9 +365,10 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
     if (!m_displayHexValuesEnabled)
     {
         /* Normal mode */
-        QByteArray data2;
+        QByteArray data2, newLine;
         data2 = data;
-        data2.replace (m_lineEndingRx, QByteArray("\n"));
+        newLine = QByteArray(NATIVE_LINEENDNG);
+        data2.replace (m_lineEndingRx, newLine);
         if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
         {
             /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
