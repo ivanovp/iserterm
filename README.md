@@ -1,7 +1,9 @@
 RS-232 serial terminal written in Qt
 ====================================
 Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015
+
 It was designed for embedded software developers.
+
 Features:
  * Hexadecimal view/send
  * Delay can be defined separately for common characters and newline character
