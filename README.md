@@ -1,7 +1,5 @@
 RS-232 serial terminal written in Qt
 ====================================
-Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015
-
 It was designed for embedded software developers.
 
 Features:
@@ -14,6 +12,10 @@ Features:
 Compile
 =======
 You need Qt 5 with QtSerialPort. Type 'qmake' and 'make' on console.
+
+Authors
+=======
+Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015
 
 This software is based on Simple Terminal example.
 
