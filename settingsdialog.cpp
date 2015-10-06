@@ -67,6 +67,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
             this, SLOT(checkCustomBaudRatePolicy(int))));
     MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(checkCustomDevicePathPolicy(int))));
+    MY_ASSERT(connect(&m_timer, SIGNAL(timeout()), this, SLOT(fillPortsInfo())));
 
     fillPortsParameters();
     fillPortsInfo();
@@ -83,6 +84,9 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 //    settings.value ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
 
     updateSettings();
+
+    m_timer.setInterval(1000);
+    m_timer.start();
 }
 
 SettingsDialog::~SettingsDialog()
@@ -182,31 +186,72 @@ void SettingsDialog::fillPortsParameters()
     ui->flowControlBox->addItem(tr("XON/XOFF"), QSerialPort::SoftwareControl);
 }
 
+/**
+ * @brief SettingsDialog::fillPortsInfo
+ * Update list of serial ports. It is called in every second.
+ */
 void SettingsDialog::fillPortsInfo()
 {
-    ui->serialPortInfoListBox->clear();
+    bool update = false;
     QString description;
     QString manufacturer;
     QString serialNumber;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
-        QStringList list;
-        description = info.description();
-        manufacturer = info.manufacturer();
-#if QT_VERSION >= 0x050300
-        serialNumber = info.serialNumber();
-#endif
-        list << info.portName()
-             << (!description.isEmpty() ? description : blankString)
-             << (!manufacturer.isEmpty() ? manufacturer : blankString)
-             << (!serialNumber.isEmpty() ? serialNumber : blankString)
-             << info.systemLocation()
-             << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : blankString)
-             << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : blankString);
 
-        ui->serialPortInfoListBox->addItem(list.first(), list);
+    /* Check if serial ports have changed */
+    if (m_availablePorts.size() != QSerialPortInfo::availablePorts().size())
+    {
+        update = true;
+    }
+    else
+    {
+        for (int i = 0; i < QSerialPortInfo::availablePorts().size(); i++)
+        {
+            const QSerialPortInfo info1 = m_availablePorts[i];
+            const QSerialPortInfo info2 = QSerialPortInfo::availablePorts()[i];
+            if (info1.portName() != info2.portName()
+                    || info1.description() != info2.description()
+                    || info1.manufacturer() != info2.manufacturer()
+#if QT_VERSION >= 0x050300
+                    || info1.serialNumber() != info2.serialNumber()
+#endif
+                    || info1.systemLocation() != info2.systemLocation()
+                    || info1.vendorIdentifier() != info2.vendorIdentifier()
+                    || info1.productIdentifier() != info2.productIdentifier())
+            {
+                update = true;
+                break;
+            }
+        }
     }
 
-    ui->serialPortInfoListBox->addItem(tr("Custom"));
+    /* Update of list is necessary */
+    if (update)
+    {
+        m_availablePorts = QSerialPortInfo::availablePorts();
+        ui->serialPortInfoListBox->clear();
+        foreach (const QSerialPortInfo &info, m_availablePorts)
+        {
+            QStringList list;
+            description = info.description();
+            manufacturer = info.manufacturer();
+#if QT_VERSION >= 0x050300
+            serialNumber = info.serialNumber();
+#else
+            serialNumber.clear();
+#endif
+            list << info.portName()
+                 << (!description.isEmpty() ? description : blankString)
+                 << (!manufacturer.isEmpty() ? manufacturer : blankString)
+                 << (!serialNumber.isEmpty() ? serialNumber : blankString)
+                 << info.systemLocation()
+                 << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : blankString)
+                 << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : blankString);
+
+            ui->serialPortInfoListBox->addItem(list.first(), list);
+        }
+
+        ui->serialPortInfoListBox->addItem(tr("Custom"));
+    }
 }
 
 void SettingsDialog::updateSettings()

@@ -42,6 +42,7 @@
 #include <QDialog>
 #include <QtSerialPort/QSerialPort>
 #include <QAbstractButton>
+#include <QTimer>
 
 QT_USE_NAMESPACE
 
@@ -85,16 +86,18 @@ private slots:
     void on_buttonBox_clicked(QAbstractButton*);
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
+    void fillPortsInfo();
 
 private:
     void fillPortsParameters();
-    void fillPortsInfo();
     void updateSettings();
 
 private:
     Ui::SettingsDialog *ui;
     SerialSettings currentSettings;
     QIntValidator *intValidator;
+    QTimer m_timer;
+    QList<QSerialPortInfo> m_availablePorts;
 };
 
 #endif // SETTINGSDIALOG_H
