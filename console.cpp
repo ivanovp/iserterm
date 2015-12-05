@@ -140,9 +140,9 @@ void Console::setUpdateEnabled(bool updateEnabled)
 {
     if (!m_updateEnabled && updateEnabled)
     {
-        m_updateEnabled = updateEnabled;
         rebuildConsole ();
     }
+    m_updateEnabled = updateEnabled;
 }
 
 QString Console::getLineEndingRx() const
