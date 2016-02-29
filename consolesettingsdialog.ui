@@ -366,6 +366,7 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>tabWidget</tabstop>
   <tabstop>lineEndingTxComboBox</tabstop>
   <tabstop>lineEndingRxComboBox</tabstop>
   <tabstop>dataBufferSizeSpinBox</tabstop>
@@ -391,7 +392,6 @@
   <tabstop>text6CheckBox</tabstop>
   <tabstop>text6Edit</tabstop>
   <tabstop>text6Button</tabstop>
-  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources/>
  <connections>

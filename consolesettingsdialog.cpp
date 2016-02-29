@@ -37,6 +37,14 @@ ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     ui->lineEndingRxComboBox->addItem (tr("Custom"));
     ui->lineEndingRxComboBox->setEditable (false);
     ui->lineEndingRxComboBox->setCurrentIndex (0);
+
+    /* Hide unused buttons */
+    ui->text1Button->hide();
+    ui->text2Button->hide();
+    ui->text3Button->hide();
+    ui->text4Button->hide();
+    ui->text5Button->hide();
+    ui->text6Button->hide();
 }
 
 ConsoleSettingsDialog::~ConsoleSettingsDialog()
