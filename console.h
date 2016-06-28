@@ -117,7 +117,7 @@ private:
     QMap<unsigned int,KeyMap> m_keyMap;
     QByteArray m_data;  /**< Raw serial data */
     int m_dataSizeLimit;
-    QMap<unsigned int,QDateTime> m_dataTimestamp;
+//    QMap<unsigned int,QDateTime> m_dataTimestamp;
     QString m_timestampFormat;
 };
 

@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
-    m_serialThread->start (QThread::HighPriority);
+    m_serialThread->start (QThread::NormalPriority);
     m_serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
@@ -295,7 +295,7 @@ void MainWindow::about()
                        QString(tr("%1 v%2.%3.%4\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
-                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015\n"
+                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2016\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"

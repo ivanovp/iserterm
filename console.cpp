@@ -80,8 +80,9 @@ Console::Console(QWidget *parent)
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
 
-    setDisplayTimestampEnabled(); // FIXME test
+//    setDisplayTimestampEnabled(); // FIXME test
 
+    m_keyMap.clear();
     m_keyMap.insert(Qt::Key_Backspace,                      KeyMap(false, "\x08"));
     m_keyMap.insert(Qt::Key_Delete,                         KeyMap(false, "\x7F"));
     m_keyMap.insert(Qt::Key_Return,                         KeyMap(true, m_lineEndingTx));
@@ -104,7 +105,7 @@ void Console::putData(const QByteArray &data)
     }
 
     // FIXME error when unwanted data is removed!
-    m_dataTimestamp[m_data.length()] = QDateTime::currentDateTime();
+//    m_dataTimestamp[m_data.length()] = QDateTime::currentDateTime();
     m_data.append(data);
     if (m_data.length () > m_dataSizeLimit)
     {
@@ -118,7 +119,7 @@ void Console::clear()
     qDebug() << __PRETTY_FUNCTION__;
     QPlainTextEdit::clear ();
     m_data.clear ();
-    m_dataTimestamp.clear();
+//    m_dataTimestamp.clear();
 }
 
 bool Console::isLocalEchoEnabled() const
@@ -374,22 +375,30 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
             /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
             data2.replace (QString (m_lineEndingRx[0]), QByteArray());
         }
-        foreach (char c, data2)
+        if (data2.contains (BACKSPACE))
         {
+          /* Very slow, it should be optimized */
+          foreach (char c, data2)
+          {
             if (c == BACKSPACE)
             {
-                /* Not good solution: backspace should not clear character
-                 * only move cursor left.
-                 */
-//                moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
-                QTextCursor cursor = textCursor();
-                cursor.movePosition(QTextCursor::End);
-                cursor.deletePreviousChar();
+              /* Not good solution: backspace should not clear character
+               * only move cursor left.
+               */
+              //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+              QTextCursor cursor = textCursor();
+              cursor.movePosition(QTextCursor::End);
+              cursor.deletePreviousChar();
             }
             else
             {
-                insertPlainText(QString(c));
+              insertPlainText(QString(c));
             }
+          }
+        }
+        else
+        {
+          insertPlainText(QString(data2));
         }
     }
     else if (rebuild)

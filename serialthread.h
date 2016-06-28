@@ -83,7 +83,7 @@ public:
 
     bool isOpen();
 
-    QByteArray readAll();
+    QByteArray readAll(int timeout = 0);
 
 signals:
     void error(QSerialPort::SerialPortError);

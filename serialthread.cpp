@@ -199,7 +199,7 @@ void SerialThread::setPort(const QSerialPortInfo &info)
     m_serialPort->setPort(info);
 }
 
-bool SerialThread::open(QIODevice::OpenMode mode) Q_DECL_OVERRIDE
+bool SerialThread::open(QIODevice::OpenMode mode) //Q_DECL_OVERRIDE
 {
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_open;
@@ -210,7 +210,7 @@ bool SerialThread::open(QIODevice::OpenMode mode) Q_DECL_OVERRIDE
     return true;
 }
 
-void SerialThread::close() Q_DECL_OVERRIDE
+void SerialThread::close() //Q_DECL_OVERRIDE
 {
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_close;
@@ -322,11 +322,28 @@ bool SerialThread::isOpen()
     return m_serialPort->isOpen();
 }
 
-QByteArray SerialThread::readAll()
+QByteArray SerialThread::readAll(int timeout)
 {
-    QMutexLocker mutexLocker(&m_mutex);
-    QByteArray data = m_readData;
-    m_readData.clear();
+    QByteArray data;
+    if (timeout == 0)
+    {
+        QMutexLocker mutexLocker(&m_mutex);
+        data = m_readData;
+        m_readData.clear();
+    }
+    else
+    {
+        if (m_mutex.tryLock(timeout))
+        {
+            data = m_readData;
+            m_readData.clear();
+            m_mutex.unlock();
+        }
+        else
+        {
+          qDebug() << __FUNCTION__ << "timeout";
+        }
+    }
     return data;
 }
 
