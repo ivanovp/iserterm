@@ -178,7 +178,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -374,8 +374,7 @@
   <action name="actionSet_font">
    <property name="icon">
     <iconset theme="font">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Set &amp;font...</string>
@@ -406,7 +405,7 @@
     <string>Stop update, received data will not be lost</string>
    </property>
    <property name="shortcut">
-    <string>Alt+S</string>
+    <string>Alt+P</string>
    </property>
   </action>
   <action name="actionViewSendInput">

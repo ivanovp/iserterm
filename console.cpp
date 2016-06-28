@@ -380,25 +380,25 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
           /* Very slow, it should be optimized */
           foreach (char c, data2)
           {
-            if (c == BACKSPACE)
-            {
-              /* Not good solution: backspace should not clear character
-               * only move cursor left.
-               */
-              //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
-              QTextCursor cursor = textCursor();
-              cursor.movePosition(QTextCursor::End);
-              cursor.deletePreviousChar();
-            }
-            else
-            {
-              insertPlainText(QString(c));
-            }
+              if (c == BACKSPACE)
+              {
+                  /* Not good solution: backspace should not clear character
+                   * only move cursor left.
+                   */
+                  //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+                  QTextCursor cursor = textCursor();
+                  cursor.movePosition(QTextCursor::End);
+                  cursor.deletePreviousChar();
+              }
+              else
+              {
+                  insertPlainText(QString(c));
+              }
           }
         }
         else
         {
-          insertPlainText(QString(data2));
+            insertPlainText(QString(data2));
         }
     }
     else if (rebuild)
