@@ -377,24 +377,27 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
         }
         if (data2.contains (BACKSPACE))
         {
-          /* Very slow, it should be optimized */
-          foreach (char c, data2)
-          {
-              if (c == BACKSPACE)
-              {
-                  /* Not good solution: backspace should not clear character
-                   * only move cursor left.
-                   */
-                  //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
-                  QTextCursor cursor = textCursor();
-                  cursor.movePosition(QTextCursor::End);
-                  cursor.deletePreviousChar();
-              }
-              else
-              {
-                  insertPlainText(QString(c));
-              }
-          }
+            while (data2.length () > 0)
+            {
+                int pos = data2.indexOf(BACKSPACE);
+                if (pos >= 0)
+                {
+                    insertPlainText(QString(data2.left(pos)));
+                    data2.remove(0, pos + 1);
+                    /* Not good solution: backspace should not clear character
+                     * only move cursor left.
+                     */
+                    //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+                    QTextCursor cursor = textCursor();
+                    cursor.movePosition(QTextCursor::End);
+                    cursor.deletePreviousChar();
+                }
+                else
+                {
+                    insertPlainText(QString(data2));
+                    break;
+                }
+            }
         }
         else
         {
