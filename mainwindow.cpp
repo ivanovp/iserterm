@@ -88,10 +88,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
     ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
     ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
-    ui->asciiRadioButton->hide();
-    ui->hexRadioButton->hide();
-    ui->decRadioButton->hide();
-    ui->binRadioButton->hide();
+//    ui->asciiRadioButton->hide();
+//    ui->hexRadioButton->hide();
+//    ui->decRadioButton->hide();
+//    ui->binRadioButton->hide();
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
@@ -398,6 +398,7 @@ void MainWindow::on_sendLineEdit_returnPressed()
     Multistring::mode_t mode;
 
     mode = static_cast<Multistring::mode_t> (ui->sendButtonGroup->checkedId());
+    qDebug() << mode;
     mstr.setString(str, mode);
     data = mstr.getByteArray();
 #if 0
@@ -443,6 +444,10 @@ void MainWindow::on_sendButton_clicked()
 void MainWindow::on_actionViewSendInput_triggered(bool checked)
 {
     ui->sendLabel->setVisible(checked);
+    ui->asciiRadioButton->setVisible(checked);
+    ui->hexRadioButton->setVisible(checked);
+    ui->decRadioButton->setVisible(checked);
+    ui->binRadioButton->setVisible(checked);
     ui->sendLineEdit->setVisible(checked);
     ui->sendButton->setVisible(checked);
 }

@@ -33,29 +33,10 @@ bool Multistring::setString(const QString &str, mode_t mode)
 
 void Multistring::setByteArray(const QByteArray &arr)
 {
-    int base = static_cast<int> (m_mode);
-    int width = 0;
+    int base = getBase();
+    int width = getWidth();
 
     m_str.clear();
-
-    switch (m_mode)
-    {
-        default:
-        case Hexadecimal:
-            width = 2;
-            break;
-
-        case Decimal:
-            width = 3;
-            break;
-
-        case Binary:
-            width = 8;
-            break;
-
-        case ASCII:
-            break;
-    }
 
     if (base > 1)
     {
@@ -79,39 +60,32 @@ QByteArray Multistring::getByteArray()
 {
     QByteArray arr;
     QString str = m_str;
+    int base = getBase();
+    int width = getWidth();
 
-    switch (m_mode)
+    if (base > 1)
     {
-        default:
-        case Hexadecimal:
-            str.remove(' ');
-            while (str.length() > 1)
+        str.remove(' ');
+        while (str.length() > 1)
+        {
+            char c;
+            bool ok;
+            QString hexStr = str.left(width);
+            c = hexStr.toInt(&ok, base);
+            if (ok)
             {
-                char c;
-                bool ok;
-                QString hexStr = str.left(2);
-                c = hexStr.toInt(&ok, 16);
-                if (ok)
-                {
-                    arr.append(c);
-                }
-                else
-                {
-                    qWarning() << "Cannot convert string to number!";
-                }
-                str.remove(0, 2);
+                arr.append(c);
             }
-            break;
-
-        case Decimal:
-            break;
-
-        case Binary:
-            break;
-
-        case ASCII:
-            arr = str.toLocal8Bit();
-            break;
+            else
+            {
+                qWarning() << "Cannot convert string to number!";
+            }
+            str.remove(0, width);
+        }
+    }
+    else
+    {
+        arr = str.toLocal8Bit();
     }
 
     return arr;
@@ -140,5 +114,31 @@ bool Multistring::getUpcase() const
 void Multistring::setUpcase(bool upcase)
 {
     m_upcase = upcase;
+}
+
+int Multistring::getWidth() const
+{
+    int width = 0;
+
+    switch (m_mode)
+    {
+        default:
+        case Hexadecimal:
+            width = 2;
+            break;
+
+        case Decimal:
+            width = 3;
+            break;
+
+        case Binary:
+            width = 8;
+            break;
+
+        case ASCII:
+            break;
+    }
+
+    return width;
 }
 

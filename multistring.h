@@ -41,6 +41,10 @@ public:
     bool getUpcase() const;
     void setUpcase(bool upcase = true);
 
+protected:
+    int getWidth() const;
+    int getBase() const { static_cast<int> (m_mode); }
+
 private:
     QString m_str;
     mode_t m_mode;
