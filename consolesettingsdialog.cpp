@@ -7,7 +7,7 @@
 
 #include "consolesettingsdialog.h"
 #include "ui_consolesettingsdialog.h"
-#include "hexvalidator.h"
+#include "multivalidator.h"
 
 #include <QDebug>
 #include <QLineEdit>
@@ -302,7 +302,7 @@ void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int inde
     ui->lineEndingTxComboBox->setEditable(isCustomLineEndingTx);
     if (isCustomLineEndingTx)
     {
-        ui->lineEndingTxComboBox->lineEdit ()->setValidator (new HexValidator(this));
+        ui->lineEndingTxComboBox->lineEdit ()->setValidator (new MultiValidator(this));
         ui->lineEndingTxComboBox->clearEditText ();
     }
 }
@@ -313,7 +313,7 @@ void ConsoleSettingsDialog::on_lineEndingRxComboBox_currentIndexChanged(int inde
     ui->lineEndingRxComboBox->setEditable(isCustomLineEndingRx);
     if (isCustomLineEndingRx)
     {
-        ui->lineEndingRxComboBox->lineEdit ()->setValidator (new HexValidator(this));
+        ui->lineEndingRxComboBox->lineEdit ()->setValidator (new MultiValidator(this));
         ui->lineEndingRxComboBox->clearEditText ();
     }
 }

@@ -40,7 +40,7 @@
 #include "ui_mainwindow.h"
 #include "console.h"
 #include "settingsdialog.h"
-#include "hexvalidator.h"
+#include "multivalidator.h"
 #include "common.h"
 #include "version.h"
 #include "consolesettingsdialog.h"
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionViewSendInput->setChecked(viewSendInput);
     on_actionViewSendInput_triggered(viewSendInput);
     ui->actionQuit->setEnabled(true);
-    ui->sendLineEdit->setValidator(new HexValidator (this));
+    ui->sendLineEdit->setValidator(new MultiValidator (this));
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
@@ -393,8 +393,15 @@ void MainWindow::on_actionSet_foreground_color_triggered()
 void MainWindow::on_sendLineEdit_returnPressed()
 {
     QString str = ui->sendLineEdit->text();
-    str.remove(' ');
+    Multistring mstr;
     QByteArray data;
+    Multistring::mode_t mode;
+
+    mode = static_cast<Multistring::mode_t> (ui->sendButtonGroup->checkedId());
+    mstr.setString(str, mode);
+    data = mstr.getByteArray();
+#if 0
+    str.remove(' ');
     while (str.length() > 1)
     {
         char c;
@@ -411,6 +418,7 @@ void MainWindow::on_sendLineEdit_returnPressed()
         }
         str.remove(0, 2);
     }
+#endif
 //    qDebug() << __PRETTY_FUNCTION__ << data;
     if (data.length())
     {

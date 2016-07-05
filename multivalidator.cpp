@@ -8,14 +8,14 @@
 #include <QDebug>
 #include <QValidator>
 
-#include "hexvalidator.h"
+#include "multivalidator.h"
 
-HexValidator::HexValidator(QObject * parent) : QValidator(parent)
-  , m_mode(Hexadecimal)
+MultiValidator::MultiValidator(QObject * parent) : QValidator(parent)
+  , m_mode(Multistring::Hexadecimal)
 {
 }
 
-void HexValidator::fixup(QString &input) const
+void MultiValidator::fixup(QString &input) const
 {
     QString str;
     int index = 0;
@@ -23,7 +23,7 @@ void HexValidator::fixup(QString &input) const
     switch (m_mode)
     {
         default:
-        case Hexadecimal:
+        case Multistring::Hexadecimal:
             foreach (QChar ch, input)
             {
                 if (std::isxdigit(ch.toLatin1()))
@@ -39,7 +39,7 @@ void HexValidator::fixup(QString &input) const
             }
             break;
 
-        case Decimal:
+        case Multistring::Decimal:
             foreach (QChar ch, input)
             {
                 if (std::isdigit(ch.toLatin1()))
@@ -55,17 +55,17 @@ void HexValidator::fixup(QString &input) const
             }
             break;
 
-        case Binary:
+        case Multistring::Binary:
             break;
 
-        case ASCII:
+        case Multistring::ASCII:
             break;
     }
 
     input = str;
 }
 
-HexValidator::State HexValidator::validate(QString &input, int &pos) const
+MultiValidator::State MultiValidator::validate(QString &input, int &pos) const
 {
 //    qDebug() << __PRETTY_FUNCTION__ << input << pos;
     const int char_pos = pos - input.left(pos).count(' ');
@@ -78,7 +78,7 @@ HexValidator::State HexValidator::validate(QString &input, int &pos) const
         switch (m_mode)
         {
             default:
-            case Hexadecimal:
+            case Multistring::Hexadecimal:
                 pos = 0;
 
                 while (chars != char_pos)
@@ -96,20 +96,20 @@ HexValidator::State HexValidator::validate(QString &input, int &pos) const
                 }
                 break;
 
-            case Decimal:
+            case Multistring::Decimal:
                 break;
 
-            case Binary:
+            case Multistring::Binary:
                 break;
 
-            case ASCII:
+            case Multistring::ASCII:
                 break;
         }
     }
     return QValidator::Acceptable;
 }
 
-void HexValidator::setMode(HexValidator::mode_t mode)
+void MultiValidator::setMode(Multistring::mode_t mode)
 {
     m_mode = mode;
 }

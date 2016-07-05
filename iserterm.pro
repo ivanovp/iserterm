@@ -7,7 +7,7 @@ TARGET = iserterm
 TEMPLATE = app
 
 SOURCES += \
-    hexvalidator.cpp \
+    multivalidator.cpp \
     main.cpp \
     mainwindow.cpp \
     settingsdialog.cpp \
@@ -19,7 +19,7 @@ SOURCES += \
 HEADERS += \
     common.h \
     console.h \
-    hexvalidator.h \
+    multivalidator.h \
     mainwindow.h \
     settingsdialog.h \
     version.h \
