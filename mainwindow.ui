@@ -59,12 +59,22 @@
         <item>
          <widget class="QLabel" name="sendLabel">
           <property name="text">
-           <string>Hex input:</string>
+           <string>Input:</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLineEdit" name="sendLineEdit"/>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="asciiRadioButton">
+          <property name="text">
+           <string>ASC&amp;II</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sendButtonGroup</string>
+          </attribute>
+         </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="hexRadioButton">
@@ -79,7 +89,7 @@
         <item>
          <widget class="QRadioButton" name="decRadioButton">
           <property name="text">
-           <string>Dec</string>
+           <string>&amp;Dec</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">sendButtonGroup</string>
@@ -89,7 +99,7 @@
         <item>
          <widget class="QRadioButton" name="binRadioButton">
           <property name="text">
-           <string>Bin</string>
+           <string>&amp;Bin</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">sendButtonGroup</string>
@@ -581,6 +591,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
   <tabstop>sendLineEdit</tabstop>
+  <tabstop>asciiRadioButton</tabstop>
   <tabstop>hexRadioButton</tabstop>
   <tabstop>decRadioButton</tabstop>
   <tabstop>binRadioButton</tabstop>

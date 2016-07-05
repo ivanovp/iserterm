@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -45,6 +45,7 @@
 #include "version.h"
 #include "consolesettingsdialog.h"
 #include "serialthread.h"
+#include "multistring.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -83,6 +84,11 @@ MainWindow::MainWindow(QWidget *parent)
     setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
     ui->hexRadioButton->setChecked(true); // FIXME load/save value
+    ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
+    ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
+    ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
+    ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
+    ui->asciiRadioButton->hide();
     ui->hexRadioButton->hide();
     ui->decRadioButton->hide();
     ui->binRadioButton->hide();
@@ -157,6 +163,10 @@ void MainWindow::setEnableConsole(bool enable)
 //    ui->sendLayout->setEnabled(enable);
     ui->sendLabel->setEnabled(enable);
     ui->sendLineEdit->setEnabled(enable);
+    ui->asciiRadioButton->setEnabled(enable);
+    ui->hexRadioButton->setEnabled(enable);
+    ui->decRadioButton->setEnabled(enable);
+    ui->binRadioButton->setEnabled(enable);
     ui->sendButton->setEnabled(enable);
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
@@ -682,4 +692,9 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
         QString text = settings.value("serial/customText6", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
     }
+}
+
+void MainWindow::on_sendButtonGroup_buttonClicked(int button)
+{
+    qDebug() << __PRETTY_FUNCTION__ << button;
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -61,6 +61,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+  enum
+  {
+    UserData_ButtonId = Qt::UserRole
+  };
+
+public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -102,6 +108,8 @@ private slots:
     void on_actionSend_custom_text_4_triggered();
     void on_actionSend_custom_text_5_triggered();
     void on_actionSend_custom_text_6_triggered();
+
+    void on_sendButtonGroup_buttonClicked(int button);
 
 private:
     Ui::MainWindow *ui;

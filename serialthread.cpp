@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 **
 ****************************************************************************/
 #include <QMutexLocker>

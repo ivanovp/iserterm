@@ -13,7 +13,8 @@ SOURCES += \
     settingsdialog.cpp \
     console.cpp \
     consolesettingsdialog.cpp \
-    serialthread.cpp
+    serialthread.cpp \
+    multistring.cpp
 
 HEADERS += \
     common.h \
@@ -23,7 +24,8 @@ HEADERS += \
     settingsdialog.h \
     version.h \
     consolesettingsdialog.h \
-    serialthread.h
+    serialthread.h \
+    multistring.h
 
 FORMS += \
     mainwindow.ui \

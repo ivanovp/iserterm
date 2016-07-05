@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -41,6 +41,8 @@
 
 #include <QPlainTextEdit>
 #include <QDateTime>
+
+#define CURSOR_MODE  1
 
 class Console : public QPlainTextEdit
 {
@@ -119,6 +121,9 @@ private:
     int m_dataSizeLimit;
 //    QMap<unsigned int,QDateTime> m_dataTimestamp;
     QString m_timestampFormat;
+#if CURSOR_MODE == 1
+    QCursor m_cursor;
+#endif
 };
 
 #endif // CONSOLE_H

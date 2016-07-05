@@ -4,18 +4,16 @@
 ** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 **
 ****************************************************************************/
+#ifndef MULTISTRING_H
+#define MULTISTRING_H
 
-#ifndef HEXVALIDATOR_H
-#define HEXVALIDATOR_H
+#include <QString>
 
-#include <QDebug>
-#include <QValidator>
-
-/**
- * @brief The HexValidator class
- * Validates hexadecimal, decimal or binary string
+/*
+ * It can store ASCII, hexadecimal, decimal and binary text and it can convert
+ * them.
  */
-class HexValidator : public QValidator
+class Multistring : public QString
 {
 public:
     typedef enum
@@ -25,14 +23,16 @@ public:
         Binary,
         ASCII
     } mode_t;
+
 public:
-    HexValidator(QObject * parent);
-    virtual void fixup(QString &input) const;
-    virtual State validate(QString &input, int &pos) const;
+    explicit Multistring();
+    ~Multistring();
+
     void setMode(mode_t mode);
     mode_t getMode() const { return m_mode; }
+
 private:
     mode_t m_mode;
 };
 
-#endif // HEXVALIDATOR_H
+#endif // MULTISTRING_H

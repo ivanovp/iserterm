@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -60,6 +60,9 @@ Console::Console(QWidget *parent)
     , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
     , m_timestampFormat("HH:mm:ss.zzz")
 {
+#if CURSOR_MODE == 1
+    setOverwriteMode(true);
+#endif
     document()->setMaximumBlockCount(10000);
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
@@ -361,7 +364,11 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
  */
 void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool rebuild)
 {
+#if CURSOR_MODE == 0
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+#else
+    setCursor(m_cursor);
+#endif
 
     if (!m_displayHexValuesEnabled)
     {
@@ -384,13 +391,16 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
                 {
                     insertPlainText(QString(data2.left(pos)));
                     data2.remove(0, pos + 1);
+#if CURSOR_MODE == 0
                     /* Not good solution: backspace should not clear character
                      * only move cursor left.
                      */
-                    //moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
                     QTextCursor cursor = textCursor();
                     cursor.movePosition(QTextCursor::End);
                     cursor.deletePreviousChar();
+#else
+                    moveCursor(QTextCursor::Left, QTextCursor::MoveAnchor);
+#endif
                 }
                 else
                 {
@@ -433,6 +443,7 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
 
         insertPlainText (dumpBuf (data2, m_hexWrap));
     }
+    m_cursor = cursor();
 
     if (scrollToEnd)
     {
