@@ -46,6 +46,7 @@
 #include "consolesettingsdialog.h"
 #include "serialthread.h"
 #include "multistring.h"
+#include "multivalidator.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -84,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
     ui->hexRadioButton->setChecked(true); // FIXME load/save value
+    m_sendLine.setMode( Multistring::Hexadecimal ); // FIXME load/save value
     ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
     ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
     ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
@@ -113,7 +115,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionViewSendInput->setChecked(viewSendInput);
     on_actionViewSendInput_triggered(viewSendInput);
     ui->actionQuit->setEnabled(true);
-    ui->sendLineEdit->setValidator(new MultiValidator (this));
+    m_multivalidator = new MultiValidator (this);
+    ui->sendLineEdit->setValidator(m_multivalidator);
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
@@ -152,8 +155,11 @@ MainWindow::~MainWindow()
         m_serialThread->stop(250);
     }
     delete m_serialThread;
+    m_serialThread = NULL;
     delete m_serialSettings;
+    m_serialSettings = NULL;
     delete ui;
+    ui = NULL;
 }
 
 void MainWindow::setEnableConsole(bool enable)
@@ -291,11 +297,21 @@ void MainWindow::openSerialPort()
     }
 }
 
-void MainWindow::closeSerialPort()
+void MainWindow::closeSerialPort(const QString &errorMsg)
 {
-    m_serialThread->close();
+    if (m_serialThread->isOpen())
+    {
+        m_serialThread->close();
+    }
     setEnableConsole(false);
-    ui->statusBar->showMessage(tr("Disconnected"));
+    if (errorMsg.isEmpty())
+    {
+        ui->statusBar->showMessage(tr("Disconnected"));
+    }
+    else
+    {
+        ui->statusBar->showMessage(tr("Disconnected: %1").arg(errorMsg));
+    }
     setWindowTitle(VER_PRODUCTNAME_STR);
 }
 
@@ -332,8 +348,7 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError)
     {
-        QMessageBox::critical(this, tr("Critical Error"), m_serialThread->errorString());
-        closeSerialPort();
+        closeSerialPort(m_serialThread->errorString());
     }
     else
     {
@@ -393,34 +408,12 @@ void MainWindow::on_actionSet_foreground_color_triggered()
 void MainWindow::on_sendLineEdit_returnPressed()
 {
     QString str = ui->sendLineEdit->text();
-    Multistring mstr;
     QByteArray data;
     Multistring::mode_t mode;
 
     mode = static_cast<Multistring::mode_t> (ui->sendButtonGroup->checkedId());
-    qDebug() << mode;
-    mstr.setString(str, mode);
-    data = mstr.getByteArray();
-#if 0
-    str.remove(' ');
-    while (str.length() > 1)
-    {
-        char c;
-        bool ok;
-        QString hexStr = str.left(2);
-        c = hexStr.toInt(&ok, 16);
-        if (ok)
-        {
-            data.append(c);
-        }
-        else
-        {
-            qWarning() << "Cannot convert string to number!";
-        }
-        str.remove(0, 2);
-    }
-#endif
-//    qDebug() << __PRETTY_FUNCTION__ << data;
+    m_sendLine.setString(str);
+    data = m_sendLine.getByteArray();
     if (data.length())
     {
         m_serialThread->write(data);
@@ -707,7 +700,13 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     }
 }
 
-void MainWindow::on_sendButtonGroup_buttonClicked(int button)
+void MainWindow::on_sendButtonGroup_buttonClicked(int base)
 {
-    qDebug() << __PRETTY_FUNCTION__ << button;
+    Multistring::mode_t mode = static_cast<Multistring::mode_t> (base);
+    qDebug() << __PRETTY_FUNCTION__ << base;
+    m_sendLine.setString(ui->sendLineEdit->text());
+    // Convert base
+    m_sendLine.setMode(mode);
+    m_multivalidator->setMode(mode);
+    ui->sendLineEdit->setText(m_sendLine.getString());
 }

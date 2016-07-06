@@ -43,7 +43,7 @@ public:
 
 protected:
     int getWidth() const;
-    int getBase() const { static_cast<int> (m_mode); }
+    int getBase() const { return static_cast<int> (m_mode); }
 
 private:
     QString m_str;

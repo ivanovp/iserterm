@@ -40,19 +40,21 @@ void Multistring::setByteArray(const QByteArray &arr)
 
     if (base > 1)
     {
+        /* Number */
         foreach(char c, arr)
         {
             if (m_str.length() > 0)
             {
                 m_str += " ";
             }
-//            m_str += QString::number(static_cast<int> (c), base);
-            m_str += QString("%1").arg(static_cast<int> (c), width, base);
+            m_str += QString("%1").arg(static_cast<int> (c), width, base, QChar('0'));
         }
+        qDebug() << __PRETTY_FUNCTION__ << m_str;
     }
     else
     {
-        m_str = arr;
+        /* ASCII data */
+        m_str = QString (arr);
     }
 }
 
@@ -65,6 +67,7 @@ QByteArray Multistring::getByteArray()
 
     if (base > 1)
     {
+        /* Number */
         str.remove(' ');
         while (str.length() > 1)
         {
@@ -85,8 +88,10 @@ QByteArray Multistring::getByteArray()
     }
     else
     {
+        /* ASCII data */
         arr = str.toLocal8Bit();
     }
+    qDebug() << __PRETTY_FUNCTION__ << arr;
 
     return arr;
 }

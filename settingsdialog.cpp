@@ -92,6 +92,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+    ui = NULL;
 }
 
 SettingsDialog::SerialSettings SettingsDialog::serialSettings() const

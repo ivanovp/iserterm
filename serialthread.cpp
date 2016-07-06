@@ -30,13 +30,17 @@ SerialThread::SerialThread(QObject *parent)
 
 SerialThread::~SerialThread()
 {
-    delete m_serialPort;
+    m_running = false;
+    if (isRunning())
+    {
+        stop(10);
+    }
 }
-
 
 
 void SerialThread::run()
 {
+    Q_ASSERT(m_serialPort == NULL);
     m_serialPort = new QSerialPort;
     Q_ASSERT(m_serialPort);
 
@@ -88,6 +92,8 @@ void SerialThread::run()
         }
         m_mutex.unlock();
     }
+    delete m_serialPort;
+    m_serialPort = NULL;
 }
 
 /**

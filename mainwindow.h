@@ -44,6 +44,9 @@
 #include <QtSerialPort/QSerialPort>
 #include <QProgressBar>
 
+#include "multistring.h"
+#include "multivalidator.h"
+
 QT_BEGIN_NAMESPACE
 
 namespace Ui {
@@ -75,7 +78,7 @@ public:
     void setVisibleCustomText(int idx, bool visible = true, const QString &text = "");
 private slots:
     void openSerialPort();
-    void closeSerialPort();
+    void closeSerialPort(const QString& errorMsg = "");
     void about();
     void writeData(const QByteArray &data);
     void readData();
@@ -109,7 +112,7 @@ private slots:
     void on_actionSend_custom_text_5_triggered();
     void on_actionSend_custom_text_6_triggered();
 
-    void on_sendButtonGroup_buttonClicked(int button);
+    void on_sendButtonGroup_buttonClicked(int base);
 
 private:
     Ui::MainWindow *ui;
@@ -119,6 +122,8 @@ private:
     QProgressBar *m_progressBar;
     QVector<QString> m_customTexts;
     QVector<bool> m_customTextsEnabled;
+    Multistring m_sendLine;
+    MultiValidator * m_multivalidator;
 };
 
 #endif // MAINWINDOW_H

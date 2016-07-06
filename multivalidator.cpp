@@ -56,9 +56,23 @@ void MultiValidator::fixup(QString &input) const
             break;
 
         case Multistring::Binary:
+            foreach (QChar ch, input)
+            {
+                if (ch.toLatin1() == '0' || ch.toLatin1() == '1')
+                {
+                    if (index != 0 && (index % 8) == 0)
+                    {
+                        str += ' ';
+                    }
+
+                    str += ch.toUpper();
+                    index++;
+                }
+            }
             break;
 
         case Multistring::ASCII:
+            str = input;
             break;
     }
 

@@ -54,6 +54,7 @@ ConsoleSettingsDialog::~ConsoleSettingsDialog()
     settings.setValue("consolesettingsdialog/height", size().height());
 
     delete ui;
+    ui = NULL;
 }
 
 QString ConsoleSettingsDialog::getLineEndingTx()
