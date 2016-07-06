@@ -32,7 +32,7 @@ public:
     bool setString(const QString& str);
     bool setString(const QString& str, mode_t mode);
 
-    QByteArray getByteArray();
+    QByteArray getByteArray(bool *ok = NULL);
     void setByteArray(const QByteArray& arr);
 
     void setMode(mode_t mode);

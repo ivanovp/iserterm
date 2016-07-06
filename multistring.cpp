@@ -58,13 +58,17 @@ void Multistring::setByteArray(const QByteArray &arr)
     }
 }
 
-QByteArray Multistring::getByteArray()
+QByteArray Multistring::getByteArray(bool * ok)
 {
     QByteArray arr;
     QString str = m_str;
     int base = getBase();
     int width = getWidth();
 
+    if (ok)
+    {
+        *ok = true;
+    }
     if (base > 1)
     {
         /* Number */
@@ -72,15 +76,16 @@ QByteArray Multistring::getByteArray()
         while (str.length() > 1)
         {
             char c;
-            bool ok;
+            bool ok2;
             QString hexStr = str.left(width);
-            c = hexStr.toInt(&ok, base);
-            if (ok)
+            c = hexStr.toInt(&ok2, base);
+            if (ok2)
             {
                 arr.append(c);
             }
             else
             {
+                *ok = false;
                 qWarning() << "Cannot convert string to number!";
             }
             str.remove(0, width);

@@ -81,9 +81,12 @@ void MultiValidator::fixup(QString &input) const
 
 MultiValidator::State MultiValidator::validate(QString &input, int &pos) const
 {
-//    qDebug() << __PRETTY_FUNCTION__ << input << pos;
     const int char_pos = pos - input.left(pos).count(' ');
     int chars = 0;
+    MultiValidator::State state = QValidator::Acceptable;
+    QString str = input;
+    int base = static_cast<int> (m_mode);
+    int width = 3; /* only when base is 10 */
 
     if (!input.isEmpty())
     {
@@ -91,8 +94,25 @@ MultiValidator::State MultiValidator::validate(QString &input, int &pos) const
 
         switch (m_mode)
         {
+            case Multistring::Decimal:
+                str.remove(' ');
+                while (str.length() > 1)
+                {
+                    int n;
+                    bool ok;
+                    QString hexStr = str.left(width);
+                    n = hexStr.toInt(&ok, base);
+                    if (!ok || n > 255)
+                    {
+                        state = QValidator::Invalid;
+                    }
+                    str.remove(0, width);
+                }
+                /* Fall through! */
+
             default:
             case Multistring::Hexadecimal:
+            case Multistring::Binary:
                 pos = 0;
 
                 while (chars != char_pos)
@@ -110,17 +130,12 @@ MultiValidator::State MultiValidator::validate(QString &input, int &pos) const
                 }
                 break;
 
-            case Multistring::Decimal:
-                break;
-
-            case Multistring::Binary:
-                break;
-
             case Multistring::ASCII:
                 break;
         }
     }
-    return QValidator::Acceptable;
+
+    return state;
 }
 
 void MultiValidator::setMode(Multistring::mode_t mode)
