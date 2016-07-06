@@ -64,7 +64,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="sendLineEdit"/>
+         <widget class="QComboBox" name="sendLineEdit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="asciiRadioButton">
@@ -596,7 +606,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>sendLineEdit</tabstop>
   <tabstop>asciiRadioButton</tabstop>
   <tabstop>hexRadioButton</tabstop>
   <tabstop>decRadioButton</tabstop>

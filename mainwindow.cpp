@@ -57,6 +57,7 @@
 #include <QProgressBar>
 #include <QFlags>
 #include <QFileDialog>
+#include <QLineEdit>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -111,7 +112,8 @@ MainWindow::MainWindow(QWidget *parent)
             break;
     }
 
-    ui->sendLineEdit->setText(settings.value("console/sendLineEdit").toString());
+    ui->sendLineEdit->setEditable(true);
+    ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
@@ -139,6 +141,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
 
+    MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_sendLineEdit_returnPressed())));
 
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
@@ -169,7 +172,7 @@ MainWindow::~MainWindow()
     settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
     settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
     settings.setValue("console/sendButtonGroup", ui->sendButtonGroup->checkedId());
-    settings.setValue("console/sendLineEdit", ui->sendLineEdit->text());
+    settings.setValue("console/sendLineEdit", ui->sendLineEdit->lineEdit()->text());
     if (m_serialThread)
     {
         m_serialThread->stop(250);
@@ -427,7 +430,7 @@ void MainWindow::on_actionSet_foreground_color_triggered()
 
 void MainWindow::on_sendLineEdit_returnPressed()
 {
-    QString str = ui->sendLineEdit->text();
+    QString str = ui->sendLineEdit->lineEdit()->text();
     QByteArray data;
 
     m_sendLine.setString(str);
@@ -722,9 +725,9 @@ void MainWindow::on_sendButtonGroup_buttonClicked(int base)
 {
     Multistring::mode_t mode = static_cast<Multistring::mode_t> (base);
     qDebug() << __PRETTY_FUNCTION__ << base;
-    m_sendLine.setString(ui->sendLineEdit->text());
+    m_sendLine.setString(ui->sendLineEdit->lineEdit()->text());
     // Convert base
     m_sendLine.setMode(mode);
     m_multivalidator->setMode(mode);
-    ui->sendLineEdit->setText(m_sendLine.getString());
+    ui->sendLineEdit->lineEdit()->setText(m_sendLine.getString());
 }
