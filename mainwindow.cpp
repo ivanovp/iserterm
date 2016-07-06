@@ -90,9 +90,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
     ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
 
-    Multistring::mode_t id = static_cast<Multistring::mode_t> (settings.value("console/sendButtonGroup", static_cast<int>(Multistring::Hexadecimal)).toInt());
-    m_sendLine.setMode(id);
-    switch (id)
+    m_multivalidator = new MultiValidator (this);
+
+    Multistring::mode_t mode = static_cast<Multistring::mode_t> (settings.value("console/sendButtonGroup", static_cast<int>(Multistring::Hexadecimal)).toInt());
+    m_multivalidator->setMode(mode);
+    m_sendLine.setMode(mode);
+    switch (mode)
     {
         default:
         case Multistring::Hexadecimal:
@@ -112,8 +115,10 @@ MainWindow::MainWindow(QWidget *parent)
             break;
     }
 
+    ui->sendLineEdit->setValidator(m_multivalidator);
     ui->sendLineEdit->setEditable(true);
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
+    ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
@@ -135,8 +140,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionViewSendInput->setChecked(viewSendInput);
     on_actionViewSendInput_triggered(viewSendInput);
     ui->actionQuit->setEnabled(true);
-    m_multivalidator = new MultiValidator (this);
-    ui->sendLineEdit->setValidator(m_multivalidator);
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
@@ -173,6 +176,7 @@ MainWindow::~MainWindow()
     settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
     settings.setValue("console/sendButtonGroup", ui->sendButtonGroup->checkedId());
     settings.setValue("console/sendLineEdit", ui->sendLineEdit->lineEdit()->text());
+    settings.setValue("console/eolCheckBox", ui->eolCheckBox->isChecked());
     if (m_serialThread)
     {
         m_serialThread->stop(250);
@@ -196,6 +200,7 @@ void MainWindow::setEnableConsole(bool enable)
     ui->hexRadioButton->setEnabled(enable);
     ui->decRadioButton->setEnabled(enable);
     ui->binRadioButton->setEnabled(enable);
+    ui->eolCheckBox->setEnabled(enable);
     ui->sendButton->setEnabled(enable);
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
@@ -435,6 +440,10 @@ void MainWindow::on_sendLineEdit_returnPressed()
 
     m_sendLine.setString(str);
     data = m_sendLine.getByteArray();
+    if (ui->eolCheckBox->isChecked())
+    {
+        data.append(m_console->getLineEndingTx());
+    }
     if (data.length())
     {
         m_serialThread->write(data);
@@ -443,6 +452,8 @@ void MainWindow::on_sendLineEdit_returnPressed()
             m_console->putData(data);
         }
     }
+
+    ui->sendLineEdit->lineEdit()->selectAll();
 }
 
 void MainWindow::on_actionStop_update_triggered(bool checked)
@@ -458,11 +469,12 @@ void MainWindow::on_sendButton_clicked()
 void MainWindow::on_actionViewSendInput_triggered(bool checked)
 {
     ui->sendLabel->setVisible(checked);
+    ui->sendLineEdit->setVisible(checked);
     ui->asciiRadioButton->setVisible(checked);
     ui->hexRadioButton->setVisible(checked);
     ui->decRadioButton->setVisible(checked);
     ui->binRadioButton->setVisible(checked);
-    ui->sendLineEdit->setVisible(checked);
+    ui->eolCheckBox->setVisible(checked);
     ui->sendButton->setVisible(checked);
 }
 

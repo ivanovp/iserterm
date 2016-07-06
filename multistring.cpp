@@ -49,7 +49,6 @@ void Multistring::setByteArray(const QByteArray &arr)
             }
             m_str += QString("%1").arg(static_cast<int> (c), width, base, QChar('0'));
         }
-        qDebug() << __PRETTY_FUNCTION__ << m_str;
     }
     else
     {
@@ -96,7 +95,6 @@ QByteArray Multistring::getByteArray(bool * ok)
         /* ASCII data */
         arr = str.toLocal8Bit();
     }
-    qDebug() << __PRETTY_FUNCTION__ << arr;
 
     return arr;
 }
@@ -109,7 +107,6 @@ void Multistring::setMode(Multistring::mode_t mode)
 {
     if (m_mode != mode)
     {
-        qDebug() << __PRETTY_FUNCTION__ << "conversion needed from mode" << m_mode << "to mode" << mode;
         QByteArray arr = getByteArray();
         m_mode = mode;
         setByteArray(arr);
