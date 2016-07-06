@@ -84,16 +84,34 @@ MainWindow::MainWindow(QWidget *parent)
     m_console = new Console;
     setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
-    ui->hexRadioButton->setChecked(true); // FIXME load/save value
-    m_sendLine.setMode( Multistring::Hexadecimal ); // FIXME load/save value
     ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
     ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
     ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
     ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
-//    ui->asciiRadioButton->hide();
-//    ui->hexRadioButton->hide();
-//    ui->decRadioButton->hide();
-//    ui->binRadioButton->hide();
+
+    Multistring::mode_t id = static_cast<Multistring::mode_t> (settings.value("console/sendButtonGroup", static_cast<int>(Multistring::Hexadecimal)).toInt());
+    m_sendLine.setMode(id);
+    switch (id)
+    {
+        default:
+        case Multistring::Hexadecimal:
+            ui->hexRadioButton->setChecked(true);
+            break;
+
+        case Multistring::Decimal:
+            ui->decRadioButton->setChecked(true);
+            break;
+
+        case Multistring::Binary:
+            ui->binRadioButton->setChecked(true);
+            break;
+
+        case Multistring::ASCII:
+            ui->asciiRadioButton->setChecked(true);
+            break;
+    }
+
+    ui->sendLineEdit->setText(settings.value("console/sendLineEdit").toString());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
@@ -150,6 +168,8 @@ MainWindow::~MainWindow()
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
     settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
     settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
+    settings.setValue("console/sendButtonGroup", ui->sendButtonGroup->checkedId());
+    settings.setValue("console/sendLineEdit", ui->sendLineEdit->text());
     if (m_serialThread)
     {
         m_serialThread->stop(250);
@@ -409,9 +429,7 @@ void MainWindow::on_sendLineEdit_returnPressed()
 {
     QString str = ui->sendLineEdit->text();
     QByteArray data;
-    Multistring::mode_t mode;
 
-    mode = static_cast<Multistring::mode_t> (ui->sendButtonGroup->checkedId());
     m_sendLine.setString(str);
     data = m_sendLine.getByteArray();
     if (data.length())

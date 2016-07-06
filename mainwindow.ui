@@ -193,7 +193,7 @@
    </property>
    <widget class="QMenu" name="menuCalls">
     <property name="title">
-     <string>Fi&amp;le</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionSend_file"/>
     <addaction name="actionSave_file"/>
@@ -219,19 +219,14 @@
     <addaction name="actionDisconnect"/>
     <addaction name="actionConfigure"/>
     <addaction name="separator"/>
-    <addaction name="actionClear"/>
-    <addaction name="actionStop_update"/>
     <addaction name="actionLocal_echo"/>
-    <addaction name="actionViewSendInput"/>
-    <addaction name="actionHexadecimal_view"/>
-    <addaction name="actionShow_line_status"/>
     <addaction name="actionToggle_DTR"/>
     <addaction name="actionToggle_RTS"/>
     <addaction name="menuSend_custom_text"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionAboutQt"/>
@@ -247,13 +242,24 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>&amp;Edit</string>
     </property>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
    </widget>
+   <widget class="QMenu" name="menuView_2">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionClear"/>
+    <addaction name="actionStop_update"/>
+    <addaction name="actionViewSendInput"/>
+    <addaction name="actionHexadecimal_view"/>
+    <addaction name="actionShow_line_status"/>
+   </widget>
    <addaction name="menuCalls"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuView_2"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
@@ -290,7 +296,7 @@
     <string>About program</string>
    </property>
    <property name="shortcut">
-    <string>Alt+A</string>
+    <string>Ctrl+A</string>
    </property>
   </action>
   <action name="actionAboutQt">
@@ -340,7 +346,7 @@
     <string>Configure serial port</string>
    </property>
    <property name="shortcut">
-    <string>Alt+C</string>
+    <string>Ctrl+U</string>
    </property>
   </action>
   <action name="actionClear">
@@ -355,7 +361,7 @@
     <string>Clear console's content</string>
    </property>
    <property name="shortcut">
-    <string>Alt+L</string>
+    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -378,7 +384,7 @@
     <string>Local &amp;echo</string>
    </property>
    <property name="shortcut">
-    <string>Alt+E</string>
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="actionSet_font">
@@ -415,7 +421,7 @@
     <string>Stop update, received data will not be lost</string>
    </property>
    <property name="shortcut">
-    <string>Alt+P</string>
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionViewSendInput">
@@ -430,7 +436,7 @@
     <string>&amp;Hexadecimal input</string>
    </property>
    <property name="shortcut">
-    <string>Alt+H</string>
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="actionSend_file">
@@ -461,7 +467,7 @@
     <string>Hexadecimal &amp;view</string>
    </property>
    <property name="shortcut">
-    <string>Alt+V</string>
+    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="actionConfigure_console">
@@ -469,7 +475,7 @@
     <string>C&amp;onsole..</string>
    </property>
    <property name="shortcut">
-    <string>Alt+O</string>
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="actionCopy">
@@ -496,7 +502,7 @@
     <string>Sho&amp;w line status</string>
    </property>
    <property name="shortcut">
-    <string>Alt+W</string>
+    <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionToggle_DTR">
