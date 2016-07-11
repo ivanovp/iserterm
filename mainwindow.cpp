@@ -67,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    m_multivalidator = new MultiValidator (this);
+
     m_customTexts.reserve(CUSTOM_TEXT_NUM);
     m_customTextsEnabled.reserve(CUSTOM_TEXT_NUM);
     for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
@@ -85,34 +87,37 @@ MainWindow::MainWindow(QWidget *parent)
     m_console = new Console;
     setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
-    ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
-    ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
-    ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
-    ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
+    ui->sendModeComboBox->addItem("ASCII", QVariant(Multistring::ASCII));
+    ui->sendModeComboBox->addItem("Hex", QVariant(Multistring::Hexadecimal));
+    ui->sendModeComboBox->addItem("Dec", QVariant(Multistring::Decimal));
+    ui->sendModeComboBox->addItem("Bin", QVariant(Multistring::Binary));
+//    ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
+//    ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
+//    ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
+//    ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
 
-    m_multivalidator = new MultiValidator (this);
-
-    Multistring::mode_t mode = static_cast<Multistring::mode_t> (settings.value("console/sendButtonGroup", static_cast<int>(Multistring::Hexadecimal)).toInt());
+    Multistring::mode_t mode = static_cast<Multistring::mode_t> (settings.value("console/sendModeComboBox", 0);
     m_multivalidator->setMode(mode);
     m_sendLine.setMode(mode);
     switch (mode)
     {
         default:
+        case Multistring:
+            ui->sendModeComboBox->setCurrentText("ASCII");
+            break;
+
         case Multistring::Hexadecimal:
-            ui->hexRadioButton->setChecked(true);
+            ui->sendModeComboBox->setCurrentText("Hex");
             break;
 
         case Multistring::Decimal:
-            ui->decRadioButton->setChecked(true);
+            ui->sendModeComboBox->setCurrentText("Dec");
             break;
 
         case Multistring::Binary:
-            ui->binRadioButton->setChecked(true);
+            ui->sendModeComboBox->setCurrentText("Bin");
             break;
 
-        case Multistring::ASCII:
-            ui->asciiRadioButton->setChecked(true);
-            break;
     }
 
     ui->sendLineEdit->setValidator(m_multivalidator);
@@ -174,7 +179,7 @@ MainWindow::~MainWindow()
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
     settings.setValue("console/viewSendInput", ui->actionViewSendInput->isChecked());
     settings.setValue("console/showLineStatus", ui->actionShow_line_status->isChecked());
-    settings.setValue("console/sendButtonGroup", ui->sendButtonGroup->checkedId());
+    settings.setValue("console/sendModeComboBox", ui->sendModeComboBox->currentIndex());
     settings.setValue("console/sendLineEdit", ui->sendLineEdit->lineEdit()->text());
     settings.setValue("console/eolCheckBox", ui->eolCheckBox->isChecked());
     if (m_serialThread)
@@ -196,10 +201,7 @@ void MainWindow::setEnableConsole(bool enable)
 //    ui->sendLayout->setEnabled(enable);
     ui->sendLabel->setEnabled(enable);
     ui->sendLineEdit->setEnabled(enable);
-    ui->asciiRadioButton->setEnabled(enable);
-    ui->hexRadioButton->setEnabled(enable);
-    ui->decRadioButton->setEnabled(enable);
-    ui->binRadioButton->setEnabled(enable);
+    ui->sendModeComboBox->setEnabled(enable);
     ui->eolCheckBox->setEnabled(enable);
     ui->sendButton->setEnabled(enable);
     ui->actionConnect->setEnabled(!enable);
@@ -470,10 +472,7 @@ void MainWindow::on_actionViewSendInput_triggered(bool checked)
 {
     ui->sendLabel->setVisible(checked);
     ui->sendLineEdit->setVisible(checked);
-    ui->asciiRadioButton->setVisible(checked);
-    ui->hexRadioButton->setVisible(checked);
-    ui->decRadioButton->setVisible(checked);
-    ui->binRadioButton->setVisible(checked);
+    ui->sendModeComboBox->setVisible(checked);
     ui->eolCheckBox->setVisible(checked);
     ui->sendButton->setVisible(checked);
 }
@@ -733,7 +732,7 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     }
 }
 
-void MainWindow::on_sendButtonGroup_buttonClicked(int base)
+void MainWindow::on_sendModeComboBox_currentIndexChanged(int base)
 {
     Multistring::mode_t mode = static_cast<Multistring::mode_t> (base);
     qDebug() << __PRETTY_FUNCTION__ << base;

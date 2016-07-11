@@ -14,8 +14,8 @@
 #include "multistring.h"
 
 /**
- * @brief The HexValidator class
- * Validates hexadecimal, decimal or binary string
+ * @brief The MultiValidator class
+ * Validates ASCII, hexadecimal, decimal or binary string
  */
 class MultiValidator : public QValidator
 {

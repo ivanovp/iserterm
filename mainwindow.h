@@ -112,7 +112,7 @@ private slots:
     void on_actionSend_custom_text_5_triggered();
     void on_actionSend_custom_text_6_triggered();
 
-    void on_sendButtonGroup_buttonClicked(int base);
+    void on_sendModeComboBox_currentIndexChanged(int base);
 
 private:
     Ui::MainWindow *ui;
