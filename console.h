@@ -42,7 +42,9 @@
 #include <QPlainTextEdit>
 #include <QDateTime>
 
-#define CURSOR_MODE  1
+/* 0: working, but should be improved */
+/* 1: to be implemented */
+#define CURSOR_MODE  0
 
 class Console : public QPlainTextEdit
 {

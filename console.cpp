@@ -443,7 +443,9 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
 
         insertPlainText (dumpBuf (data2, m_hexWrap));
     }
+#if CURSOR_MODE == 1
     m_cursor = cursor();
+#endif
 
     if (scrollToEnd)
     {
