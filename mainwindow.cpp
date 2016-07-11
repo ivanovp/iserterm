@@ -96,29 +96,29 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
 //    ui->sendButtonGroup->setId(ui->binRadioButton, Multistring::Binary);
 
-    Multistring::mode_t mode = static_cast<Multistring::mode_t> (settings.value("console/sendModeComboBox", 0);
-    m_multivalidator->setMode(mode);
-    m_sendLine.setMode(mode);
-    switch (mode)
+    switch (settings.value("console/sendModeComboBox", 0).toInt())
     {
         default:
-        case Multistring:
+        case 0:
             ui->sendModeComboBox->setCurrentText("ASCII");
             break;
 
-        case Multistring::Hexadecimal:
+        case 1:
             ui->sendModeComboBox->setCurrentText("Hex");
             break;
 
-        case Multistring::Decimal:
+        case 2:
             ui->sendModeComboBox->setCurrentText("Dec");
             break;
 
-        case Multistring::Binary:
+        case 3:
             ui->sendModeComboBox->setCurrentText("Bin");
             break;
 
     }
+    Multistring::mode_t mode = static_cast<Multistring::mode_t> (ui->sendModeComboBox->currentData().toInt());
+    m_multivalidator->setMode(mode);
+    m_sendLine.setMode(mode);
 
     ui->sendLineEdit->setValidator(m_multivalidator);
     ui->sendLineEdit->setEditable(true);
@@ -732,10 +732,11 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     }
 }
 
-void MainWindow::on_sendModeComboBox_currentIndexChanged(int base)
+void MainWindow::on_sendModeComboBox_currentIndexChanged(int idx)
 {
-    Multistring::mode_t mode = static_cast<Multistring::mode_t> (base);
-    qDebug() << __PRETTY_FUNCTION__ << base;
+    Multistring::mode_t mode = static_cast<Multistring::mode_t> (ui->sendModeComboBox->currentData().toInt());
+    qDebug() << __PRETTY_FUNCTION__ << "idx:" << idx << "mode:" << mode;
+
     m_sendLine.setString(ui->sendLineEdit->lineEdit()->text());
     // Convert base
     m_sendLine.setMode(mode);
