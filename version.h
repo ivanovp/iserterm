@@ -5,7 +5,7 @@
 
 #define VER_PRODUCT_MAJOR           0
 #define VER_PRODUCT_MINOR           1
-#define VER_PRODUCT_RELEASE         6
+#define VER_PRODUCT_RELEASE         7
 
 #ifdef QT_DEBUG
 #define VER_PRODUCT_BUILD           99
