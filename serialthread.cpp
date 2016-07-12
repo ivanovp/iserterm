@@ -383,8 +383,8 @@ void SerialThread::processCommand()
                     emit progress(QString("%1 bytes of %2 bytes sent").arg(m_writeDataSent).arg(m_writeDataLength), progress_percent);
                 }
                 /* Character sent, delay for specified time. Meanwhile check if
-                             * data can be received.
-                             */
+                 * data can be received.
+                 */
                 int delay_ms = 0;
                 if (m_chr.length() > 0 && c == m_chr)
                 {
@@ -399,9 +399,9 @@ void SerialThread::processCommand()
                 int elapsed_ms;
                 timer.start();
                 /* Check if data can be received and measure time of
-                             * operation. waitForReadyRead() can block running
-                             * up to delay_ms time.
-                             */
+                 * operation. waitForReadyRead() can block running
+                 * up to delay_ms time.
+                 */
                 if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
                 {
                     m_readData.append(m_serialPort->readAll());

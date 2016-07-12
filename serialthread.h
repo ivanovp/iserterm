@@ -120,7 +120,9 @@ protected:
 #endif
     int m_delayAfterBytes_ms;   /**< After sending a byte this delay will be applied. */
     int m_delayAfterChr_ms;
-    QByteArray m_chr;           /**< After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms. */
+    /** After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms.
+     * This is usually a new line charater (CR, LF). */
+    QByteArray m_chr;
     QSerialPort::PinoutSignals m_pinoutSignals;
 };
 
