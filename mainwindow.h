@@ -112,7 +112,7 @@ private slots:
     void on_actionSend_custom_text_5_triggered();
     void on_actionSend_custom_text_6_triggered();
 
-    void onSendModeComboBox_currentIndexChanged(int idx);
+    void onSendModeComboBox_currentIndexChanged();
     QStringList getCurrentHistory();
     QStringList loadHistory(Multistring::mode_t mode);
     void saveHistory(Multistring::mode_t mode, const QStringList& history);

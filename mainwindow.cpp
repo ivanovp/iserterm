@@ -151,7 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusBar->addPermanentWidget(m_progressBar);
 
     MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendLineEdit_returnPressed())));
-    MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSendModeComboBox_currentIndexChanged(int))));
+    MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged()), this, SLOT(onSendModeComboBox_currentIndexChanged())));
 
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
@@ -735,7 +735,7 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     }
 }
 
-void MainWindow::onSendModeComboBox_currentIndexChanged(int idx)
+void MainWindow::onSendModeComboBox_currentIndexChanged()
 {
     Multistring::mode_t prevMode = m_sendLine.getMode();
     Multistring::mode_t mode = static_cast<Multistring::mode_t> (ui->sendModeComboBox->currentData().toInt());
