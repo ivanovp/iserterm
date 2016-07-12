@@ -113,6 +113,9 @@ private slots:
     void on_actionSend_custom_text_6_triggered();
 
     void on_sendModeComboBox_currentIndexChanged(int idx);
+    QStringList getCurrentHistory();
+    QStringList loadHistory(Multistring::mode_t mode);
+    void saveHistory(Multistring::mode_t mode, const QStringList& history);
 
 private:
     Ui::MainWindow *ui;
@@ -124,6 +127,7 @@ private:
     QVector<bool> m_customTextsEnabled;
     Multistring m_sendLine;
     MultiValidator * m_multivalidator;
+    QStringList m_sendLineHistories[4]; /**< History for following modes: ASCII, hexadecimal, decimal, binary */
 };
 
 #endif // MAINWINDOW_H

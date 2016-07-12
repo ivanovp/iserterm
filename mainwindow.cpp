@@ -182,6 +182,7 @@ MainWindow::~MainWindow()
     settings.setValue("console/sendModeComboBox", ui->sendModeComboBox->currentIndex());
     settings.setValue("console/sendLineEdit", ui->sendLineEdit->lineEdit()->text());
     settings.setValue("console/eolCheckBox", ui->eolCheckBox->isChecked());
+    saveHistory(m_sendLine.getMode(), getCurrentHistory());
     if (m_serialThread)
     {
         m_serialThread->stop(250);
@@ -734,12 +735,55 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
 
 void MainWindow::on_sendModeComboBox_currentIndexChanged(int idx)
 {
+    Multistring::mode_t prevMode = m_sendLine.getMode();
     Multistring::mode_t mode = static_cast<Multistring::mode_t> (ui->sendModeComboBox->currentData().toInt());
-    qDebug() << __PRETTY_FUNCTION__ << "idx:" << idx << "mode:" << mode;
+//    qDebug() << __PRETTY_FUNCTION__ << "idx:" << idx << "mode:" << mode;
 
     m_sendLine.setString(ui->sendLineEdit->lineEdit()->text());
     // Convert base
     m_sendLine.setMode(mode);
     m_multivalidator->setMode(mode);
+    saveHistory(prevMode, getCurrentHistory());
+    ui->sendLineEdit->clear();
+    ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(m_sendLine.getString());
+}
+
+QStringList MainWindow::getCurrentHistory()
+{
+    QStringList history;
+
+    for (int i = 0; i < ui->sendLineEdit->count(); i++)
+    {
+        history.append(ui->sendLineEdit->itemText(i));
+    }
+
+    return history;
+}
+
+QStringList MainWindow::loadHistory(Multistring::mode_t mode)
+{
+    QSettings settings;
+    int count = settings.value(QString("console/sendLineHistoryCount%1").arg(mode), 0).toInt();
+    QStringList history;
+
+    for (int i = 0; i < count; i++)
+    {
+        QString s = settings.value(QString("console/sendLineHistory%1/%2").arg(mode).arg(i), 0).toString();
+        history.append(s);
+    }
+
+    return history;
+}
+
+void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &history)
+{
+    QSettings settings;
+    int count = history.count();
+    settings.setValue(QString("console/sendLineHistoryCount%1").arg(mode), count);
+
+    for (int i = 0; i < count; i++)
+    {
+        settings.setValue(QString("console/sendLineHistory%1/%2").arg(mode).arg(i), history[i]);
+    }
 }
