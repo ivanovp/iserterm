@@ -168,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -186,7 +186,7 @@
     </property>
     <widget class="QMenu" name="menuSend_custom_text">
      <property name="title">
-      <string>Send custom text</string>
+      <string>&amp;Send custom text</string>
      </property>
      <addaction name="actionSend_custom_text_1"/>
      <addaction name="actionSend_custom_text_2"/>
@@ -504,10 +504,10 @@
      <normaloff>:/images/text1.png</normaloff>:/images/text1.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 1</string>
+    <string>Send custom text &amp;1</string>
    </property>
    <property name="shortcut">
-    <string>Alt+1</string>
+    <string>Ctrl+1</string>
    </property>
   </action>
   <action name="actionSend_custom_text_2">
@@ -516,10 +516,10 @@
      <normaloff>:/images/text2.png</normaloff>:/images/text2.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 2</string>
+    <string>Send custom text &amp;2</string>
    </property>
    <property name="shortcut">
-    <string>Alt+2</string>
+    <string>Ctrl+2</string>
    </property>
   </action>
   <action name="actionSend_custom_text_3">
@@ -528,10 +528,10 @@
      <normaloff>:/images/text3.png</normaloff>:/images/text3.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 3</string>
+    <string>Send custom text &amp;3</string>
    </property>
    <property name="shortcut">
-    <string>Alt+3</string>
+    <string>Ctrl+3</string>
    </property>
   </action>
   <action name="actionSend_custom_text_4">
@@ -540,10 +540,10 @@
      <normaloff>:/images/text4.png</normaloff>:/images/text4.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 4</string>
+    <string>Send custom text &amp;4</string>
    </property>
    <property name="shortcut">
-    <string>Alt+4</string>
+    <string>Ctrl+4</string>
    </property>
   </action>
   <action name="actionSend_custom_text_5">
@@ -552,10 +552,10 @@
      <normaloff>:/images/text5.png</normaloff>:/images/text5.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 5</string>
+    <string>Send custom text &amp;5</string>
    </property>
    <property name="shortcut">
-    <string>Alt+5</string>
+    <string>Ctrl+5</string>
    </property>
   </action>
   <action name="actionSend_custom_text_6">
@@ -564,10 +564,10 @@
      <normaloff>:/images/text6.png</normaloff>:/images/text6.png</iconset>
    </property>
    <property name="text">
-    <string>Send custom text 6</string>
+    <string>Send custom text &amp;6</string>
    </property>
    <property name="shortcut">
-    <string>Alt+6</string>
+    <string>Ctrl+6</string>
    </property>
   </action>
  </widget>

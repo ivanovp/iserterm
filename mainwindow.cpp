@@ -151,7 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusBar->addPermanentWidget(m_progressBar);
 
     MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendLineEdit_returnPressed())));
-    MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged()), this, SLOT(onSendModeComboBox_currentIndexChanged())));
+    MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSendModeComboBox_currentIndexChanged())));
 
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
@@ -677,6 +677,10 @@ void MainWindow::on_actionSend_custom_text_1_triggered()
     {
         QString text = settings.value("serial/customText1", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -688,6 +692,10 @@ void MainWindow::on_actionSend_custom_text_2_triggered()
     {
         QString text = settings.value("serial/customText2", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -699,6 +707,10 @@ void MainWindow::on_actionSend_custom_text_3_triggered()
     {
         QString text = settings.value("serial/customText3", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -710,6 +722,10 @@ void MainWindow::on_actionSend_custom_text_4_triggered()
     {
         QString text = settings.value("serial/customText4", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -721,6 +737,10 @@ void MainWindow::on_actionSend_custom_text_5_triggered()
     {
         QString text = settings.value("serial/customText5", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -732,6 +752,10 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     {
         QString text = settings.value("serial/customText6", "").toString();
         m_serialThread->write(text.toLocal8Bit(), m_console->getLineEndingTx());
+        if (ui->actionLocal_echo->isChecked())
+        {
+            m_console->putData(text.toLocal8Bit());
+        }
     }
 }
 
@@ -766,8 +790,6 @@ QStringList MainWindow::getCurrentHistory()
 QStringList MainWindow::loadHistory(Multistring::mode_t mode)
 {
     QSettings settings;
-    QString s = QString("console/sendLineHistoryCount%1").arg(static_cast<int>(mode));
-    qDebug() << __PRETTY_FUNCTION__ << s;
     int count = settings.value(QString("console/sendLineHistoryCount%1").arg(static_cast<int>(mode)), 0).toInt();
     QStringList history;
 
