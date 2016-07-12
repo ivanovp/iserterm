@@ -122,6 +122,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->sendLineEdit->setValidator(m_multivalidator);
     ui->sendLineEdit->setEditable(true);
+    ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
@@ -149,7 +150,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
 
-    MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(on_sendLineEdit_returnPressed())));
+    MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendLineEdit_returnPressed())));
+    MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSendModeComboBox_currentIndexChanged(int))));
 
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
@@ -436,7 +438,7 @@ void MainWindow::on_actionSet_foreground_color_triggered()
     }
 }
 
-void MainWindow::on_sendLineEdit_returnPressed()
+void MainWindow::onSendLineEdit_returnPressed()
 {
     QString str = ui->sendLineEdit->lineEdit()->text();
     QByteArray data;
@@ -466,7 +468,7 @@ void MainWindow::on_actionStop_update_triggered(bool checked)
 
 void MainWindow::on_sendButton_clicked()
 {
-    on_sendLineEdit_returnPressed();
+    onSendLineEdit_returnPressed();
 }
 
 void MainWindow::on_actionViewSendInput_triggered(bool checked)
@@ -733,7 +735,7 @@ void MainWindow::on_actionSend_custom_text_6_triggered()
     }
 }
 
-void MainWindow::on_sendModeComboBox_currentIndexChanged(int idx)
+void MainWindow::onSendModeComboBox_currentIndexChanged(int idx)
 {
     Multistring::mode_t prevMode = m_sendLine.getMode();
     Multistring::mode_t mode = static_cast<Multistring::mode_t> (ui->sendModeComboBox->currentData().toInt());
@@ -764,12 +766,14 @@ QStringList MainWindow::getCurrentHistory()
 QStringList MainWindow::loadHistory(Multistring::mode_t mode)
 {
     QSettings settings;
-    int count = settings.value(QString("console/sendLineHistoryCount%1").arg(mode), 0).toInt();
+    QString s = QString("console/sendLineHistoryCount%1").arg(static_cast<int>(mode));
+    qDebug() << __PRETTY_FUNCTION__ << s;
+    int count = settings.value(QString("console/sendLineHistoryCount%1").arg(static_cast<int>(mode)), 0).toInt();
     QStringList history;
 
     for (int i = 0; i < count; i++)
     {
-        QString s = settings.value(QString("console/sendLineHistory%1/%2").arg(mode).arg(i), 0).toString();
+        QString s = settings.value(QString("console/sendLineHistory%1/%2").arg(static_cast<int>(mode)).arg(i), 0).toString();
         history.append(s);
     }
 
@@ -780,10 +784,10 @@ void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &histor
 {
     QSettings settings;
     int count = history.count();
-    settings.setValue(QString("console/sendLineHistoryCount%1").arg(mode), count);
+    settings.setValue(QString("console/sendLineHistoryCount%1").arg(static_cast<int>(mode)), count);
 
     for (int i = 0; i < count; i++)
     {
-        settings.setValue(QString("console/sendLineHistory%1/%2").arg(mode).arg(i), history[i]);
+        settings.setValue(QString("console/sendLineHistory%1/%2").arg(static_cast<int>(mode)).arg(i), history[i]);
     }
 }

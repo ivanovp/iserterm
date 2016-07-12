@@ -89,7 +89,7 @@ private slots:
     void on_actionSet_font_triggered();
     void on_actionSet_background_color_triggered();
     void on_actionSet_foreground_color_triggered();
-    void on_sendLineEdit_returnPressed();
+    void onSendLineEdit_returnPressed();
     void on_actionStop_update_triggered(bool checked);
     void on_sendButton_clicked();
     void on_actionViewSendInput_triggered(bool checked);
@@ -112,7 +112,7 @@ private slots:
     void on_actionSend_custom_text_5_triggered();
     void on_actionSend_custom_text_6_triggered();
 
-    void on_sendModeComboBox_currentIndexChanged(int idx);
+    void onSendModeComboBox_currentIndexChanged(int idx);
     QStringList getCurrentHistory();
     QStringList loadHistory(Multistring::mode_t mode);
     void saveHistory(Multistring::mode_t mode, const QStringList& history);
