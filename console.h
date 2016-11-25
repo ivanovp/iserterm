@@ -107,8 +107,8 @@ private:
       KeyMap() : m_handleKey(false), m_str("") {}
       KeyMap(bool key, QString str) { m_handleKey = key; m_str = str; }
 
-      bool m_handleKey;
-      QString m_str;
+      bool m_handleKey; /**< true: Handle key by QPlainTextEdit */
+      QString m_str;    /**< Text to be sent, when key is pressed */
     };
 
     bool m_localEchoEnabled;

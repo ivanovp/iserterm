@@ -86,8 +86,10 @@ Console::Console(QWidget *parent)
 //    setDisplayTimestampEnabled(); // FIXME test
 
     m_keyMap.clear();
+    /* Backspace and delete are not handled by QPlainTextEdit */
     m_keyMap.insert(Qt::Key_Backspace,                      KeyMap(false, "\x08"));
     m_keyMap.insert(Qt::Key_Delete,                         KeyMap(false, "\x7F"));
+    /* Others are handled by QPlainTextEdit */
     m_keyMap.insert(Qt::Key_Return,                         KeyMap(true, m_lineEndingTx));
     m_keyMap.insert(Qt::Key_Enter,                          KeyMap(true, m_lineEndingTx));
     m_keyMap.insert(Qt::Key_Enter | Qt::KeypadModifier,     KeyMap(true, m_lineEndingTx));
