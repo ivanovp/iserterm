@@ -453,6 +453,11 @@ void SerialThread::processCommand()
               qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
               m_running = false;
             }
+            else
+            {
+              MY_ASSERT(connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), this,
+                                SIGNAL(error(QSerialPort::SerialPortError))));
+            }
 #endif
         }
         m_command = CMD_undefined;

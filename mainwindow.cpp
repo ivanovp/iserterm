@@ -210,6 +210,8 @@ void MainWindow::setEnableConsole(bool enable)
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
     ui->actionConfigure->setEnabled(!enable);
+    ui->actionToggle_DTR->setEnabled(!enable);
+    ui->actionToggle_RTS->setEnabled(!enable);
 
     for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
     {
