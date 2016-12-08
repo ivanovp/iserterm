@@ -47,6 +47,7 @@
 #include "serialthread.h"
 #include "multistring.h"
 #include "multivalidator.h"
+#include "shiftdeleventfilter.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -124,6 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendLineEdit->setEditable(true);
     ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
+    ui->sendLineEdit->installEventFilter(new ShiftDelEventFilter);
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
@@ -771,8 +773,10 @@ void MainWindow::onSendModeComboBox_currentIndexChanged()
     // Convert base
     m_sendLine.setMode(mode);
     m_multivalidator->setMode(mode);
+    /* Save current mode's history */
     saveHistory(prevMode, getCurrentHistory());
     ui->sendLineEdit->clear();
+    /* Load next mode's history */
     ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(m_sendLine.getString());
 }
@@ -789,6 +793,11 @@ QStringList MainWindow::getCurrentHistory()
     return history;
 }
 
+/**
+ * @brief MainWindow::loadHistory Load history of sendLineEdit values
+ * @param mode ASCII, hexadecimal, etc. @see Multistring::mode_t
+ * @return Loaded history.
+ */
 QStringList MainWindow::loadHistory(Multistring::mode_t mode)
 {
     QSettings settings;
@@ -804,6 +813,11 @@ QStringList MainWindow::loadHistory(Multistring::mode_t mode)
     return history;
 }
 
+/**
+ * @brief MainWindow::saveHistory Save history of sendLineEdit values
+ * @param mode ASCII, hexadecimal, etc. @see Multistring::mode_t
+ * @param history History to be saved.
+ */
 void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &history)
 {
     QSettings settings;

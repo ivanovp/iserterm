@@ -14,7 +14,8 @@ SOURCES += \
     console.cpp \
     consolesettingsdialog.cpp \
     serialthread.cpp \
-    multistring.cpp
+    multistring.cpp \
+    shiftdeleventfilter.cpp
 
 HEADERS += \
     common.h \
@@ -25,7 +26,8 @@ HEADERS += \
     version.h \
     consolesettingsdialog.h \
     serialthread.h \
-    multistring.h
+    multistring.h \
+    shiftdeleventfilter.h
 
 FORMS += \
     mainwindow.ui \
