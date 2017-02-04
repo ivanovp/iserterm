@@ -128,7 +128,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
     ui->sendLineEdit->installEventFilter(new ShiftDelEventFilter);
-    ui->sendLineEdit->completer()->setCaseSensitivity(Qt::CaseSensitive);
+    ui->sendLineEdit->completer()->setCompletionMode(static_cast<QCompleter::CompletionMode>(settings.value("completion/mode").toInt()));
+    ui->sendLineEdit->completer()->setCaseSensitivity(static_cast<Qt::CaseSensitivity>(settings.value("completion/caseSensitivity").toInt()));
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
@@ -497,6 +498,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     ConsoleSettingsDialog *dialog = new ConsoleSettingsDialog(this);
     QSettings settings;
 
+    // Tab1
     dialog->setLineEndingRx(m_console->getLineEndingRx ());
     dialog->setLineEndingTx(m_console->getLineEndingTx ());
     dialog->setDataBufferSize(m_console->getDataSizeLimit () >> 20);
@@ -504,6 +506,12 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setHexWrap(m_console->getHexWrap ());
     dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_ms());
     dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_ms());
+    // Tab2
+//    dialog->setCompletionMode(settings.value("completion/mode").toInt());
+//    dialog->setCompletionCaseSensitivity(settings.value("completion/caseSensitivity").toInt());
+    dialog->setCompletionMode(ui->sendLineEdit->completer()->completionMode());
+    dialog->setCompletionCaseSensitivity(ui->sendLineEdit->completer()->caseSensitivity());
+    // Tab3
     for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
     {
         QString text = settings.value(QString("serial/customText%1").arg(i + 1), "").toString();
@@ -540,6 +548,8 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_console->setHexWrap (hexWrap);
         m_serialThread->setDelayAfterBytes_ms(delayAfterBytes_ms);
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
+        ui->sendLineEdit->completer()->setCompletionMode(dialog->getCompletionMode());
+        ui->sendLineEdit->completer()->setCaseSensitivity(dialog->getCompletionCaseSensitivity());
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);
@@ -547,6 +557,8 @@ void MainWindow::on_actionConfigure_console_triggered()
         settings.setValue("serial/hexWrap", hexWrap);
         settings.setValue("serial/delayAfterBytes_ms", delayAfterBytes_ms);
         settings.setValue("serial/delayAfterNewline_ms", delayAfterNewline_ms);
+        settings.setValue("completion/mode", dialog->getCompletionMode());
+        settings.setValue("completion/caseSensitivity", dialog->getCompletionCaseSensitivity());
     }
 
     delete dialog;

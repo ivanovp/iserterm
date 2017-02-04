@@ -9,6 +9,7 @@
 #define CONSOLESETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QCompleter>
 
 namespace Ui {
     class ConsoleSettingsDialog;
@@ -48,6 +49,12 @@ public:
 
     bool isCustomTextEnabled(int idx);
     void setCustomTextEnabled(int idx, bool enable = true);
+
+    QCompleter::CompletionMode getCompletionMode();
+    void setCompletionMode(QCompleter::CompletionMode mode);
+
+    Qt::CaseSensitivity getCompletionCaseSensitivity();
+    void setCompletionCaseSensitivity(Qt::CaseSensitivity caseSensitivity);
 private slots:
     void on_lineEndingTxComboBox_currentIndexChanged(int index);
     void on_lineEndingRxComboBox_currentIndexChanged(int index);

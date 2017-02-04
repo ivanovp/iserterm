@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>389</width>
-    <height>320</height>
+    <height>314</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Console settings</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -23,8 +23,8 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout" columnstretch="1,0,0">
          <item row="4" column="2">
           <widget class="QLabel" name="label_8">
@@ -168,8 +168,65 @@
          </item>
         </layout>
        </item>
-       <item>
+       <item row="1" column="0">
         <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabCompletion">
+      <attribute name="title">
+       <string>Input completion</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Completion mode:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="completionModeComboBox">
+           <item>
+            <property name="text">
+             <string>Pop-up</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Unfiltered pop-up</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Inline</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="completionCaseSensCheckBox">
+           <property name="text">
+            <string>Case sensitive</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -353,7 +410,7 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -366,7 +423,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>text1Button</tabstop>
   <tabstop>lineEndingTxComboBox</tabstop>
   <tabstop>lineEndingRxComboBox</tabstop>
   <tabstop>dataBufferSizeSpinBox</tabstop>
@@ -374,9 +431,11 @@
   <tabstop>hexWrapSpinBox</tabstop>
   <tabstop>delayAfterSendByteSpinBox</tabstop>
   <tabstop>delayAfterSendNewLineSpinBox</tabstop>
+  <tabstop>completionModeComboBox</tabstop>
+  <tabstop>completionCaseSensCheckBox</tabstop>
+  <tabstop>tabWidget</tabstop>
   <tabstop>text1CheckBox</tabstop>
   <tabstop>text1Edit</tabstop>
-  <tabstop>text1Button</tabstop>
   <tabstop>text2CheckBox</tabstop>
   <tabstop>text2Edit</tabstop>
   <tabstop>text2Button</tabstop>

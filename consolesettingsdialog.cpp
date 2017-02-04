@@ -12,6 +12,9 @@
 #include <QDebug>
 #include <QLineEdit>
 #include <QSettings>
+#include <QCheckBox>
+#include <QCompleter>
+#include <QComboBox>
 
 ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -295,6 +298,37 @@ void ConsoleSettingsDialog::setCustomTextEnabled(int idx, bool enable)
             Q_ASSERT(0);
             break;
     }
+}
+
+QCompleter::CompletionMode ConsoleSettingsDialog::getCompletionMode()
+{
+    return static_cast<QCompleter::CompletionMode>( ui->completionModeComboBox->currentIndex() );
+}
+
+void ConsoleSettingsDialog::setCompletionMode(QCompleter::CompletionMode mode)
+{
+    ui->completionModeComboBox->setCurrentIndex(static_cast<int>(mode));
+}
+
+Qt::CaseSensitivity ConsoleSettingsDialog::getCompletionCaseSensitivity()
+{
+    Qt::CaseSensitivity sens;
+
+    if (ui->completionCaseSensCheckBox->isChecked())
+    {
+        sens = Qt::CaseSensitive;
+    }
+    else
+    {
+        sens = Qt::CaseInsensitive;
+    }
+
+    return sens;
+}
+
+void ConsoleSettingsDialog::setCompletionCaseSensitivity(Qt::CaseSensitivity caseSensitivity)
+{
+    ui->completionCaseSensCheckBox->setChecked(caseSensitivity == Qt::CaseSensitive);
 }
 
 void ConsoleSettingsDialog::on_lineEndingTxComboBox_currentIndexChanged(int index)
