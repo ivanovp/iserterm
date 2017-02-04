@@ -59,6 +59,8 @@
 #include <QFlags>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QComboBox>
+#include <QCompleter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -126,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
     ui->sendLineEdit->installEventFilter(new ShiftDelEventFilter);
+    ui->sendLineEdit->completer()->setCaseSensitivity(Qt::CaseSensitive);
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
