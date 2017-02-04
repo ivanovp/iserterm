@@ -8,6 +8,7 @@ Features:
  * Newline can be defined separately for sending and receiving
  * Sending file
  * Saving console's content to file
+ * History of entered commands with auto completion
 
 Compile
 =======
@@ -15,7 +16,7 @@ You need Qt 5 with QtSerialPort. Type 'qmake' and 'make' on console.
 
 Authors
 =======
-Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015
+Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015-2017
 
 This software is based on Simple Terminal example.
 
