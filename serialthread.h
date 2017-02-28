@@ -93,6 +93,7 @@ signals:
     void pinoutSignalsChanged(QSerialPort::PinoutSignals pinoutSignals);
 
 public slots:
+    void abortSend();
 
 protected:
    void processCommand();

@@ -353,6 +353,13 @@ QByteArray SerialThread::readAll(int timeout)
     return data;
 }
 
+void SerialThread::abortSend()
+{
+    qDebug() << __FUNCTION__;
+    QMutexLocker mutexLocker(&m_mutex);
+    m_writeData.clear();
+}
+
 void SerialThread::processCommand()
 {
     const int progressLimit = 10;
@@ -373,6 +380,7 @@ void SerialThread::processCommand()
             {
                 QByteArray c = m_writeData.left(1);
                 m_writeData.remove(0, 1);
+                m_mutex.unlock();
                 //qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
                 m_serialPort->write(c);
                 m_serialPort->flush();
@@ -404,10 +412,11 @@ void SerialThread::processCommand()
                  */
                 if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
                 {
+                    m_mutex.lock();
                     m_readData.append(m_serialPort->readAll());
+                    m_mutex.unlock();
                     emit readyRead();
                 }
-                m_mutex.unlock();
                 elapsed_ms = timer.elapsed();
                 //qDebug() << __PRETTY_FUNCTION__ << "elapsed_ms" << elapsed_ms;
                 if (elapsed_ms < delay_ms)

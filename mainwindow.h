@@ -41,6 +41,7 @@
 
 #include <QtCore/QtGlobal>
 #include <QMainWindow>
+#include <QPushButton>
 #include <QtSerialPort/QSerialPort>
 #include <QProgressBar>
 
@@ -119,9 +120,7 @@ private slots:
     void saveHistory(Multistring::mode_t mode, const QStringList& history);
 
     void on_actionSet_inactive_background_color_triggered();
-
     void on_actionSet_stopped_background_color_triggered();
-
     void on_actionConfigure_triggered();
 
 private:
@@ -130,6 +129,7 @@ private:
     SettingsDialog *m_serialSettings;
     SerialThread *m_serialThread;
     QProgressBar *m_progressBar;
+    QPushButton *m_stopButton;
     QVector<QString> m_customTexts;
     QVector<bool> m_customTextsEnabled;
     Multistring m_sendLine;
