@@ -94,6 +94,12 @@ public slots:
     void clear();
     void paste();
 
+public:
+    QVariant m_bgcolordef;
+    QVariant m_inactbgcolordef;
+    QVariant m_stoppedbgcolordef;
+    QVariant m_fgcolordef;
+
 private:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);

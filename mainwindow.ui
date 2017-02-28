@@ -168,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -217,6 +217,8 @@
     </property>
     <addaction name="actionSet_font"/>
     <addaction name="actionSet_background_color"/>
+    <addaction name="actionSet_inactive_background_color"/>
+    <addaction name="actionSet_stopped_background_color"/>
     <addaction name="actionSet_foreground_color"/>
     <addaction name="actionConfigure_console"/>
    </widget>
@@ -568,6 +570,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+6</string>
+   </property>
+  </action>
+  <action name="actionSet_inactive_background_color">
+   <property name="text">
+    <string>Set &amp;inactive background color...</string>
+   </property>
+  </action>
+  <action name="actionSet_stopped_background_color">
+   <property name="text">
+    <string>Set &amp;stopped background color...</string>
    </property>
   </action>
  </widget>

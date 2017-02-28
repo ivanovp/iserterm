@@ -71,15 +71,15 @@ Console::Console(QWidget *parent)
     font.setStyleHint(QFont::TypeWriter);
     document()->setDefaultFont(font);
     QPalette p = palette();
-    QVariant bgcolordef;
-    bgcolordef = QColor (Qt::black).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
-    QVariant fgcolordef;
-    fgcolordef = QColor (Qt::lightGray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
-    QColor bgcolor = settings.value("console/bgcolor", bgcolordef).toString();
-    QColor fgcolor = settings.value("console/fgcolor", fgcolordef).toString();
+    m_bgcolordef = QColor (Qt::black).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    m_inactbgcolordef = QColor (Qt::gray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    m_stoppedbgcolordef = QColor (Qt::darkRed).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    m_fgcolordef = QColor (Qt::lightGray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    QColor inactbgcolor = settings.value("console/inactbgcolor", m_inactbgcolordef).toString();
+    QColor fgcolor = settings.value("console/fgcolor", m_fgcolordef).toString();
 //    qDebug() << "bgcolor" << bgcolor;
 //    qDebug() << "fgcolor" << fgcolor;
-    p.setColor(QPalette::Base, bgcolor);
+    p.setColor(QPalette::Base, inactbgcolor);
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
 

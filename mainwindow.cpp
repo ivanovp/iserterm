@@ -336,6 +336,7 @@ void MainWindow::openSerialPort()
 
         ui->statusBar->showMessage(tr("Open error"));
     }
+    updateBackgroundColor();
 }
 
 void MainWindow::closeSerialPort(const QString &errorMsg)
@@ -354,6 +355,37 @@ void MainWindow::closeSerialPort(const QString &errorMsg)
         ui->statusBar->showMessage(tr("Disconnected: %1").arg(errorMsg));
     }
     setWindowTitle(VER_PRODUCTNAME_STR);
+    updateBackgroundColor();
+}
+
+void MainWindow::updateBackgroundColor()
+{
+    QSettings settings;
+    QPalette palette = m_console->palette();
+
+    if (m_serialThread->isOpen())
+    {
+        /* Port opened */
+        if (m_console->isUpdateEnabled())
+        {
+            /* Normal mode */
+            QColor color = settings.value("console/bgcolor", m_console->m_bgcolordef).toString();
+            palette.setColor(QPalette::Base, color);
+        }
+        else
+        {
+            /* STOP button pressed */
+            QColor color = settings.value("console/stoppedbgcolor", m_console->m_stoppedbgcolordef).toString();
+            palette.setColor(QPalette::Base, color);
+        }
+    }
+    else
+    {
+        /* Port closed */
+        QColor color = settings.value("console/inactbgcolor", m_console->m_inactbgcolordef).toString();
+        palette.setColor(QPalette::Base, color);
+    }
+    m_console->setPalette(palette);
 }
 
 void MainWindow::about()
@@ -417,16 +449,47 @@ void MainWindow::on_actionSet_font_triggered()
 
 void MainWindow::on_actionSet_background_color_triggered()
 {
+    QSettings settings;
     QPalette palette = m_console->palette();
-    QColor colorOriginal = palette.color(QPalette::Base).toRgb();
+    QColor colorOriginal = settings.value("console/bgcolor").toString();
     QColor color;
     color = QColorDialog::getColor(colorOriginal, this, "Choose background color");
     if (color.isValid())
     {
-        QSettings settings;
         settings.setValue("console/bgcolor", color.name(QColor::HexArgb));
         palette.setColor(QPalette::Base, color);
-        m_console->setPalette(palette);
+        updateBackgroundColor();
+    }
+}
+
+
+void MainWindow::on_actionSet_inactive_background_color_triggered()
+{
+    QSettings settings;
+    QPalette palette = m_console->palette();
+    QColor colorOriginal = settings.value("console/inactbgcolor").toString();
+    QColor color;
+    color = QColorDialog::getColor(colorOriginal, this, "Choose background color for inactive state");
+    if (color.isValid())
+    {
+        settings.setValue("console/inactbgcolor", color.name(QColor::HexArgb));
+        palette.setColor(QPalette::Base, color);
+        updateBackgroundColor();
+    }
+}
+
+void MainWindow::on_actionSet_stopped_background_color_triggered()
+{
+    QSettings settings;
+    QPalette palette = m_console->palette();
+    QColor colorOriginal = settings.value("console/stoppedbgcolor").toString();
+    QColor color;
+    color = QColorDialog::getColor(colorOriginal, this, "Choose background color for stopped state");
+    if (color.isValid())
+    {
+        settings.setValue("console/stoppedbgcolor", color.name(QColor::HexArgb));
+        palette.setColor(QPalette::Base, color);
+        updateBackgroundColor();
     }
 }
 
@@ -472,6 +535,7 @@ void MainWindow::onSendLineEdit_returnPressed()
 void MainWindow::on_actionStop_update_triggered(bool checked)
 {
     m_console->setUpdateEnabled(!checked);
+    updateBackgroundColor();
 }
 
 void MainWindow::on_sendButton_clicked()

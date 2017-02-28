@@ -79,6 +79,7 @@ public:
 private slots:
     void openSerialPort();
     void closeSerialPort(const QString& errorMsg = "");
+    void updateBackgroundColor(void);
     void about();
     void writeData(const QByteArray &data);
     void readData();
@@ -116,6 +117,10 @@ private slots:
     QStringList getCurrentHistory();
     QStringList loadHistory(Multistring::mode_t mode);
     void saveHistory(Multistring::mode_t mode, const QStringList& history);
+
+    void on_actionSet_inactive_background_color_triggered();
+
+    void on_actionSet_stopped_background_color_triggered();
 
 private:
     Ui::MainWindow *ui;
