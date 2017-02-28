@@ -362,7 +362,8 @@ void SerialThread::abortSend()
 
 void SerialThread::processCommand()
 {
-    const int progressLimit = 10;
+    bool progressSent = false;
+    const int progressLimit_ms = 2000; /* 2 seconds */
     float progress_percent = 0.0f;
 
     if (m_command == CMD_write)
@@ -370,8 +371,9 @@ void SerialThread::processCommand()
         progress_percent = 0.0f;
         if (m_writeData.length())
         {
-            if (m_writeDataLength > progressLimit)
+            if (m_writeDataLength * m_delayAfterBytes_ms >= progressLimit_ms)
             {
+                progressSent = true;
                 emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
             }
             /* Send data while thread should run */
@@ -386,8 +388,9 @@ void SerialThread::processCommand()
                 m_serialPort->flush();
                 m_writeDataSent++;
                 progress_percent = 100.0f * m_writeDataSent / m_writeDataLength;
-                if (m_writeDataLength > progressLimit)
+                if (m_writeDataLength * m_delayAfterBytes_ms >= progressLimit_ms)
                 {
+                    progressSent = true;
                     emit progress(QString("%1 bytes of %2 bytes sent").arg(m_writeDataSent).arg(m_writeDataLength), progress_percent);
                 }
                 /* Character sent, delay for specified time. Meanwhile check if
@@ -426,7 +429,7 @@ void SerialThread::processCommand()
                 }
                 m_mutex.lock();
             }
-            if (m_writeDataSent > progressLimit)
+            if (progressSent)
             {
                 emit progress(QString("%1 bytes sent").arg(m_writeDataSent), 100.0f);
             }
