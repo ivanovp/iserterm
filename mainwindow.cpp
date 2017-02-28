@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
     MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
-    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
+//    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
     MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), m_console, SLOT(clear())));
     MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
     MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
@@ -177,7 +177,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 }
-
 
 MainWindow::~MainWindow()
 {
@@ -215,7 +214,7 @@ void MainWindow::setEnableConsole(bool enable)
     ui->sendButton->setEnabled(enable);
     ui->actionConnect->setEnabled(!enable);
     ui->actionDisconnect->setEnabled(enable);
-    ui->actionConfigure->setEnabled(!enable);
+//    ui->actionConfigure->setEnabled(!enable);
     ui->actionToggle_DTR->setEnabled(enable);
     ui->actionToggle_RTS->setEnabled(enable);
 
@@ -906,5 +905,18 @@ void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &histor
     for (int i = 0; i < count; i++)
     {
         settings.setValue(QString("console/sendLineHistory%1/%2").arg(static_cast<int>(mode)).arg(i), history[i]);
+    }
+}
+
+void MainWindow::on_actionConfigure_triggered()
+{
+    int result = m_serialSettings->exec();
+    qDebug() << __PRETTY_FUNCTION__ << result;
+
+    if ((result == SettingsDialog::Accepted) && (m_serialThread->isOpen()))
+    {
+        // Reopen port
+        m_serialThread->close();
+        openSerialPort();
     }
 }

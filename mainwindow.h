@@ -122,6 +122,8 @@ private slots:
 
     void on_actionSet_stopped_background_color_triggered();
 
+    void on_actionConfigure_triggered();
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;

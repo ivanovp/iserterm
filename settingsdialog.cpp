@@ -120,6 +120,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
     if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
     {
+        setResult(Accepted);
         /* Ok button was pressed */
         updateSettings();
         QSettings settings;
@@ -130,6 +131,10 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         settings.setValue ("serial/stopBits", currentSettings.stopBits);
         settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
 //        settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
+    }
+    else
+    {
+        setResult(Rejected);
     }
 }
 
