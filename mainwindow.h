@@ -129,7 +129,7 @@ private:
     SettingsDialog *m_serialSettings;
     SerialThread *m_serialThread;
     QProgressBar *m_progressBar;
-    QPushButton *m_stopButton;
+    QPushButton *m_abortButton;
     QVector<QString> m_customTexts;
     QVector<bool> m_customTextsEnabled;
     Multistring m_sendLine;

@@ -155,9 +155,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
-    m_stopButton = new QPushButton("STOP", this);
-    m_stopButton->hide();
-    ui->statusBar->addPermanentWidget(m_stopButton);
+    m_abortButton = new QPushButton("Abort", this);
+    m_abortButton->hide();
+    ui->statusBar->addPermanentWidget(m_abortButton);
 
     MY_ASSERT(connect(ui->sendLineEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(onSendLineEdit_returnPressed())));
     MY_ASSERT(connect(ui->sendModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSendModeComboBox_currentIndexChanged())));
@@ -180,7 +180,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 
-    MY_ASSERT(connect(m_stopButton, SIGNAL(pressed()), m_serialThread, SLOT(abortSend())));
+    MY_ASSERT(connect(m_abortButton, SIGNAL(pressed()), m_serialThread, SLOT(abortSend())));
 }
 
 MainWindow::~MainWindow()
@@ -654,13 +654,13 @@ void MainWindow::serialProgress(QString message, int percent)
     }
     m_progressBar->show();
     m_progressBar->setValue(percent);
-    m_stopButton->show();
+    m_abortButton->show();
 }
 
 void MainWindow::serialFinish()
 {
     m_progressBar->hide();
-    m_stopButton->hide();
+    m_abortButton->hide();
 }
 
 void MainWindow::serialPinoutsChanged(QSerialPort::PinoutSignals pinoutSignals)
