@@ -374,7 +374,7 @@ void SerialThread::processCommand()
             if (m_writeDataLength * m_delayAfterBytes_ms >= progressLimit_ms)
             {
                 progressSent = true;
-                emit progress(QString("Sending %1 bytes").arg(m_writeDataLength), progress_percent);
+                emit progress(QString(tr("Sending %1 bytes")).arg(m_writeDataLength), progress_percent);
             }
             /* Send data while thread should run */
             //qDebug() << __PRETTY_FUNCTION__ << m_writeData.length() << m_running << m_serialPort->isOpen() << m_serialPort->isWritable();
@@ -391,7 +391,7 @@ void SerialThread::processCommand()
                 if (m_writeDataLength * m_delayAfterBytes_ms >= progressLimit_ms)
                 {
                     progressSent = true;
-                    emit progress(QString("%1 bytes of %2 bytes sent").arg(m_writeDataSent).arg(m_writeDataLength), progress_percent);
+                    emit progress(QString(tr("%1 bytes of %2 bytes sent")).arg(m_writeDataSent).arg(m_writeDataLength), progress_percent);
                 }
                 /* Character sent, delay for specified time. Meanwhile check if
                  * data can be received.
@@ -431,7 +431,7 @@ void SerialThread::processCommand()
             }
             if (progressSent)
             {
-                emit progress(QString("%1 bytes sent").arg(m_writeDataSent), 100.0f);
+                emit progress(QString(tr("%1 bytes sent")).arg(m_writeDataSent), 100.0f);
             }
             emit finish();
             m_writeDataSent = 0;
