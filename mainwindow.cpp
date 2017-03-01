@@ -90,10 +90,10 @@ MainWindow::MainWindow(QWidget *parent)
     m_console = new Console;
     setEnableConsole(false);
     ui->consoleWidget->addWidget(m_console);
-    ui->sendModeComboBox->addItem("ASCII", QVariant(Multistring::ASCII));
-    ui->sendModeComboBox->addItem("Hex", QVariant(Multistring::Hexadecimal));
-    ui->sendModeComboBox->addItem("Dec", QVariant(Multistring::Decimal));
-    ui->sendModeComboBox->addItem("Bin", QVariant(Multistring::Binary));
+    ui->sendModeComboBox->addItem(tr("ASCII"), QVariant(Multistring::ASCII));
+    ui->sendModeComboBox->addItem(tr("Hex"), QVariant(Multistring::Hexadecimal));
+    ui->sendModeComboBox->addItem(tr("Dec"), QVariant(Multistring::Decimal));
+    ui->sendModeComboBox->addItem(tr("Bin"), QVariant(Multistring::Binary));
 //    ui->sendButtonGroup->setId(ui->asciiRadioButton, Multistring::ASCII);
 //    ui->sendButtonGroup->setId(ui->hexRadioButton, Multistring::Hexadecimal);
 //    ui->sendButtonGroup->setId(ui->decRadioButton, Multistring::Decimal);
@@ -103,19 +103,19 @@ MainWindow::MainWindow(QWidget *parent)
     {
         default:
         case 0:
-            ui->sendModeComboBox->setCurrentText("ASCII");
+            ui->sendModeComboBox->setCurrentText(tr("ASCII"));
             break;
 
         case 1:
-            ui->sendModeComboBox->setCurrentText("Hex");
+            ui->sendModeComboBox->setCurrentText(tr("Hex"));
             break;
 
         case 2:
-            ui->sendModeComboBox->setCurrentText("Dec");
+            ui->sendModeComboBox->setCurrentText(tr("Dec"));
             break;
 
         case 3:
-            ui->sendModeComboBox->setCurrentText("Bin");
+            ui->sendModeComboBox->setCurrentText(tr("Bin"));
             break;
 
     }
@@ -155,7 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar = new QProgressBar(this);
     m_progressBar->hide();
     ui->statusBar->addPermanentWidget(m_progressBar);
-    m_abortButton = new QPushButton("Abort", this);
+    m_abortButton = new QPushButton(tr("Abort"), this);
     m_abortButton->hide();
     ui->statusBar->addPermanentWidget(m_abortButton);
 
@@ -305,7 +305,7 @@ void MainWindow::setVisibleCustomText(int idx, bool visible, const QString& text
         action->setVisible(visible);
         if (text.length())
         {
-            QString s = QString("Send custom text %1:\n%2").arg(idx).arg(text);
+            QString s = QString(tr("Send custom text %1:\n%2")).arg(idx).arg(text);
             action->setToolTip(s);
         }
     }
@@ -397,13 +397,15 @@ void MainWindow::about()
     QMessageBox::about(this, tr("About"),
                        QString(tr("%1 v%2.%3.%4\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
+                          "Git version %5.\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
                           "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2016\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"
                           "Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>\n"
-                          )).arg(VER_PRODUCTNAME_STR).arg(VER_PRODUCT_MAJOR).arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE));
+                          )).arg(VER_PRODUCTNAME_STR).arg(VER_PRODUCT_MAJOR)
+                       .arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE).arg(GIT_VERSION));
 }
 
 void MainWindow::writeData(const QByteArray &data)

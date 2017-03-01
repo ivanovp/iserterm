@@ -5,6 +5,9 @@ QT += widgets serialport
 
 TARGET = iserterm
 TEMPLATE = app
+#GIT_VERSION = git describe --abbrev=4 --dirty --always --tags
+GIT_VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)
+DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
 SOURCES += \
     multivalidator.cpp \
