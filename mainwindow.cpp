@@ -398,7 +398,7 @@ void MainWindow::about()
                        QString(tr("%1 v%2.%3.%4\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
-                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2016\n"
+                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2017\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"
@@ -455,7 +455,7 @@ void MainWindow::on_actionSet_background_color_triggered()
 {
     QSettings settings;
     QPalette palette = m_console->palette();
-    QColor colorOriginal = settings.value("console/bgcolor").toString();
+    QColor colorOriginal = settings.value("console/bgcolor", m_console->m_bgcolordef).toString();
     QColor color;
     color = QColorDialog::getColor(colorOriginal, this, "Choose background color");
     if (color.isValid())
@@ -471,7 +471,7 @@ void MainWindow::on_actionSet_inactive_background_color_triggered()
 {
     QSettings settings;
     QPalette palette = m_console->palette();
-    QColor colorOriginal = settings.value("console/inactbgcolor").toString();
+    QColor colorOriginal = settings.value("console/inactbgcolor", m_console->m_inactbgcolordef).toString();
     QColor color;
     color = QColorDialog::getColor(colorOriginal, this, "Choose background color for inactive state");
     if (color.isValid())
@@ -486,7 +486,7 @@ void MainWindow::on_actionSet_stopped_background_color_triggered()
 {
     QSettings settings;
     QPalette palette = m_console->palette();
-    QColor colorOriginal = settings.value("console/stoppedbgcolor").toString();
+    QColor colorOriginal = settings.value("console/stoppedbgcolor", m_console->m_stoppedbgcolordef).toString();
     QColor color;
     color = QColorDialog::getColor(colorOriginal, this, "Choose background color for stopped state");
     if (color.isValid())
