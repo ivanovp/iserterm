@@ -168,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -238,6 +238,7 @@
     <addaction name="actionViewSendInput"/>
     <addaction name="actionHexadecimal_view"/>
     <addaction name="actionShow_line_status"/>
+    <addaction name="actionShow_timestamp"/>
    </widget>
    <addaction name="menuCalls"/>
    <addaction name="menuEdit"/>
@@ -261,6 +262,7 @@
    <addaction name="actionStop_update"/>
    <addaction name="actionViewSendInput"/>
    <addaction name="actionHexadecimal_view"/>
+   <addaction name="actionShow_timestamp"/>
    <addaction name="separator"/>
    <addaction name="actionSend_custom_text_1"/>
    <addaction name="actionSend_custom_text_2"/>
@@ -580,6 +582,21 @@
   <action name="actionSet_stopped_background_color">
    <property name="text">
     <string>Set &amp;stopped background color...</string>
+   </property>
+  </action>
+  <action name="actionShow_timestamp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/timestamp.png</normaloff>:/images/timestamp.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show timestamp</string>
+   </property>
+   <property name="shortcut">
+    <string>F12</string>
    </property>
   </action>
  </widget>

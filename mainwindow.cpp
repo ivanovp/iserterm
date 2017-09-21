@@ -125,17 +125,22 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->sendLineEdit->setValidator(m_multivalidator);
     ui->sendLineEdit->setEditable(true);
+    ui->sendLineEdit->setDuplicatesEnabled(false);
     ui->sendLineEdit->addItems(loadHistory(mode));
     ui->sendLineEdit->lineEdit()->setText(settings.value("console/sendLineEdit").toString());
-    ui->sendLineEdit->installEventFilter(new ShiftDelEventFilter);
+    QObject * evfilter = new ShiftDelEventFilter;
+    evfilter->setParent(ui->sendLineEdit);
+    ui->sendLineEdit->installEventFilter(evfilter);
     ui->sendLineEdit->completer()->setCompletionMode(static_cast<QCompleter::CompletionMode>(settings.value("completion/mode").toInt()));
     ui->sendLineEdit->completer()->setCaseSensitivity(static_cast<Qt::CaseSensitivity>(settings.value("completion/caseSensitivity").toInt()));
+    ui->sendLineEdit->view()->installEventFilter(evfilter);
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
     m_console->setDisplaySize (settings.value("serial/displaySize", m_console->getDisplaySize ()).toInt ());
     m_console->setHexWrap (settings.value("serial/hexWrap", m_console->getHexWrap ()).toInt ());
+    m_console->setTimestampFormatString(settings.value("console/timestampFormatString", m_console->getTimestampFormatString()).toString());
 
     m_serialThread = new SerialThread;
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
@@ -145,9 +150,12 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialSettings = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
-    bool viewLineStatus = settings.value("console/showLineStatus", true).toBool();
-    ui->actionShow_line_status->setChecked(viewLineStatus);
-    on_actionShow_line_status_triggered(viewLineStatus);
+    bool showLineStatus = settings.value("console/showLineStatus", true).toBool();
+    ui->actionShow_line_status->setChecked(showLineStatus);
+    on_actionShow_line_status_triggered(showLineStatus);
+    bool showTimestamp = settings.value("console/showTimestamp", false).toBool();
+    ui->actionShow_timestamp->setChecked(showTimestamp);
+    on_actionShow_timestamp_triggered(showTimestamp);
     bool viewSendInput = settings.value("console/viewSendInput", true).toBool();
     ui->actionViewSendInput->setChecked(viewSendInput);
     on_actionViewSendInput_triggered(viewSendInput);
@@ -194,6 +202,7 @@ MainWindow::~MainWindow()
     settings.setValue("console/sendModeComboBox", ui->sendModeComboBox->currentIndex());
     settings.setValue("console/sendLineEdit", ui->sendLineEdit->lineEdit()->text());
     settings.setValue("console/eolCheckBox", ui->eolCheckBox->isChecked());
+    settings.setValue("console/showTimestamp", ui->actionShow_timestamp->isChecked());
     saveHistory(m_sendLine.getMode(), getCurrentHistory());
     if (m_serialThread)
     {
@@ -520,6 +529,13 @@ void MainWindow::onSendLineEdit_returnPressed()
     QString str = ui->sendLineEdit->lineEdit()->text();
     QByteArray data;
 
+    /* Check if text was added to history, neccessary when Send button was
+     * used! */
+    if (ui->sendLineEdit->findText(str) < 0)
+    {
+        /* Text not found in history, add it! */
+        ui->sendLineEdit->addItem(str);
+    }
     m_sendLine.setString(str);
     data = m_sendLine.getByteArray();
     if (ui->eolCheckBox->isChecked())
@@ -576,6 +592,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setHexWrap(m_console->getHexWrap ());
     dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_ms());
     dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_ms());
+    dialog->setTimestampFormatString(m_console->getTimestampFormatString());
     // Tab2
 //    dialog->setCompletionMode(settings.value("completion/mode").toInt());
 //    dialog->setCompletionCaseSensitivity(settings.value("completion/caseSensitivity").toInt());
@@ -602,6 +619,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         int hexWrap = dialog->getHexWrap();
         int delayAfterBytes_ms = dialog->getDelayAfterSendByte();
         int delayAfterNewline_ms = dialog->getDelayAfterSendNewLine();
+        QString timestampFormatString = dialog->getTimestampFormatString();
         QSettings settings;
         for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
         {
@@ -616,6 +634,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_console->setDataSizeLimit(dataSizeLimit);
         m_console->setDisplaySize (displaySize);
         m_console->setHexWrap (hexWrap);
+        m_console->setTimestampFormatString(timestampFormatString);
         m_serialThread->setDelayAfterBytes_ms(delayAfterBytes_ms);
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
         ui->sendLineEdit->completer()->setCompletionMode(dialog->getCompletionMode());
@@ -627,6 +646,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         settings.setValue("serial/hexWrap", hexWrap);
         settings.setValue("serial/delayAfterBytes_ms", delayAfterBytes_ms);
         settings.setValue("serial/delayAfterNewline_ms", delayAfterNewline_ms);
+        settings.setValue("console/timestampFormatString", timestampFormatString);
         settings.setValue("completion/mode", dialog->getCompletionMode());
         settings.setValue("completion/caseSensitivity", dialog->getCompletionCaseSensitivity());
     }
@@ -928,4 +948,9 @@ void MainWindow::on_actionConfigure_triggered()
         m_serialThread->close();
         openSerialPort();
     }
+}
+
+void MainWindow::on_actionShow_timestamp_triggered(bool checked)
+{
+    m_console->setDisplayTimestampEnabled(checked);
 }

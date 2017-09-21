@@ -15,5 +15,6 @@
         <file>images/text4.png</file>
         <file>images/text5.png</file>
         <file>images/text6.png</file>
+        <file>images/timestamp.png</file>
     </qresource>
 </RCC>

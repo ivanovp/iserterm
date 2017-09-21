@@ -123,6 +123,8 @@ private slots:
     void on_actionSet_stopped_background_color_triggered();
     void on_actionConfigure_triggered();
 
+    void on_actionShow_timestamp_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;

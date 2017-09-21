@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>389</width>
+    <width>400</width>
     <height>314</height>
    </rect>
   </property>
@@ -26,69 +26,19 @@
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout" columnstretch="1,0,0">
-         <item row="4" column="2">
-          <widget class="QLabel" name="label_8">
+         <item row="2" column="2">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>byte(s)</string>
+            <string>MiB</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="lineEndingTxComboBox"/>
-         </item>
-         <item row="3" column="1">
-          <widget class="QSpinBox" name="displaySizeSpinBox">
-           <property name="minimum">
-            <number>50</number>
-           </property>
+         <item row="6" column="1">
+          <widget class="QSpinBox" name="delayAfterSendNewLineSpinBox">
            <property name="maximum">
-            <number>10000000</number>
-           </property>
-           <property name="value">
-            <number>1000</number>
+            <number>10000</number>
            </property>
           </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Line ending for receiving:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Delay after sending byte:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="2">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>ms</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QSpinBox" name="dataBufferSizeSpinBox">
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>256</number>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>lines</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="lineEndingRxComboBox"/>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_7">
@@ -97,17 +47,20 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Line ending for sending:</string>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="lineEndingTxComboBox">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
-          <widget class="QLabel" name="label_4">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>MiB</string>
+            <string>Data buffer size:</string>
            </property>
           </widget>
          </item>
@@ -124,24 +77,10 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
-          <widget class="QSpinBox" name="delayAfterSendByteSpinBox">
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_5">
+         <item row="6" column="2">
+          <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>Display size:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Data buffer size:</string>
+            <string>ms</string>
            </property>
           </widget>
          </item>
@@ -152,19 +91,97 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="2">
-          <widget class="QLabel" name="label_12">
+         <item row="4" column="2">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>byte(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Delay after sending byte:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>lines</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="dataBufferSizeSpinBox">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>256</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="lineEndingRxComboBox"/>
+         </item>
+         <item row="5" column="1">
+          <widget class="QSpinBox" name="delayAfterSendByteSpinBox">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QSpinBox" name="displaySizeSpinBox">
+           <property name="minimum">
+            <number>50</number>
+           </property>
+           <property name="maximum">
+            <number>10000000</number>
+           </property>
+           <property name="value">
+            <number>1000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Display size:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Line ending for sending:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="QLabel" name="label_10">
            <property name="text">
             <string>ms</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
-          <widget class="QSpinBox" name="delayAfterSendNewLineSpinBox">
-           <property name="maximum">
-            <number>10000</number>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Line ending for receiving:</string>
            </property>
           </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>Timestamp format string:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="timestampComboBox"/>
          </item>
         </layout>
        </item>
@@ -423,7 +440,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>text1Button</tabstop>
+  <tabstop>tabWidget</tabstop>
   <tabstop>lineEndingTxComboBox</tabstop>
   <tabstop>lineEndingRxComboBox</tabstop>
   <tabstop>dataBufferSizeSpinBox</tabstop>
@@ -431,11 +448,12 @@
   <tabstop>hexWrapSpinBox</tabstop>
   <tabstop>delayAfterSendByteSpinBox</tabstop>
   <tabstop>delayAfterSendNewLineSpinBox</tabstop>
+  <tabstop>timestampComboBox</tabstop>
   <tabstop>completionModeComboBox</tabstop>
   <tabstop>completionCaseSensCheckBox</tabstop>
-  <tabstop>tabWidget</tabstop>
   <tabstop>text1CheckBox</tabstop>
   <tabstop>text1Edit</tabstop>
+  <tabstop>text1Button</tabstop>
   <tabstop>text2CheckBox</tabstop>
   <tabstop>text2Edit</tabstop>
   <tabstop>text2Button</tabstop>

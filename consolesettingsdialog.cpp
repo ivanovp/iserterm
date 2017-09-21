@@ -41,6 +41,13 @@ ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     ui->lineEndingRxComboBox->setEditable (false);
     ui->lineEndingRxComboBox->setCurrentIndex (0);
 
+    ui->timestampComboBox->addItem("HH:mm:ss.zzz  ");
+    ui->timestampComboBox->addItem("HH:mm:ss  ");
+    ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss.zzz  ");
+    ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss  ");
+    ui->timestampComboBox->addItem (tr("Custom"));
+    ui->timestampComboBox->setEditable(false);
+
     /* Hide unused buttons */
     ui->text1Button->hide();
     ui->text2Button->hide();
@@ -69,7 +76,7 @@ QString ConsoleSettingsDialog::getLineEndingTx()
     }
     else
     {
-        lineEndingTx = ui->lineEndingTxComboBox->currentData ().toString ();
+        lineEndingTx = ui->lineEndingTxComboBox->currentData (Qt::UserRole).toString ();
     }
     return lineEndingTx;
 }
@@ -90,6 +97,7 @@ void ConsoleSettingsDialog::setLineEndingTx(const QString &lineEndingTx)
     {
         ui->lineEndingTxComboBox->setCurrentIndex (ui->lineEndingTxComboBox->count () - 1);
         ui->lineEndingTxComboBox->setEditText (bin2hexString (lineEndingTx));
+        ui->lineEndingTxComboBox->setEditable(true);
     }
 }
 
@@ -102,7 +110,7 @@ QString ConsoleSettingsDialog::getLineEndingRx()
     }
     else
     {
-        lineEndingRx = ui->lineEndingRxComboBox->currentData ().toString ();
+        lineEndingRx = ui->lineEndingRxComboBox->currentData (Qt::UserRole).toString ();
     }
     return lineEndingRx;
 }
@@ -123,6 +131,7 @@ void ConsoleSettingsDialog::setLineEndingRx(const QString &lineEndingRx)
     {
         ui->lineEndingRxComboBox->setCurrentIndex (ui->lineEndingRxComboBox->count () - 1);
         ui->lineEndingRxComboBox->setEditText (bin2hexString (lineEndingRx));
+        ui->lineEndingRxComboBox->setEditable(true);
     }
 }
 
@@ -174,6 +183,40 @@ int ConsoleSettingsDialog::getDelayAfterSendNewLine()
 void ConsoleSettingsDialog::setDelayAfterSendNewLine(const int delayAfterSendNewline)
 {
     ui->delayAfterSendNewLineSpinBox->setValue (delayAfterSendNewline);
+}
+
+QString ConsoleSettingsDialog::getTimestampFormatString()
+{
+    QString timestamp;
+    if (ui->timestampComboBox->currentIndex () == ui->timestampComboBox->count () - 1)
+    {
+        timestamp = ui->timestampComboBox->currentData (Qt::EditRole).toString ();
+    }
+    else
+    {
+        timestamp = ui->timestampComboBox->currentText ();
+    }
+    return timestamp;
+}
+
+void ConsoleSettingsDialog::setTimestampFormatString(const QString &formatString)
+{
+    bool found = false;
+
+    for (int i = 0; i < ui->timestampComboBox->count () - 1; i++)
+    {
+        if (formatString == ui->timestampComboBox->itemText(i))
+        {
+            ui->timestampComboBox->setCurrentIndex (i);
+            found = true;
+        }
+    }
+    if (!found)
+    {
+        ui->timestampComboBox->setCurrentIndex (ui->timestampComboBox->count () - 1);
+        ui->timestampComboBox->setEditText (formatString);
+        ui->timestampComboBox->setEditable(true);
+    }
 }
 
 QString ConsoleSettingsDialog::getCustomText(int idx)
@@ -391,4 +434,15 @@ QString ConsoleSettingsDialog::bin2hexString(const QString &binString)
     }
 
     return hexString;
+}
+
+void ConsoleSettingsDialog::on_timestampComboBox_currentIndexChanged(int index)
+{
+    bool isCustomTimestamp = (index == ui->timestampComboBox->count() - 1);
+    ui->timestampComboBox->setEditable(isCustomTimestamp);
+    if (isCustomTimestamp)
+    {
+        //ui->timestampComboBox->lineEdit ()->setValidator (new MultiValidator(this));
+        ui->timestampComboBox->clearEditText ();
+    }
 }

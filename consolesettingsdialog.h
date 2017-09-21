@@ -44,6 +44,9 @@ public:
     int getDelayAfterSendNewLine();
     void setDelayAfterSendNewLine(const int delayAfterSendNewline);
 
+    QString getTimestampFormatString();
+    void setTimestampFormatString(const QString& formatString);
+
     QString getCustomText(int idx);
     void setCustomText(int idx, const QString& customText);
 
@@ -60,6 +63,8 @@ private slots:
     void on_lineEndingRxComboBox_currentIndexChanged(int index);
     QString hexString2Bin(const QString& hexString);
     QString bin2hexString(const QString& binString);
+
+    void on_timestampComboBox_currentIndexChanged(int index);
 
 private:
     Ui::ConsoleSettingsDialog *ui;

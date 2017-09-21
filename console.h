@@ -88,7 +88,8 @@ public:
     QByteArray getAllData() const;
 
     QString getTimestamp() const;
-    void setTimestampFormat(const QString& format);
+    void setTimestampFormatString(const QString& format);
+    QString getTimestampFormatString();
 
 public slots:
     void clear();
@@ -106,6 +107,7 @@ private:
     void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true, bool rebuild = false);
     void rebuildConsole();
     QString dumpBuf(const QByteArray& buf, int hexWrap);
+    void addTimestamp(QByteArray& buf);
 
     class KeyMap
     {
@@ -125,10 +127,11 @@ private:
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<unsigned int,KeyMap> m_keyMap;
-    QByteArray m_data;  /**< Raw serial data */
+    QByteArray m_data;           /**< Raw serial data */
+    QByteArray m_dataTimestamp;  /**< Raw serial data with timestamp */
     int m_dataSizeLimit;
 //    QMap<unsigned int,QDateTime> m_dataTimestamp;
-    QString m_timestampFormat;
+    QString m_timestampFormatString;
 #if CURSOR_MODE == 1
     QCursor m_cursor;
 #endif

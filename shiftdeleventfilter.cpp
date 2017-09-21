@@ -16,9 +16,16 @@ bool ShiftDelEventFilter::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key::Key_Delete && keyEvent->modifiers() == Qt::ShiftModifier)
+        if ((keyEvent->key() == Qt::Key::Key_Delete || keyEvent->key() == Qt::Key::Key_Clear)
+                && keyEvent->modifiers() == Qt::ShiftModifier)
         {
             QComboBox *combobox = dynamic_cast<QComboBox *>(obj);
+            qDebug() << "combobox:" << combobox;
+            if (!combobox)
+            {
+                combobox = dynamic_cast<QComboBox *>(parent());
+                qDebug() << "combobox2:" << combobox;
+            }
             if (combobox)
             {
                 combobox->removeItem(combobox->currentIndex());

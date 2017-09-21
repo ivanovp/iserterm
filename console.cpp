@@ -58,11 +58,13 @@ Console::Console(QWidget *parent)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
     , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
-    , m_timestampFormat("HH:mm:ss.zzz")
+    , m_timestampFormatString("HH:mm:ss.zzz  ")
 {
 #if CURSOR_MODE == 1
     setOverwriteMode(true);
 #endif
+    setAcceptDrops(false);
+    setUndoRedoEnabled(false);
     document()->setMaximumBlockCount(10000);
     QSettings settings;
     QString fontStr = settings.value("console/font", "Monospace,12").toString();
@@ -82,8 +84,6 @@ Console::Console(QWidget *parent)
     p.setColor(QPalette::Base, inactbgcolor);
     p.setColor(QPalette::Text, fgcolor);
     setPalette(p);
-
-//    setDisplayTimestampEnabled(); // FIXME test
 
     m_keyMap.clear();
     /* Backspace and delete are not handled by QPlainTextEdit */
@@ -115,7 +115,18 @@ void Console::putData(const QByteArray &data)
     if (m_data.length () > m_dataSizeLimit)
     {
         /* Remove unwanted bytes */
-        m_data.remove (0, m_data.length () - m_dataSizeLimit);
+        /* / 10 ---> 10 percent histeresys TODO configurable histeresys? */
+        m_data.remove (0, m_data.length () - m_dataSizeLimit - m_dataSizeLimit / 10);
+    }
+
+    QByteArray data2 = data;
+    addTimestamp(data2);
+    m_dataTimestamp.append(data2);
+    if (m_dataTimestamp.length () > m_dataSizeLimit)
+    {
+        /* Remove unwanted bytes */
+        /* / 10 ---> 10 percent histeresys TODO configurable histeresys? */
+        m_dataTimestamp.remove (0, m_dataTimestamp.length () - m_dataSizeLimit - m_dataSizeLimit / 10);
     }
 }
 
@@ -124,6 +135,7 @@ void Console::clear()
     qDebug() << __PRETTY_FUNCTION__;
     QPlainTextEdit::clear ();
     m_data.clear ();
+    m_dataTimestamp.clear ();
 //    m_dataTimestamp.clear();
 }
 
@@ -176,18 +188,30 @@ void Console::setLineEndingTx(const QString &lineEndingTx)
 
 QByteArray Console::getAllData() const
 {
-    return m_data;
+    if (m_displayTimestampEnabled)
+    {
+        return m_dataTimestamp;
+    }
+    else
+    {
+        return m_data;
+    }
 }
 
 QString Console::getTimestamp() const
 {
     QDateTime now = QDateTime::currentDateTime();
-    return now.toString(m_timestampFormat);
+    return now.toString(m_timestampFormatString);
 }
 
-void Console::setTimestampFormat(const QString &format)
+void Console::setTimestampFormatString(const QString &format)
 {
-    m_timestampFormat = format;
+    m_timestampFormatString = format;
+}
+
+QString Console::getTimestampFormatString()
+{
+    return m_timestampFormatString;
 }
 
 void Console::paste()
@@ -223,7 +247,11 @@ bool Console::isDisplayTimestampEnabled() const
 
 void Console::setDisplayTimestampEnabled(bool displayTimestampEnabled)
 {
-    m_displayTimestampEnabled = displayTimestampEnabled;
+    if (m_displayTimestampEnabled != displayTimestampEnabled)
+    {
+        m_displayTimestampEnabled = displayTimestampEnabled;
+        rebuildConsole();
+    }
 }
 
 int Console::getDataSizeLimit() const
@@ -377,6 +405,12 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
         /* Normal mode */
         QByteArray data2, newLine;
         data2 = data;
+
+        if (m_displayTimestampEnabled && !rebuild)
+        {
+            addTimestamp(data2);
+        }
+
         newLine = QByteArray(NATIVE_LINEENDNG);
         data2.replace (m_lineEndingRx, newLine);
         if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
@@ -463,7 +497,14 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
 void Console::rebuildConsole()
 {
     QPlainTextEdit::clear();
-    appendDataToConsole (m_data, true, true);
+    if (m_displayTimestampEnabled)
+    {
+        appendDataToConsole (m_dataTimestamp, true, true);
+    }
+    else
+    {
+        appendDataToConsole (m_data, true, true);
+    }
 }
 
 /**
@@ -530,4 +571,21 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
     }
 
     return str;
+}
+
+void Console::addTimestamp(QByteArray &buf)
+{
+    QString timestamp = getTimestamp();
+
+    /* Adding timestamps after every new line character */
+    QString data2 = buf;
+    for (int i = data2.length() - 1; i >= 0; i--)
+    {
+        if (data2[i] == m_lineEndingRx.right(1).toLatin1())
+        {
+            data2.insert(i + 1, timestamp.toLocal8Bit());
+        }
+    }
+
+    buf = data2.toLocal8Bit();
 }
