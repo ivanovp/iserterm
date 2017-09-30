@@ -190,7 +190,12 @@ QString ConsoleSettingsDialog::getTimestampFormatString()
     QString timestamp;
     if (ui->timestampComboBox->currentIndex () == ui->timestampComboBox->count () - 1)
     {
-        timestamp = ui->timestampComboBox->currentData (Qt::EditRole).toString ();
+        timestamp = ui->timestampComboBox->currentData (Qt::DisplayRole).toString ();
+        if (timestamp == tr("Custom"))
+        {
+            /* Timestamp was not edited */
+            timestamp = m_customTimestampFormatString;
+        }
     }
     else
     {
@@ -213,10 +218,12 @@ void ConsoleSettingsDialog::setTimestampFormatString(const QString &formatString
     }
     if (!found)
     {
+        /* This is a custom timestamp */
         ui->timestampComboBox->setCurrentIndex (ui->timestampComboBox->count () - 1);
         ui->timestampComboBox->setEditText (formatString);
         ui->timestampComboBox->setEditable(true);
     }
+    m_customTimestampFormatString = formatString;
 }
 
 QString ConsoleSettingsDialog::getCustomText(int idx)

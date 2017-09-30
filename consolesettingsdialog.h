@@ -68,6 +68,7 @@ private slots:
 
 private:
     Ui::ConsoleSettingsDialog *ui;
+    QString m_customTimestampFormatString;
 };
 
 #endif // CONSOLESETTINGSDIALOG_H
