@@ -262,6 +262,35 @@ QSerialPort::Parity SerialThread::parity()
     return m_serialPort->parity();
 }
 
+QString SerialThread::parityStr()
+{
+    QString str;
+
+    switch (m_serialPort->parity())
+    {
+        case QSerialPort::NoParity:
+            str = tr("None");
+            break;
+        case QSerialPort::EvenParity:
+            str = tr("Even");
+            break;
+        case QSerialPort::OddParity:
+            str = tr("Odd");
+            break;
+        case QSerialPort::MarkParity:
+            str = tr("Mark");
+            break;
+        case QSerialPort::SpaceParity:
+            str = tr("Space");
+            break;
+        default:
+            str = tr("Unknown");
+            break;
+    }
+
+    return str;
+}
+
 bool SerialThread::setStopBits(QSerialPort::StopBits stopBits)
 {
     QMutexLocker mutexLocker(&m_mutex);
@@ -284,6 +313,29 @@ QSerialPort::FlowControl SerialThread::flowControl()
 {
     QMutexLocker mutexLocker(&m_mutex);
     return m_serialPort->flowControl();
+}
+
+QString SerialThread::flowControlStr()
+{
+    QString str;
+
+    switch (m_serialPort->flowControl())
+    {
+        case QSerialPort::NoFlowControl:
+            str = tr("No handshake");
+            break;
+        case QSerialPort::HardwareControl:
+            str = tr("RTS/CTS");
+            break;
+        case QSerialPort::SoftwareControl:
+            str = tr("XON/XOFF");
+            break;
+        default:
+            str = tr("Unknown");
+            break;
+    }
+
+    return str;
 }
 
 bool SerialThread::setDataTerminalReady(bool set)

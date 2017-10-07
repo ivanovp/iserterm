@@ -147,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
     m_serialThread->start (QThread::NormalPriority);
-    m_serialSettings = new SettingsDialog;
+//    m_serialSettingsDialog = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
     bool showLineStatus = settings.value("console/showLineStatus", true).toBool();
@@ -173,7 +173,7 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(openSerialPort())));
     MY_ASSERT(connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort())));
     MY_ASSERT(connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(close())));
-//    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettings, SLOT(show())));
+//    MY_ASSERT(connect(ui->actionConfigure, SIGNAL(triggered()), m_serialSettingsDialog, SLOT(show())));
     MY_ASSERT(connect(ui->actionClear, SIGNAL(triggered()), m_console, SLOT(clear())));
     MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
     MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
@@ -210,8 +210,8 @@ MainWindow::~MainWindow()
     }
     delete m_serialThread;
     m_serialThread = NULL;
-    delete m_serialSettings;
-    m_serialSettings = NULL;
+//    delete m_serialSettingsDialog;
+//    m_serialSettingsDialog = NULL;
     delete ui;
     ui = NULL;
 }
@@ -322,25 +322,26 @@ void MainWindow::setVisibleCustomText(int idx, bool visible, const QString& text
 
 void MainWindow::openSerialPort()
 {
-    SettingsDialog::SerialSettings p = m_serialSettings->serialSettings();
-    m_serialThread->setPortName(p.name);
+    QSettings settings;
+
+    m_serialThread->setPortName(settings.value ("serial/name").toString());
     if (m_serialThread->open(QIODevice::ReadWrite))
     {
         // Parameters shall be set after open on Qt 5.3!
-        m_serialThread->setBaudRate(p.baudRate);
-        m_serialThread->setDataBits(p.dataBits);
-        m_serialThread->setParity(p.parity);
-        m_serialThread->setStopBits(p.stopBits);
-        m_serialThread->setFlowControl(p.flowControl);
+        m_serialThread->setBaudRate(settings.value ("serial/baudRate", 115200).toInt());
+        m_serialThread->setDataBits(static_cast<QSerialPort::DataBits>(settings.value ("serial/dataBits", QSerialPort::Data8).toInt()));
+        m_serialThread->setParity(static_cast<QSerialPort::Parity>(settings.value ("serial/parity", QSerialPort::NoParity).toInt()));
+        m_serialThread->setStopBits(static_cast<QSerialPort::StopBits>(settings.value ("serial/stopBits", QSerialPort::OneStop).toInt()));
+        m_serialThread->setFlowControl(static_cast<QSerialPort::FlowControl>(settings.value ("serial/flowControl", QSerialPort::NoFlowControl).toInt()));
         setEnableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
         ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
-                                   .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                   .arg(p.stringParity[0]).arg(p.stringStopBits).arg(p.stringFlowControl));
-        QString title = QString("%1 - %2, %3, %4%5%6, %7").arg(VER_PRODUCTNAME_STR).arg(p.name)
-            .arg(p.stringBaudRate).arg(p.stringDataBits).arg(p.stringParity[0]).arg(p.stringStopBits)
-            .arg(p.stringFlowControl);
+                                   .arg(m_serialThread->portName()).arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits())
+                                   .arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits()).arg(m_serialThread->flowControlStr()));
+        QString title = QString("%1 - %2, %3, %4%5%6, %7").arg(VER_PRODUCTNAME_STR).arg(m_serialThread->portName())
+            .arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits()).arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits())
+            .arg(m_serialThread->flowControlStr());
         setWindowTitle(title);
     }
     else
@@ -939,7 +940,8 @@ void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &histor
 
 void MainWindow::on_actionConfigure_triggered()
 {
-    int result = m_serialSettings->exec();
+    SettingsDialog * serialSettingsDialog = new SettingsDialog;
+    int result = serialSettingsDialog->exec();
     qDebug() << __PRETTY_FUNCTION__ << result;
 
     if ((result == SettingsDialog::Accepted) && (m_serialThread->isOpen()))
@@ -948,6 +950,8 @@ void MainWindow::on_actionConfigure_triggered()
         m_serialThread->close();
         openSerialPort();
     }
+
+    delete serialSettingsDialog;
 }
 
 void MainWindow::on_actionShow_timestamp_triggered(bool checked)

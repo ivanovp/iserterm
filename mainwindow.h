@@ -47,6 +47,7 @@
 
 #include "multistring.h"
 #include "multivalidator.h"
+#include "settingsdialog.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -128,7 +129,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Console *m_console;
-    SettingsDialog *m_serialSettings;
+//    SettingsDialog *m_serialSettingsDialog;
     SerialThread *m_serialThread;
     QProgressBar *m_progressBar;
     QPushButton *m_abortButton;

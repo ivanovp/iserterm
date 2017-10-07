@@ -62,7 +62,8 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    struct SerialSettings {
+    typedef struct
+    {
         QString name;
         qint32 baudRate;
         QString stringBaudRate;
@@ -74,13 +75,12 @@ public:
         QString stringStopBits;
         QSerialPort::FlowControl flowControl;
         QString stringFlowControl;
-//        bool localEchoEnabled;
-    };
+    } serialSettings_t;
 
     explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
 
-    SerialSettings serialSettings() const;
+    serialSettings_t serialSettings() const;
 
 private slots:
     void showPortInfo(int idx);
@@ -95,7 +95,7 @@ private:
 
 private:
     Ui::SettingsDialog *ui;
-    SerialSettings currentSettings;
+    serialSettings_t currentSettings;
     QIntValidator *intValidator;
     QTimer m_timer;
     QList<QSerialPortInfo> m_availablePorts;

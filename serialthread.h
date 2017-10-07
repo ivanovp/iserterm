@@ -64,12 +64,14 @@ public:
 
     bool setParity(QSerialPort::Parity parity);
     QSerialPort::Parity parity();
+    QString parityStr();
 
     bool setStopBits(QSerialPort::StopBits stopBits);
     QSerialPort::StopBits stopBits();
 
     bool setFlowControl(QSerialPort::FlowControl flowControl);
     QSerialPort::FlowControl flowControl();
+    QString flowControlStr();
 
     bool setDataTerminalReady(bool set);
     bool isDataTerminalReady();

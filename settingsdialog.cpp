@@ -74,14 +74,13 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     QSettings settings;
     // FIXME custom serial name
-    ui->serialPortInfoListBox->setCurrentText(settings.value ("serial/name", currentSettings.name).toString());
+    ui->serialPortInfoListBox->setCurrentText(settings.value ("serial/name").toString());
     // FIXME custom baud rate!
     ui->baudRateBox->setCurrentText(settings.value ("serial/baudRate", currentSettings.baudRate).toString());
     ui->dataBitsBox->setCurrentText(settings.value ("serial/dataBits", currentSettings.dataBits).toString());
     ui->parityBox->setCurrentText(settings.value ("serial/parity", currentSettings.parity).toString());
     ui->stopBitsBox->setCurrentText(settings.value ("serial/stopBits", currentSettings.stopBits).toString());
     ui->flowControlBox->setCurrentText(settings.value ("serial/flowControl", currentSettings.flowControl).toString());
-//    settings.value ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
 
     updateSettings();
 
@@ -95,7 +94,7 @@ SettingsDialog::~SettingsDialog()
     ui = NULL;
 }
 
-SettingsDialog::SerialSettings SettingsDialog::serialSettings() const
+SettingsDialog::serialSettings_t SettingsDialog::serialSettings() const
 {
     return currentSettings;
 }
@@ -130,7 +129,6 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         settings.setValue ("serial/parity", currentSettings.stringParity);
         settings.setValue ("serial/stopBits", currentSettings.stopBits);
         settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
-//        settings.setValue ("serial/localEchoEnabled", currentSettings.localEchoEnabled);
     }
     else
     {
@@ -182,9 +180,7 @@ void SettingsDialog::fillPortsParameters()
     ui->parityBox->addItem(tr("Space"), QSerialPort::SpaceParity);
 
     ui->stopBitsBox->addItem(QStringLiteral("1"), QSerialPort::OneStop);
-#ifdef Q_OS_WIN
-    ui->stopBitsBox->addItem(tr("1.5"), QSerialPort::OneAndHalfStop);
-#endif
+    ui->stopBitsBox->addItem(QStringLiteral("1.5"), QSerialPort::OneAndHalfStop);
     ui->stopBitsBox->addItem(QStringLiteral("2"), QSerialPort::TwoStop);
 
     ui->flowControlBox->addItem(tr("No handshake"), QSerialPort::NoFlowControl);
@@ -290,6 +286,4 @@ void SettingsDialog::updateSettings()
     currentSettings.flowControl = static_cast<QSerialPort::FlowControl>(
                 ui->flowControlBox->itemData(ui->flowControlBox->currentIndex()).toInt());
     currentSettings.stringFlowControl = ui->flowControlBox->currentText();
-
-//    currentSettings.localEchoEnabled = ui->localEchoCheckBox->isChecked();
 }
