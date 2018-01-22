@@ -409,7 +409,7 @@ void MainWindow::about()
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "Git version %5.\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
-                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2017\n"
+                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2018\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"

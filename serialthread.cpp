@@ -74,7 +74,7 @@ void SerialThread::run()
             {
                 if (m_serialPort->waitForReadyRead(10))
                 {
-                    m_readData.append(m_serialPort->readAll());
+                    m_readData.append(m_serialPort->read(1024)); // read maximum 1024 byte only
                     emit readyRead();
                 }
                 /* Check if CTS, RTS, etc. signals changed */

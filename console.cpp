@@ -109,8 +109,6 @@ void Console::putData(const QByteArray &data)
         appendDataToConsole (data, scrollToEnd);
     }
 
-    // FIXME error when unwanted data is removed!
-//    m_dataTimestamp[m_data.length()] = QDateTime::currentDateTime();
     m_data.append(data);
     if (m_data.length () > m_dataSizeLimit)
     {
@@ -136,7 +134,6 @@ void Console::clear()
     QPlainTextEdit::clear ();
     m_data.clear ();
     m_dataTimestamp.clear ();
-//    m_dataTimestamp.clear();
 }
 
 bool Console::isLocalEchoEnabled() const

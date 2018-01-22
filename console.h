@@ -130,7 +130,6 @@ private:
     QByteArray m_data;           /**< Raw serial data */
     QByteArray m_dataTimestamp;  /**< Raw serial data with timestamp */
     int m_dataSizeLimit;
-//    QMap<unsigned int,QDateTime> m_dataTimestamp;
     QString m_timestampFormatString;
 #if CURSOR_MODE == 1
     QCursor m_cursor;
