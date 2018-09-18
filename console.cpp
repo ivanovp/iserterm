@@ -487,6 +487,8 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
     {
         QScrollBar *bar = verticalScrollBar();
         bar->setValue(bar->maximum());
+        /* Maybe only this needed */
+        ensureCursorVisible();
     }
 }
 

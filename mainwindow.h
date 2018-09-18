@@ -129,8 +129,8 @@ private slots:
 
     void on_actionSet_timestamp_color_triggered();
 
+    void find(QString searchStr = "", bool caseSens = false, bool wholeWords = false, bool regEx = false);
     void on_actionFind_triggered();
-
     void on_actionFind_next_triggered();
 
 private:

@@ -51,6 +51,7 @@
 #include "finddialog.h"
 
 #include <QDebug>
+#include <QAbstractItemView>
 #include <QMessageBox>
 #include <QFontDialog>
 #include <QSettings>
@@ -989,17 +990,107 @@ void MainWindow::on_actionSet_timestamp_color_triggered()
     }
 }
 
+void MainWindow::find(QString searchStr, bool caseSens, bool wholeWords, bool regEx)
+{
+    QSettings settings;
+
+    if (!searchStr.length())
+    {
+        searchStr = settings.value("find/text", "").toString();
+        caseSens = settings.value("find/caseSens", false).toBool();
+        wholeWords = settings.value("find/wholeWords", false).toBool();
+        regEx = settings.value("find/regEx", false).toBool();
+    }
+
+    QTextDocument * document = m_console->document();
+    QTextCursor highlightCursor(document);
+#if 0
+    QTextCursor cursor(document);
+    cursor.beginEditBlock();
+#endif
+
+    if (m_console->textCursor().hasSelection())
+    {
+        highlightCursor = m_console->textCursor();
+    }
+
+    QTextDocument::FindFlags flags = 0;
+    if (wholeWords)
+    {
+        flags |= QTextDocument::FindWholeWords;
+    }
+    if (caseSens)
+    {
+        flags |= QTextDocument::FindCaseSensitively;
+    }
+
+    if (regEx)
+    {
+        QRegExp searchRegEx(searchStr);
+        searchRegEx.setPatternSyntax(QRegExp::RegExp);
+        if (caseSens)
+        {
+            searchRegEx.setCaseSensitivity(Qt::CaseSensitive);
+        }
+        else
+        {
+            searchRegEx.setCaseSensitivity(Qt::CaseInsensitive);
+        }
+        highlightCursor = document->find(searchRegEx, highlightCursor, flags);
+    }
+    else
+    {
+        highlightCursor = document->find(searchStr, highlightCursor, flags);
+    }
+
+    if (!highlightCursor.isNull())
+    {
+//        highlightCursor.movePosition(QTextCursor::NextCharacter,
+//                                     QTextCursor::KeepAnchor,
+//                                     searchStr.length());
+        highlightCursor.select(QTextCursor::WordUnderCursor);
+        qDebug() << "selected: " << highlightCursor.selectedText();
+        m_console->setTextCursor(highlightCursor);
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Text not found"),
+                                 "The text cannot be found.");
+    }
+
+#if 0
+    while (!highlightCursor.isNull() && !highlightCursor.atEnd())
+    {
+        highlightCursor = document->find(searchString, highlightCursor, flags);
+
+        if (!highlightCursor.isNull())
+        {
+            highlightCursor.movePosition(QTextCursor::WordRight,
+                                         QTextCursor::KeepAnchor);
+            highlightCursor.mergeCharFormat(colorFormat);
+            found = true;
+        }
+    }
+
+    cursor.endEditBlock();
+#endif
+}
+
 void MainWindow::on_actionFind_triggered()
 {
     FindDialog *dialog = new FindDialog(this);
     int result = dialog->exec();
 
     qDebug() << "result:" << result;
+    if (result == SettingsDialog::Accepted && dialog->getText().length() > 0)
+    {
+        find(dialog->getText(), dialog->isCaseSens(), dialog->isWholeWords(), dialog->isRegEx());
+    }
 
     delete dialog;
 }
 
 void MainWindow::on_actionFind_next_triggered()
 {
-
+    find();
 }
