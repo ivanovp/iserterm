@@ -128,6 +128,12 @@ private:
     QString m_lineEndingRx;
     QString m_lineEndingTx;
     QMap<unsigned int,KeyMap> m_keyMap;
+    /* TODO There should be different documents (QDocument?) for
+     * - ASCII without timestamp
+     * - ASCII with timestamp
+     * - hexadecimal
+     * Adding colors to timestamp could possible...
+     */
     QByteArray m_data;           /**< Raw serial data */
     QByteArray m_dataTimestamp;  /**< Raw serial data with timestamp */
     int m_dataSizeLimit;
