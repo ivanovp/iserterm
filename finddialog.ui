@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>138</height>
+    <height>149</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Find text</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
