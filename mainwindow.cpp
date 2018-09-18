@@ -48,6 +48,7 @@
 #include "multistring.h"
 #include "multivalidator.h"
 #include "shiftdeleventfilter.h"
+#include "finddialog.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -971,4 +972,34 @@ void MainWindow::on_actionConfigure_triggered()
 void MainWindow::on_actionShow_timestamp_triggered(bool checked)
 {
     m_console->setDisplayTimestampEnabled(checked);
+}
+
+void MainWindow::on_actionSet_timestamp_color_triggered()
+{
+    QPalette palette = m_console->palette();
+    QColor colorOriginal = palette.color(QPalette::Dark).toRgb();
+    QColor color;
+    color = QColorDialog::getColor(colorOriginal, this, "Choose timestamp color");
+    if (color.isValid())
+    {
+        QSettings settings;
+        settings.setValue("console/timestampcolor", color.name(QColor::HexArgb));
+        palette.setColor(QPalette::Dark, color);
+        m_console->setPalette(palette);
+    }
+}
+
+void MainWindow::on_actionFind_triggered()
+{
+    FindDialog *dialog = new FindDialog(this);
+    int result = dialog->exec();
+
+    qDebug() << "result:" << result;
+
+    delete dialog;
+}
+
+void MainWindow::on_actionFind_next_triggered()
+{
+
 }

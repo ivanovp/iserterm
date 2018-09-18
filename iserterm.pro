@@ -18,7 +18,8 @@ SOURCES += \
     consolesettingsdialog.cpp \
     serialthread.cpp \
     multistring.cpp \
-    shiftdeleventfilter.cpp
+    shiftdeleventfilter.cpp \
+    finddialog.cpp
 
 HEADERS += \
     common.h \
@@ -30,12 +31,14 @@ HEADERS += \
     consolesettingsdialog.h \
     serialthread.h \
     multistring.h \
-    shiftdeleventfilter.h
+    shiftdeleventfilter.h \
+    finddialog.h
 
 FORMS += \
     mainwindow.ui \
     settingsdialog.ui \
-    consolesettingsdialog.ui
+    consolesettingsdialog.ui \
+    finddialog.ui
 
 RESOURCES += \
     iserterm.qrc

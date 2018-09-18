@@ -168,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -216,10 +216,13 @@
      <string>&amp;Configuration</string>
     </property>
     <addaction name="actionSet_font"/>
+    <addaction name="separator"/>
     <addaction name="actionSet_background_color"/>
     <addaction name="actionSet_inactive_background_color"/>
     <addaction name="actionSet_stopped_background_color"/>
     <addaction name="actionSet_foreground_color"/>
+    <addaction name="actionSet_timestamp_color"/>
+    <addaction name="separator"/>
     <addaction name="actionConfigure_console"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -228,6 +231,9 @@
     </property>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionFind"/>
+    <addaction name="actionFind_next"/>
    </widget>
    <widget class="QMenu" name="menuView_2">
     <property name="title">
@@ -376,6 +382,9 @@
    <property name="text">
     <string>Set &amp;font...</string>
    </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionSet_background_color">
    <property name="text">
@@ -491,7 +500,7 @@
     <string>Toggle DT&amp;R</string>
    </property>
    <property name="shortcut">
-    <string>F7</string>
+    <string>F9</string>
    </property>
   </action>
   <action name="actionToggle_RTS">
@@ -499,7 +508,7 @@
     <string>Tog&amp;gle RTS</string>
    </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>F10</string>
    </property>
   </action>
   <action name="actionSend_custom_text_1">
@@ -597,6 +606,33 @@
    </property>
    <property name="shortcut">
     <string>F12</string>
+   </property>
+  </action>
+  <action name="actionSet_timestamp_color">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Set timestamp color...</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="text">
+    <string>&amp;Find...</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionFind_next">
+   <property name="text">
+    <string>Find &amp;next</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
  </widget>

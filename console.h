@@ -100,6 +100,7 @@ public:
     QVariant m_inactbgcolordef;
     QVariant m_stoppedbgcolordef;
     QVariant m_fgcolordef;
+    QVariant m_timestampcolordef;
 
 private:
     virtual void keyPressEvent(QKeyEvent *e);

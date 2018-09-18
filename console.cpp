@@ -77,12 +77,15 @@ Console::Console(QWidget *parent)
     m_inactbgcolordef = QColor (Qt::gray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
     m_stoppedbgcolordef = QColor (Qt::darkRed).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
     m_fgcolordef = QColor (Qt::lightGray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
+    m_timestampcolordef = QColor (Qt::darkGray).name(QColor::HexArgb); // Convert default color to "#aarrggbb" format string
     QColor inactbgcolor = settings.value("console/inactbgcolor", m_inactbgcolordef).toString();
     QColor fgcolor = settings.value("console/fgcolor", m_fgcolordef).toString();
+    QColor timestampcolor = settings.value("console/timestampcolor", m_timestampcolordef).toString();
 //    qDebug() << "bgcolor" << bgcolor;
 //    qDebug() << "fgcolor" << fgcolor;
     p.setColor(QPalette::Base, inactbgcolor);
     p.setColor(QPalette::Text, fgcolor);
+    p.setColor(QPalette::Dark, fgcolor);
     setPalette(p);
 
     m_keyMap.clear();

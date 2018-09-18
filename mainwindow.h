@@ -127,6 +127,12 @@ private slots:
 
     void on_actionShow_timestamp_triggered(bool checked);
 
+    void on_actionSet_timestamp_color_triggered();
+
+    void on_actionFind_triggered();
+
+    void on_actionFind_next_triggered();
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;
