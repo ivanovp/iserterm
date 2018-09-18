@@ -85,7 +85,7 @@ Console::Console(QWidget *parent)
 //    qDebug() << "fgcolor" << fgcolor;
     p.setColor(QPalette::Base, inactbgcolor);
     p.setColor(QPalette::Text, fgcolor);
-    p.setColor(QPalette::Dark, fgcolor);
+    p.setColor(QPalette::Dark, timestampcolor);
     setPalette(p);
 
     m_keyMap.clear();
