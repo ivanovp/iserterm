@@ -44,6 +44,7 @@
 #include <QPushButton>
 #include <QtSerialPort/QSerialPort>
 #include <QProgressBar>
+#include <QTimer>
 
 #include "multistring.h"
 #include "multivalidator.h"
@@ -138,6 +139,7 @@ private:
     Multistring m_sendLine;
     MultiValidator * m_multivalidator;
     QStringList m_sendLineHistories[4]; /**< History for following modes: ASCII, hexadecimal, decimal, binary */
+    QTimer      m_updateTimer;          /**< Console update timer */
 };
 
 #endif // MAINWINDOW_H

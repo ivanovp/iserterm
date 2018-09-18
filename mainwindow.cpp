@@ -189,6 +189,12 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(m_console, SIGNAL(getData(QByteArray)), this, SLOT(writeData(QByteArray))));
 
     MY_ASSERT(connect(m_abortButton, SIGNAL(pressed()), m_serialThread, SLOT(abortSend())));
+
+    /* Timer is used to prevent flooding of console with data */
+    m_updateTimer.setSingleShot(true);
+    m_updateTimer.setInterval(100); /* FIXME this could be configurable */
+
+    MY_ASSERT(connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(readData())));
 }
 
 MainWindow::~MainWindow()
@@ -428,9 +434,17 @@ void MainWindow::writeData(const QByteArray &data)
 
 void MainWindow::readData()
 {
-    QByteArray data = m_serialThread->readAll();
-    /* Receive serial data and show on console */
-    m_console->putData(data);
+    /* Check if last data chunk was received within time interval (100 ms) */
+    if (!m_updateTimer.isActive())
+    {
+      QByteArray data = m_serialThread->readAll();
+      if (data.length())
+      {
+        m_updateTimer.start();
+        /* Receive serial data and show on console */
+        m_console->putData(data);
+      }
+    }
 }
 
 void MainWindow::handleError(QSerialPort::SerialPortError error)

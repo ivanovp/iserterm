@@ -16,7 +16,7 @@ You need Qt 5 with QtSerialPort. Type 'qmake' and 'make' on console.
 
 Authors
 =======
-Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015-2017
+Copyright (C) Peter Ivanov &lt;ivanovp@gmail.com&gt;, 2015-2018
 
 This software is based on Simple Terminal example.
 
