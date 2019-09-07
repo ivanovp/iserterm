@@ -544,20 +544,20 @@ void SerialThread::processCommand()
 #if WINDOWS
             /* Workaround for Windows */
             m_serialPort->setPortName(m_portName);
-            m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
-            if (m_serialPort->isOpen())
+            bool isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            if (isOpened)
             {
               m_serialPort->close();
               recreatePort();
             }
 #endif
             m_serialPort->setPortName(m_portName);
-            bool isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
               // Parameters shall be set after open on Qt 5.3!
 #if 0
-              // buggy on Windows 10 with PL2303 (not sure which one is guily)
+              // buggy on Windows 10 with PL2303 (not sure which one is guilty)
               m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
               m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
 #else

@@ -44,6 +44,7 @@
 #include <QIntValidator>
 #include <QLineEdit>
 #include <QSettings>
+#include <QDebug>
 
 QT_USE_NAMESPACE
 
@@ -61,12 +62,16 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
 //    MY_ASSERT(connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),
 //            this, SLOT(on_buttonBox_clicked(QAbstractButton*))));
+//    MY_ASSERT(connect(ui->profileListWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
+//                      this, SLOT(on_profileListWidget_currentItemChanged(QListWidgetItem*,QListWidgetItem*))));
+//    MY_ASSERT(connect(ui->addButton, SIGNAL(clicked()), this, SLOT(on_addButton_clicked())));
+//    MY_ASSERT(connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(on_removeButton_clicked())));
     MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(showPortInfo(int))));
+                      this, SLOT(showPortInfo(int))));
     MY_ASSERT(connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomBaudRatePolicy(int))));
+                      this, SLOT(checkCustomBaudRatePolicy(int))));
     MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomDevicePathPolicy(int))));
+                      this, SLOT(checkCustomDevicePathPolicy(int))));
     MY_ASSERT(connect(&m_timer, SIGNAL(timeout()), this, SLOT(fillPortsInfo())));
 
     fillPortsParameters();
@@ -253,6 +258,27 @@ void SettingsDialog::fillPortsInfo()
         }
 
         ui->serialPortInfoListBox->addItem(tr("Custom"));
+    }
+}
+
+void SettingsDialog::on_profileListWidget_currentItemChanged(QListWidgetItem *item, QListWidgetItem *prevItem)
+{
+    qDebug() << "profile:" << item->text();
+}
+
+void SettingsDialog::on_addButton_clicked()
+{
+    ui->profileListWidget->addItem(tr("New"));
+}
+
+void SettingsDialog::on_removeButton_clicked()
+{
+    /* At least one item should remain in the list */
+    if (ui->profileListWidget->count() > 1)
+    {
+        int currentRow = ui->profileListWidget->currentRow();
+        QListWidgetItem *item = ui->profileListWidget->takeItem(currentRow);
+        delete item;
     }
 }
 

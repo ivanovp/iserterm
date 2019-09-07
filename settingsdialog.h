@@ -44,6 +44,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QAbstractButton>
 #include <QTimer>
+#include <QListWidgetItem>
 
 QT_USE_NAMESPACE
 
@@ -88,6 +89,9 @@ private slots:
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
     void fillPortsInfo();
+    void on_profileListWidget_currentItemChanged(QListWidgetItem *item, QListWidgetItem *prevItem);
+    void on_addButton_clicked();
+    void on_removeButton_clicked();
 
 private:
     void fillPortsParameters();
