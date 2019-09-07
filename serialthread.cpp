@@ -193,7 +193,7 @@ void SerialThread::setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr)
 void SerialThread::setPortName(const QString &name)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_serialPort->setPortName(name);
+    m_portName = name;
 }
 
 QString SerialThread::portName()
@@ -541,6 +541,17 @@ void SerialThread::processCommand()
     {
         if (!m_serialPort->isOpen())
         {
+#if WINDOWS
+            /* Workaround for Windows */
+            m_serialPort->setPortName(m_portName);
+            m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            if (m_serialPort->isOpen())
+            {
+              m_serialPort->close();
+              recreatePort();
+            }
+#endif
+            m_serialPort->setPortName(m_portName);
             bool isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
@@ -560,8 +571,6 @@ void SerialThread::processCommand()
             else
             {
               qCritical() << __PRETTY_FUNCTION__ << "cannot open port!";
-              //recreatePort();
-              //m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             }
         }
         m_command = CMD_undefined;
@@ -571,9 +580,6 @@ void SerialThread::processCommand()
         if (m_serialPort->isOpen())
         {
             m_serialPort->close();
-#if WINDOWS
-            recreatePort();
-#endif
         }
         m_command = CMD_undefined;
     }

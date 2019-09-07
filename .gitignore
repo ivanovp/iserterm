@@ -11,3 +11,5 @@ release/
 x64/
 *.user
 UpgradeLog*.htm
+*~
+*.bak

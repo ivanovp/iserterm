@@ -134,6 +134,7 @@ protected:
      * This is usually a new line charater (CR, LF). */
     QByteArray m_chr;
     QSerialPort::PinoutSignals m_pinoutSignals;
+    QString m_portName;
     qint32 m_baudRateInput;
     qint32 m_baudRateOutput;
     QSerialPort::DataBits m_dataBits;
