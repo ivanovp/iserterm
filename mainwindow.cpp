@@ -148,7 +148,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
-    m_serialThread->start (QThread::NormalPriority);
+    m_serialThread->start (QThread::LowPriority);
 //    m_serialSettingsDialog = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
