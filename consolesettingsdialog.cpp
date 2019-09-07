@@ -67,6 +67,16 @@ ConsoleSettingsDialog::~ConsoleSettingsDialog()
     ui = NULL;
 }
 
+int ConsoleSettingsDialog::getAutoWrapColumn()
+{
+    return ui->autoWrapSpinBox->value();
+}
+
+void ConsoleSettingsDialog::setAutoWrapColumn(int autoWrapColumn)
+{
+    ui->autoWrapSpinBox->setValue(autoWrapColumn);
+}
+
 QString ConsoleSettingsDialog::getLineEndingTx()
 {
     QString lineEndingTx;

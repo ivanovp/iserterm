@@ -57,12 +57,16 @@ Console::Console(QWidget *parent)
     , m_hexWrap(16)
     , m_lineEndingRx("\r\n")
     , m_lineEndingTx("\r")
-    , m_dataSizeLimit(1 * 1024 * 1024) /* 1 MiB by default */
+    , m_dataSizeLimit_bytes(1 * 1024 * 1024) /* 1 MiB by default */
+    , m_dataSizeHysteresis_percent(10) /* 10 % by default */
+    , m_autoWrapColumn(80)  /* automatically wrap text after 80 characters */
+    , m_noLineEndingCntr(0)
     , m_timestampFormatString("HH:mm:ss.zzz  ")
 {
 #if CURSOR_MODE == 1
     setOverwriteMode(true);
 #endif
+    setLineWrapMode(NoWrap);
     setAcceptDrops(false);
     setUndoRedoEnabled(false);
     document()->setMaximumBlockCount(10000);
@@ -101,33 +105,86 @@ Console::Console(QWidget *parent)
     m_keyMap.insert(Qt::Key_A | Qt::ControlModifier,        KeyMap(true, ""));
 }
 
-void Console::putData(const QByteArray &data)
+void Console::putData(const QByteArray &dataRaw)
 {
+    int i;
+    int j;
+    bool found;
+    int length = m_lineEndingRx.length();
+    QByteArray data;
+
+    if (m_autoWrapColumn > 0)
+    {
+        for (i = 0; i < dataRaw.length(); i++)
+        {
+            /* Check if any of the line ending chars found in the buffer */
+            found = false;
+            for (j = 0; j < length; j++)
+            {
+                if (dataRaw[i] == m_lineEndingRx[j])
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                m_noLineEndingCntr = 0u;
+            }
+            else
+            {
+                m_noLineEndingCntr++;
+            }
+            if (m_noLineEndingCntr > m_autoWrapColumn)
+            {
+                /* No line ending found, wrap the line! */
+                data += m_lineEndingRx;
+                m_noLineEndingCntr = 0u;
+            }
+            data += dataRaw[i];
+        }
+    }
+    else
+    {
+        /* Auto wrap disabled, copy buffer */
+        data = dataRaw;
+    }
+
     if (m_updateEnabled)
     {
         QScrollBar *bar = verticalScrollBar();
         /* Check if slider is scrolled to down */
         bool scrollToEnd = bar->sliderPosition() == bar->maximum();
 
-        appendDataToConsole (data, scrollToEnd);
+        appendDataToConsole (data, dataRaw, scrollToEnd);
     }
 
     m_data.append(data);
-    if (m_data.length () > m_dataSizeLimit)
+    qDebug() << "m_data.len" << m_data.length();
+    if (m_data.length () > m_dataSizeLimit_bytes)
     {
         /* Remove unwanted bytes */
         /* / 10 ---> 10 percent histeresys TODO configurable histeresys? */
-        m_data.remove (0, m_data.length () - m_dataSizeLimit - m_dataSizeLimit / 10);
+        m_data.remove (0, m_data.length () - m_dataSizeLimit_bytes + m_dataSizeLimit_bytes / m_dataSizeHysteresis_percent);
+    }
+
+    m_dataRaw.append(dataRaw);
+    qDebug() << "m_dataRaw.len" << m_dataRaw.length();
+    if (m_dataRaw.length () > m_dataSizeLimit_bytes)
+    {
+        /* Remove unwanted bytes */
+        /* / 10 ---> 10 percent histeresys TODO configurable histeresys? */
+        m_dataRaw.remove (0, m_dataRaw.length () - m_dataSizeLimit_bytes + m_dataSizeLimit_bytes / m_dataSizeHysteresis_percent);
     }
 
     QByteArray data2 = data;
     addTimestamp(data2);
     m_dataTimestamp.append(data2);
-    if (m_dataTimestamp.length () > m_dataSizeLimit)
+    if (m_dataTimestamp.length () > m_dataSizeLimit_bytes)
     {
         /* Remove unwanted bytes */
         /* / 10 ---> 10 percent histeresys TODO configurable histeresys? */
-        m_dataTimestamp.remove (0, m_dataTimestamp.length () - m_dataSizeLimit - m_dataSizeLimit / 10);
+        m_dataTimestamp.remove (0, m_dataTimestamp.length () - m_dataSizeLimit_bytes + m_dataSizeLimit_bytes / m_dataSizeHysteresis_percent);
     }
 }
 
@@ -240,6 +297,16 @@ void Console::setDisplayHexValuesEnabled(bool displayHexValuesEnabled)
     }
 }
 
+int Console::getAutoWrapColumn() const
+{
+    return m_autoWrapColumn;
+}
+
+void Console::setAutoWrapColumn(int autoWrapColumn)
+{
+    m_autoWrapColumn = autoWrapColumn;
+}
+
 bool Console::isDisplayTimestampEnabled() const
 {
     return m_displayTimestampEnabled;
@@ -256,12 +323,12 @@ void Console::setDisplayTimestampEnabled(bool displayTimestampEnabled)
 
 int Console::getDataSizeLimit() const
 {
-    return m_dataSizeLimit;
+    return m_dataSizeLimit_bytes;
 }
 
-void Console::setDataSizeLimit(int dataSizeLimit)
+void Console::setDataSizeLimit(int dataSizeLimit_bytes)
 {
-    m_dataSizeLimit = dataSizeLimit;
+    m_dataSizeLimit_bytes = dataSizeLimit_bytes;
 }
 
 int Console::getDisplaySize() const
@@ -388,11 +455,12 @@ void Console::contextMenuEvent(QContextMenuEvent *e)
  * @brief Console::appendDataToConsole
  * Append serial data to console document.
  *
- * @param data Data to append.
+ * @param data    Data to append (for ASCII view).
+ * @param rawData Data to append (for hexadecimal view).
  * @param scrollToEnd Scroll to end of document.
  * @param rebuild Rebuild whole text document.
  */
-void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool rebuild)
+void Console::appendDataToConsole(const QByteArray &data, const QByteArray &dataRaw, bool scrollToEnd, bool rebuild)
 {
 #if CURSOR_MODE == 0
     moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
@@ -416,7 +484,7 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
         if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
         {
             /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
-            data2.replace (QString (m_lineEndingRx[0]), QByteArray());
+            data2.replace (QString ('\r'), QByteArray());
         }
         if (data2.contains (BACKSPACE))
         {
@@ -453,11 +521,11 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
     else if (rebuild)
     {
         /* Hexadecimal display mode, rebuild console */
-        insertPlainText (dumpBuf (data, m_hexWrap));
+        insertPlainText (dumpBuf (dataRaw, m_hexWrap));
     }
     else
     {
-        int size = m_data.size ();
+        int size = m_dataRaw.size ();
         int mod = size % m_hexWrap;
 
         /* Hexadecimal display mode */
@@ -474,8 +542,8 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
 
         /* Get data which was in last line */
         QByteArray data2;
-        data2 = m_data.right (mod);
-        data2.append (data);
+        data2 = m_dataRaw.right (mod);
+        data2.append (dataRaw);
 
         insertPlainText (dumpBuf (data2, m_hexWrap));
     }
@@ -499,13 +567,13 @@ void Console::appendDataToConsole(const QByteArray &data, bool scrollToEnd, bool
 void Console::rebuildConsole()
 {
     QPlainTextEdit::clear();
-    if (m_displayTimestampEnabled)
+    if (!m_displayHexValuesEnabled && m_displayTimestampEnabled)
     {
-        appendDataToConsole (m_dataTimestamp, true, true);
+        appendDataToConsole (m_dataTimestamp, m_dataRaw, true, true);
     }
     else
     {
-        appendDataToConsole (m_data, true, true);
+        appendDataToConsole (m_data, m_dataRaw, true, true);
     }
 }
 

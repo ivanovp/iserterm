@@ -23,6 +23,9 @@ public:
     explicit ConsoleSettingsDialog(QWidget *parent = 0);
     ~ConsoleSettingsDialog();
 
+    int getAutoWrapColumn();
+    void setAutoWrapColumn(int autoWrapColumn);
+
     QString getLineEndingTx();
     void setLineEndingTx(const QString& lineEndingTx);
 

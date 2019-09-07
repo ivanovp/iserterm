@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sendLineEdit->completer()->setCaseSensitivity(static_cast<Qt::CaseSensitivity>(settings.value("completion/caseSensitivity").toInt()));
     ui->sendLineEdit->view()->installEventFilter(evfilter);
     ui->eolCheckBox->setChecked(settings.value("console/eolCheckBox").toBool());
+    m_console->setAutoWrapColumn (settings.value("serial/autoWrapColumn", m_console->getAutoWrapColumn()).toInt ());
     m_console->setLineEndingRx (settings.value("serial/lineEndingRx", m_console->getLineEndingRx ()).toString ());
     m_console->setLineEndingTx (settings.value("serial/lineEndingTx", m_console->getLineEndingTx ()).toString ());
     m_console->setDataSizeLimit (settings.value("serial/dataSizeLimit", m_console->getDataSizeLimit ()).toInt ());
@@ -148,7 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
-    m_serialThread->start (QThread::LowPriority);
+    m_serialThread->start (QThread::NormalPriority);
 //    m_serialSettingsDialog = new SettingsDialog;
 
     ui->actionLocal_echo->setChecked(settings.value("serial/localEchoEnabled", true).toBool());
@@ -182,7 +183,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
-//    MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
+#if USE_UPDATE_TIMER == 0
+    MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
+#endif
     MY_ASSERT(connect(m_serialThread, SIGNAL(progress(QString,int)), this, SLOT(serialProgress(QString,int))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(finish()), this, SLOT(serialFinish())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(pinoutSignalsChanged(QSerialPort::PinoutSignals)),
@@ -192,12 +195,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     MY_ASSERT(connect(m_abortButton, SIGNAL(pressed()), m_serialThread, SLOT(abortSend())));
 
+#if USE_UPDATE_TIMER
     /* Timer is used to prevent flooding of console with data */
     m_updateTimer.setSingleShot(false);
     m_updateTimer.setInterval(100); /* FIXME this could be configurable */
     m_updateTimer.start();
 
     MY_ASSERT(connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(readData())));
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -418,7 +423,7 @@ void MainWindow::about()
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "Git version %5.\n"
                           "RS-232 serial terminal software based on Simple Terminal example.\n"
-                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2018\n"
+                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2019\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"
@@ -604,6 +609,7 @@ void MainWindow::on_actionConfigure_console_triggered()
     QSettings settings;
 
     // Tab1
+    dialog->setAutoWrapColumn(m_console->getAutoWrapColumn());
     dialog->setLineEndingRx(m_console->getLineEndingRx ());
     dialog->setLineEndingTx(m_console->getLineEndingTx ());
     dialog->setDataBufferSize(m_console->getDataSizeLimit () >> 20);
@@ -631,6 +637,7 @@ void MainWindow::on_actionConfigure_console_triggered()
 
     if (result == ConsoleSettingsDialog::Accepted)
     {
+        int autoWrapColumn = dialog->getAutoWrapColumn();
         QString lineEndingRx = dialog->getLineEndingRx();
         QString lineEndingTx = dialog->getLineEndingTx();
         int dataSizeLimit = dialog->getDataBufferSize() << 20;
@@ -648,6 +655,7 @@ void MainWindow::on_actionConfigure_console_triggered()
             settings.setValue(QString("serial/customText%1").arg(i + 1), m_customTexts[i]);
             settings.setValue(QString("serial/customText%1Enabled").arg(i + 1), m_customTextsEnabled[i]);
         }
+        m_console->setAutoWrapColumn(autoWrapColumn);
         m_console->setLineEndingRx(lineEndingRx);
         m_console->setLineEndingTx(lineEndingTx);
         m_console->setDataSizeLimit(dataSizeLimit);
@@ -658,6 +666,7 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
         ui->sendLineEdit->completer()->setCompletionMode(dialog->getCompletionMode());
         ui->sendLineEdit->completer()->setCaseSensitivity(dialog->getCompletionCaseSensitivity());
+        settings.setValue("serial/autoWrapColumn", autoWrapColumn);
         settings.setValue("serial/lineEndingRx", lineEndingRx);
         settings.setValue("serial/lineEndingTx", lineEndingTx);
         settings.setValue("serial/dataSizeLimit", dataSizeLimit);

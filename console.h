@@ -56,7 +56,7 @@ signals:
 public:
     explicit Console(QWidget *parent = 0);
 
-    void putData(const QByteArray &data);
+    void putData(const QByteArray &dataRaw);
 
     bool isLocalEchoEnabled() const;
     void setLocalEchoEnabled(bool localEchoEnabled = true);
@@ -65,7 +65,7 @@ public:
     void setUpdateEnabled(bool updateEnabled = true);
 
     int getDataSizeLimit() const;
-    void setDataSizeLimit(int dataSizeLimit);
+    void setDataSizeLimit(int dataSizeLimit_bytes);
 
     int getDisplaySize() const;
     void setDisplaySize(int displaySize);
@@ -78,6 +78,9 @@ public:
 
     bool isDisplayHexValuesEnabled() const;
     void setDisplayHexValuesEnabled(bool displayHexValues = true);
+
+    int getAutoWrapColumn() const;
+    void setAutoWrapColumn(int autoWrapColumn);
 
     QString getLineEndingRx() const;
     void setLineEndingRx(const QString &lineEndingRx);
@@ -105,7 +108,7 @@ public:
 private:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);
-    void appendDataToConsole(const QByteArray &data, bool scrollToEnd = true, bool rebuild = false);
+    void appendDataToConsole(const QByteArray &data, const QByteArray &dataRaw, bool scrollToEnd = true, bool rebuild = false);
     void rebuildConsole();
     QString dumpBuf(const QByteArray& buf, int hexWrap);
     void addTimestamp(QByteArray& buf);
@@ -134,9 +137,13 @@ private:
      * - hexadecimal
      * Adding colors to timestamp could possible...
      */
-    QByteArray m_data;           /**< Raw serial data */
-    QByteArray m_dataTimestamp;  /**< Raw serial data with timestamp */
-    int m_dataSizeLimit;
+    QByteArray m_data;          /**< Serial data for ASCII view */
+    QByteArray m_dataRaw;       /**< Raw serial data for hexadecimal view */
+    QByteArray m_dataTimestamp; /**< Serial data with timestamp */
+    int m_dataSizeLimit_bytes;
+    int m_dataSizeHysteresis_percent;
+    int m_autoWrapColumn;       /**< Automatically wrap text after m_autoWrapColumn characters */
+    int m_noLineEndingCntr;     /**< Distance from last line ending character (for auto wrap) */
     QString m_timestampFormatString;
 #if CURSOR_MODE == 1
     QCursor m_cursor;

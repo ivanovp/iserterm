@@ -5,7 +5,7 @@
 
 #define VER_PRODUCT_MAJOR           0
 #define VER_PRODUCT_MINOR           1
-#define VER_PRODUCT_RELEASE         14
+#define VER_PRODUCT_RELEASE         15
 
 #ifdef QT_DEBUG
 #define VER_PRODUCT_BUILD           99
@@ -26,7 +26,7 @@
 #define VER_PRODUCTNAME_STR         "iSerTerm" DEBUG_STR
 #define VER_FILEDESCRIPTION_STR     VER_PRODUCTNAME_STR
 #define VER_INTERNALNAME_STR        VER_PRODUCTNAME_STR
-#define VER_LEGALCOPYRIGHT_STR      "Copyright (c) 2015-2018 Peter Ivanov"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright (c) 2015-2019 Peter Ivanov"
 #define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "iSerTerm"

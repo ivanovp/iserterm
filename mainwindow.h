@@ -50,6 +50,8 @@
 #include "multivalidator.h"
 #include "settingsdialog.h"
 
+#define USE_UPDATE_TIMER    0
+
 QT_BEGIN_NAMESPACE
 
 namespace Ui {
@@ -145,7 +147,9 @@ private:
     Multistring m_sendLine;
     MultiValidator * m_multivalidator;
     QStringList m_sendLineHistories[4]; /**< History for following modes: ASCII, hexadecimal, decimal, binary */
+#if USE_UPDATE_TIMER
     QTimer      m_updateTimer;          /**< Console update timer */
+#endif
 };
 
 #endif // MAINWINDOW_H
