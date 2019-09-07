@@ -182,7 +182,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
-    MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
+//    MY_ASSERT(connect(m_serialThread, SIGNAL(readyRead()), this, SLOT(readData())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(progress(QString,int)), this, SLOT(serialProgress(QString,int))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(finish()), this, SLOT(serialFinish())));
     MY_ASSERT(connect(m_serialThread, SIGNAL(pinoutSignalsChanged(QSerialPort::PinoutSignals)),
@@ -193,8 +193,9 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(m_abortButton, SIGNAL(pressed()), m_serialThread, SLOT(abortSend())));
 
     /* Timer is used to prevent flooding of console with data */
-    m_updateTimer.setSingleShot(true);
+    m_updateTimer.setSingleShot(false);
     m_updateTimer.setInterval(100); /* FIXME this could be configurable */
+    m_updateTimer.start();
 
     MY_ASSERT(connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(readData())));
 }
@@ -437,15 +438,16 @@ void MainWindow::writeData(const QByteArray &data)
 void MainWindow::readData()
 {
     /* Check if last data chunk was received within time interval (100 ms) */
-    if (!m_updateTimer.isActive())
+//    if (!m_updateTimer.isActive())
     {
       QByteArray data = m_serialThread->readAll();
       if (data.length())
       {
-        m_updateTimer.start();
+        //m_updateTimer.start(); // FIXME
         /* Receive serial data and show on console */
         m_console->putData(data);
       }
+//      m_updateTimer.start(); // FIXME this should be in the 'if'
     }
 }
 
