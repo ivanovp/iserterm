@@ -74,6 +74,9 @@
           <property name="editable">
            <bool>true</bool>
           </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+          </property>
          </widget>
         </item>
         <item>
@@ -168,7 +171,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
