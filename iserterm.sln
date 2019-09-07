@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iserterm", "iserterm.vcxproj", "{274FDF7C-E5D7-314D-B02D-97B10D1E93A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{274FDF7C-E5D7-314D-B02D-97B10D1E93A3}.Debug|x64.ActiveCfg = Debug|x64
+		{274FDF7C-E5D7-314D-B02D-97B10D1E93A3}.Debug|x64.Build.0 = Debug|x64
+		{274FDF7C-E5D7-314D-B02D-97B10D1E93A3}.Release|x64.ActiveCfg = Release|x64
+		{274FDF7C-E5D7-314D-B02D-97B10D1E93A3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0570FFC0-CA5F-4F17-B682-E797F4247831}
+	EndGlobalSection
+EndGlobal

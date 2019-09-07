@@ -8,6 +8,7 @@
 #include "consolesettingsdialog.h"
 #include "ui_consolesettingsdialog.h"
 #include "multivalidator.h"
+#include "common.h"
 
 #include <QDebug>
 #include <QLineEdit>

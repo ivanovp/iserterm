@@ -5,4 +5,9 @@ moc_*.cpp
 moc_*.h
 *.pro.user
 *.pro.user*
-
+.vs/
+debug/
+release/
+x64/
+*.user
+UpgradeLog*.htm

@@ -49,8 +49,13 @@
 #include "multistring.h"
 #include "multivalidator.h"
 #include "settingsdialog.h"
+#include "common.h"
 
+//#if WINDOWS
+//#define USE_UPDATE_TIMER    1
+//#else
 #define USE_UPDATE_TIMER    0
+//#endif
 
 QT_BEGIN_NAMESPACE
 

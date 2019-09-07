@@ -26,7 +26,11 @@ void MultiValidator::fixup(QString &input) const
         case Multistring::Hexadecimal:
             foreach (QChar ch, input)
             {
+#ifdef __GNUC__
                 if (std::isxdigit(ch.toLatin1()))
+#else
+                if (isxdigit(ch.toLatin1()))
+#endif
                 {
                     if (index != 0 && (index & 1) == 0)
                     {
@@ -42,7 +46,11 @@ void MultiValidator::fixup(QString &input) const
         case Multistring::Decimal:
             foreach (QChar ch, input)
             {
+#ifdef __GNUC__
                 if (std::isdigit(ch.toLatin1()))
+#else
+                if (isdigit(ch.toLatin1()))
+#endif
                 {
                     if (index != 0 && (index % 3) == 0)
                     {

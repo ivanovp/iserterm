@@ -10,6 +10,10 @@
 
 #ifdef _MSC_VER
 #define __PRETTY_FUNCTION__ __FUNCTION__
+#define WINDOWS           1
+#endif
+#ifdef __WIN32__
+#define WINDOWS           1
 #endif
 
 #define TOSTR(s)          XSTR(s)

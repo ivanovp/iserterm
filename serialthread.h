@@ -12,6 +12,12 @@
 #include <QWaitCondition>
 #include <QSerialPort>
 
+//#if WINDOWS
+//#define ALT_MODE  1
+//#else
+#define ALT_MODE  0
+//#endif
+
 /**
  * @brief The SerialThread class
  * Used to send serial data with delays between bytes.
@@ -86,6 +92,7 @@ public:
     bool isOpen();
 
     QByteArray readAll(int timeout = 0);
+    void recreatePort();
 
 signals:
     void error(QSerialPort::SerialPortError);
@@ -118,7 +125,7 @@ protected:
     QByteArray m_readData;      /**< Received data */
     bool m_running;             /**< Thread is running, used to stop thread gently. */
     QMutex m_mutex;             /**< Mutex to protect m_writeData, m_readData. */
-#ifndef __WIN32__
+#if ALT_MODE == 0
     QWaitCondition m_commandEvent; /**< Thread waits for this condition. */
 #endif
     int m_delayAfterBytes_ms;   /**< After sending a byte this delay will be applied. */
@@ -127,6 +134,12 @@ protected:
      * This is usually a new line charater (CR, LF). */
     QByteArray m_chr;
     QSerialPort::PinoutSignals m_pinoutSignals;
+    qint32 m_baudRateInput;
+    qint32 m_baudRateOutput;
+    QSerialPort::DataBits m_dataBits;
+    QSerialPort::Parity m_parity;
+    QSerialPort::StopBits m_stopBits;
+    QSerialPort::FlowControl m_flowControl;
 };
 
 #endif // SERIALTHREAD_H

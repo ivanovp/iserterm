@@ -23,6 +23,12 @@ SerialThread::SerialThread(QObject *parent)
     , m_writeDataSent(0)
     , m_delayAfterBytes_ms(1)
     , m_delayAfterChr_ms(1)
+    , m_baudRateInput(115200)
+    , m_baudRateOutput(115200)
+    , m_dataBits(QSerialPort::Data8)
+    , m_parity(QSerialPort::NoParity)
+    , m_stopBits(QSerialPort::OneStop)
+    , m_flowControl(QSerialPort::NoFlowControl)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
     qRegisterMetaType<QSerialPort::PinoutSignals>("QSerialPort::PinoutSignals");
@@ -35,31 +41,21 @@ SerialThread::~SerialThread()
     {
         stop(10);
     }
+    delete m_serialPort;
+    m_serialPort = NULL;
 }
-
 
 void SerialThread::run()
 {
     Q_ASSERT(m_serialPort == NULL);
-    m_serialPort = new QSerialPort;
-    Q_ASSERT(m_serialPort);
-
-    if (!m_serialPort)
-    {
-        qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
-        return;
-    }
-
-    MY_ASSERT(connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), this,
-            SIGNAL(error(QSerialPort::SerialPortError))));
-
     m_running = true;
+    recreatePort();
 
     while (m_running)
     {
         m_mutex.lock();
         /* Unlocks mutex and waits for event! */
-#ifdef __WIN32__
+#if ALT_MODE
         if (m_running && m_command != CMD_undefined)
 #else
         if (m_running && m_commandEvent.wait(&m_mutex, 10))
@@ -91,6 +87,12 @@ void SerialThread::run()
                 msleep(10);
             }
         }
+#if ALT_MODE
+        else
+        {
+          msleep(10);
+        }
+#endif
         m_mutex.unlock();
     }
     delete m_serialPort;
@@ -107,7 +109,7 @@ void SerialThread::stop(int timeout)
 {
     m_running = false;
     m_command = CMD_stop;
-#ifndef __WIN32__
+#if ALT_MODE == 0
     m_commandEvent.wakeAll();
 #endif
     if (timeout > 0)
@@ -144,7 +146,7 @@ qint64 SerialThread::write(QByteArray data, const QString& lineEnding)
     m_writeData.append(data);
     m_command = CMD_write;
     m_commandParam = 0;
-#ifndef __WIN32__
+#if ALT_MODE == 0
     m_commandEvent.wakeAll();
 #endif
     int length = data.length();
@@ -211,7 +213,7 @@ bool SerialThread::open(QIODevice::OpenMode mode) //Q_DECL_OVERRIDE
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_open;
     m_commandParam = mode;
-#ifndef __WIN32__
+#if ALT_MODE == 0
     m_commandEvent.wakeAll();
 #endif
     return true;
@@ -222,7 +224,7 @@ void SerialThread::close() //Q_DECL_OVERRIDE
     QMutexLocker mutexLocker(&m_mutex);
     m_command = CMD_close;
     m_commandParam = 0;
-#ifndef __WIN32__
+#if ALT_MODE == 0
     m_commandEvent.wakeAll();
 #endif
 }
@@ -230,7 +232,21 @@ void SerialThread::close() //Q_DECL_OVERRIDE
 bool SerialThread::setBaudRate(qint32 baudRate, QSerialPort::Directions directions)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    return m_serialPort->setBaudRate(baudRate, directions);
+    if (directions == QSerialPort::AllDirections)
+    {
+      m_baudRateInput = baudRate;
+      m_baudRateOutput = baudRate;
+    }
+    else if (directions == QSerialPort::Input)
+    {
+      m_baudRateInput = baudRate;
+    }
+    else if (directions == QSerialPort::Output)
+    {
+      m_baudRateOutput = baudRate;
+    }
+    return true;
+//    return m_serialPort->setBaudRate(baudRate, directions);
 }
 
 qint32 SerialThread::baudRate(QSerialPort::Directions directions)
@@ -242,7 +258,9 @@ qint32 SerialThread::baudRate(QSerialPort::Directions directions)
 bool SerialThread::setDataBits(QSerialPort::DataBits dataBits)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    return m_serialPort->setDataBits(dataBits);
+    m_dataBits = dataBits;
+    return true;
+//    return m_serialPort->setDataBits(dataBits);
 }
 
 QSerialPort::DataBits SerialThread::dataBits()
@@ -254,7 +272,9 @@ QSerialPort::DataBits SerialThread::dataBits()
 bool SerialThread::setParity(QSerialPort::Parity parity)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    return m_serialPort->setParity(parity);
+    m_parity = parity;
+    return true;
+//    return m_serialPort->setParity(parity);
 }
 
 QSerialPort::Parity SerialThread::parity()
@@ -295,7 +315,9 @@ QString SerialThread::parityStr()
 bool SerialThread::setStopBits(QSerialPort::StopBits stopBits)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    return m_serialPort->setStopBits(stopBits);
+    m_stopBits = stopBits;
+    return true;
+//    return m_serialPort->setStopBits(stopBits);
 }
 
 QSerialPort::StopBits SerialThread::stopBits()
@@ -307,7 +329,9 @@ QSerialPort::StopBits SerialThread::stopBits()
 bool SerialThread::setFlowControl(QSerialPort::FlowControl flowControl)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    return m_serialPort->setFlowControl(flowControl);
+    m_flowControl = flowControl;
+    return true;
+//    return m_serialPort->setFlowControl(flowControl);
 }
 
 QSerialPort::FlowControl SerialThread::flowControl()
@@ -406,6 +430,27 @@ QByteArray SerialThread::readAll(int timeout)
     return data;
 }
 
+void SerialThread::recreatePort()
+{
+  /* On MingW32/Win7 serial port's handle cannot be reused.
+   * "The handle is invalid" error occurs.
+   */
+  delete m_serialPort;
+  m_serialPort = new QSerialPort;
+  Q_ASSERT(m_serialPort);
+
+  if (!m_serialPort)
+  {
+    qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
+    m_running = false;
+  }
+  else
+  {
+    MY_ASSERT(connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), this,
+                      SIGNAL(error(QSerialPort::SerialPortError))));
+  }
+}
+
 void SerialThread::abortSend()
 {
     qDebug() << __FUNCTION__;
@@ -496,7 +541,28 @@ void SerialThread::processCommand()
     {
         if (!m_serialPort->isOpen())
         {
-            m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            bool isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            if (isOpened)
+            {
+              // Parameters shall be set after open on Qt 5.3!
+#if 0
+              // buggy on Windows 10 with PL2303 (not sure which one is guily)
+              m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
+              m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
+#else
+              m_serialPort->setBaudRate(m_baudRateOutput);
+#endif
+              m_serialPort->setDataBits(m_dataBits);
+              m_serialPort->setParity(m_parity);
+              m_serialPort->setStopBits(m_stopBits);
+              m_serialPort->setFlowControl(m_flowControl);
+            }
+            else
+            {
+              qCritical() << __PRETTY_FUNCTION__ << "cannot open port!";
+              //recreatePort();
+              //m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            }
         }
         m_command = CMD_undefined;
     }
@@ -505,24 +571,8 @@ void SerialThread::processCommand()
         if (m_serialPort->isOpen())
         {
             m_serialPort->close();
-#ifdef __WIN32__
-            /* On MingW32/Win7 serial port's handle cannot be reused.
-             * "The handle is invalid" error occurs.
-             */
-            delete m_serialPort;
-            m_serialPort = new QSerialPort;
-            Q_ASSERT(m_serialPort);
-
-            if (!m_serialPort)
-            {
-              qCritical() << __PRETTY_FUNCTION__ << "not enough memory";
-              m_running = false;
-            }
-            else
-            {
-              MY_ASSERT(connect(m_serialPort, SIGNAL(error(QSerialPort::SerialPortError)), this,
-                                SIGNAL(error(QSerialPort::SerialPortError))));
-            }
+#if WINDOWS
+            recreatePort();
 #endif
         }
         m_command = CMD_undefined;

@@ -339,14 +339,13 @@ void MainWindow::openSerialPort()
     QSettings settings;
 
     m_serialThread->setPortName(settings.value ("serial/name").toString());
+    m_serialThread->setBaudRate(settings.value ("serial/baudRate", 115200).toInt());
+    m_serialThread->setDataBits(static_cast<QSerialPort::DataBits>(settings.value ("serial/dataBits", QSerialPort::Data8).toInt()));
+    m_serialThread->setParity(static_cast<QSerialPort::Parity>(settings.value ("serial/parity", QSerialPort::NoParity).toInt()));
+    m_serialThread->setStopBits(static_cast<QSerialPort::StopBits>(settings.value ("serial/stopBits", QSerialPort::OneStop).toInt()));
+    m_serialThread->setFlowControl(static_cast<QSerialPort::FlowControl>(settings.value ("serial/flowControl", QSerialPort::NoFlowControl).toInt()));
     if (m_serialThread->open(QIODevice::ReadWrite))
     {
-        // Parameters shall be set after open on Qt 5.3!
-        m_serialThread->setBaudRate(settings.value ("serial/baudRate", 115200).toInt());
-        m_serialThread->setDataBits(static_cast<QSerialPort::DataBits>(settings.value ("serial/dataBits", QSerialPort::Data8).toInt()));
-        m_serialThread->setParity(static_cast<QSerialPort::Parity>(settings.value ("serial/parity", QSerialPort::NoParity).toInt()));
-        m_serialThread->setStopBits(static_cast<QSerialPort::StopBits>(settings.value ("serial/stopBits", QSerialPort::OneStop).toInt()));
-        m_serialThread->setFlowControl(static_cast<QSerialPort::FlowControl>(settings.value ("serial/flowControl", QSerialPort::NoFlowControl).toInt()));
         setEnableConsole(true);
         //console->setLocalEchoEnabled(p.localEchoEnabled);
         m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
