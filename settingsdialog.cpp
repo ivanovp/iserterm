@@ -45,6 +45,7 @@
 #include <QLineEdit>
 #include <QSettings>
 #include <QDebug>
+#include <QMessageBox>
 
 QT_USE_NAMESPACE
 
@@ -56,9 +57,11 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    intValidator = new QIntValidator(0, 4000000, this);
+    m_intValidator = new QIntValidator(0, 4000000, this);
+    QLineEdit *edit = ui->baudRateBox->lineEdit();
+    edit->setValidator(m_intValidator);
 
-    ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
+//    ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
 
 //    MY_ASSERT(connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),
 //            this, SLOT(on_buttonBox_clicked(QAbstractButton*))));
@@ -68,26 +71,48 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 //    MY_ASSERT(connect(ui->removeButton, SIGNAL(clicked()), this, SLOT(on_removeButton_clicked())));
     MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
                       this, SLOT(showPortInfo(int))));
+#if USE_POLICY_CHECK
     MY_ASSERT(connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
                       this, SLOT(checkCustomBaudRatePolicy(int))));
     MY_ASSERT(connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
                       this, SLOT(checkCustomDevicePathPolicy(int))));
+#endif
     MY_ASSERT(connect(&m_timer, SIGNAL(timeout()), this, SLOT(fillPortsInfo())));
+
+    ui->profileListWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
     fillPortsParameters();
     fillPortsInfo();
 
-    QSettings settings;
-    // FIXME custom serial name
-    ui->serialPortInfoListBox->setCurrentText(settings.value ("serial/name").toString());
-    // FIXME custom baud rate!
-    ui->baudRateBox->setCurrentText(settings.value ("serial/baudRate", currentSettings.baudRate).toString());
-    ui->dataBitsBox->setCurrentText(settings.value ("serial/dataBits", currentSettings.dataBits).toString());
-    ui->parityBox->setCurrentText(settings.value ("serial/parity", currentSettings.parity).toString());
-    ui->stopBitsBox->setCurrentText(settings.value ("serial/stopBits", currentSettings.stopBits).toString());
-    ui->flowControlBox->setCurrentText(settings.value ("serial/flowControl", currentSettings.flowControl).toString());
+    loadSettings(&m_currentSettings);
+    settings2ui(&m_currentSettings);
 
-    updateSettings();
+    QListWidgetItem *item = new QListWidgetItem(tr("Current"));
+    /* Name of default item is not editable! */
+//    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    settings2item(item, &m_currentSettings);
+    ui->profileListWidget->addItem(item);
+    /* First item is selected */
+    ui->profileListWidget->setCurrentItem(item);
+
+    /* Load profile items */
+    QSettings settings;
+    settings.beginGroup("profile");
+    QStringList profileNames = settings.childGroups();
+    foreach (QString profileName, profileNames)
+    {
+        /* Load settings with the original profile name (with 0x7F in it) */
+        serialSettings_t serialSettings;
+        loadSettings(&serialSettings, profileName);
+        /* Then replace 0x7F to '/', because '/' is the separator... */
+        profileName.replace(REPL_CHAR, SEP_CHAR);
+        qDebug() << "profile" << profileName;
+
+        QListWidgetItem *item = new QListWidgetItem(profileName);
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        settings2item(item, &serialSettings);
+        ui->profileListWidget->addItem(item);
+    }
 
     m_timer.setInterval(1000);
     m_timer.start();
@@ -101,7 +126,7 @@ SettingsDialog::~SettingsDialog()
 
 SettingsDialog::serialSettings_t SettingsDialog::serialSettings() const
 {
-    return currentSettings;
+    return m_currentSettings;
 }
 
 void SettingsDialog::showPortInfo(int idx)
@@ -120,27 +145,63 @@ void SettingsDialog::showPortInfo(int idx)
 
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
-    hide();
-
     if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
     {
-        setResult(Accepted);
-        /* Ok button was pressed */
-        updateSettings();
-        QSettings settings;
-        settings.setValue ("serial/name", currentSettings.name);
-        settings.setValue ("serial/baudRate", currentSettings.baudRate);
-        settings.setValue ("serial/dataBits", currentSettings.dataBits);
-        settings.setValue ("serial/parity", currentSettings.stringParity);
-        settings.setValue ("serial/stopBits", currentSettings.stopBits);
-        settings.setValue ("serial/flowControl", currentSettings.stringFlowControl);
+        bool error = false;
+        /* Check if profile names are not identical */
+        /* Get all items in the profile list */
+        QList<QListWidgetItem*> items = ui->profileListWidget->findItems("*", Qt::MatchWildcard);
+        for (int i = 0; i < items.length() && !error; i++)
+        {
+            for (int j = i; j < items.length() && !error; j++)
+            {
+                if (j != i && items[i]->text() == items[j]->text())
+                {
+                    QMessageBox::critical(this, tr("Identical profile name found"), tr("Profile names shall be different!"));
+                    error = true;
+                }
+            }
+        }
+
+        if (!error)
+        {
+            hide();
+
+            setResult(Accepted);
+            /* Ok button was pressed */
+            ui2settings(&m_currentSettings);
+            settings2item(ui->profileListWidget->currentItem(), &m_currentSettings);
+            saveSettings(&m_currentSettings);
+
+            /* Remove all profiles, otherwise deleted names will not disappear! */
+            QSettings settings;
+            settings.beginGroup("profile");
+            QStringList profileNames = settings.childGroups();
+            foreach (QString profileName, profileNames)
+            {
+                settings.remove(profileName);
+            }
+
+            /* Save profile items */
+            /* Remove current item, it has already saved as m_currentSettings */
+            items.removeFirst();
+            foreach (QListWidgetItem *item, items)
+            {
+                serialSettings_t serialSettings;
+                item2settings(item, &serialSettings);
+                saveSettings(&serialSettings, item->text());
+            }
+        }
     }
     else
     {
+        hide();
+
         setResult(Rejected);
     }
 }
 
+#if USE_POLICY_CHECK
 void SettingsDialog::checkCustomBaudRatePolicy(int idx)
 {
     bool isCustomBaudRate = !ui->baudRateBox->itemData(idx).isValid();
@@ -149,7 +210,7 @@ void SettingsDialog::checkCustomBaudRatePolicy(int idx)
     {
         ui->baudRateBox->clearEditText();
         QLineEdit *edit = ui->baudRateBox->lineEdit();
-        edit->setValidator(intValidator);
+        edit->setValidator(m_intValidator);
     }
 }
 
@@ -162,15 +223,24 @@ void SettingsDialog::checkCustomDevicePathPolicy(int idx)
         ui->serialPortInfoListBox->clearEditText();
     }
 }
+#endif
 
 void SettingsDialog::fillPortsParameters()
 {
+    ui->baudRateBox->addItem(QStringLiteral("1200"), QSerialPort::Baud1200);
+    ui->baudRateBox->addItem(QStringLiteral("2400"), QSerialPort::Baud2400);
+    ui->baudRateBox->addItem(QStringLiteral("4800"), QSerialPort::Baud4800);
     ui->baudRateBox->addItem(QStringLiteral("9600"), QSerialPort::Baud9600);
     ui->baudRateBox->addItem(QStringLiteral("19200"), QSerialPort::Baud19200);
     ui->baudRateBox->addItem(QStringLiteral("38400"), QSerialPort::Baud38400);
     ui->baudRateBox->addItem(QStringLiteral("57600"), QSerialPort::Baud57600);
     ui->baudRateBox->addItem(QStringLiteral("115200"), QSerialPort::Baud115200);
+    /* Non-standard */
+    ui->baudRateBox->addItem(QStringLiteral("200000"), 200000);
+    ui->baudRateBox->addItem(QStringLiteral("250400"), 250400);
+#if USE_POLICY_CHECK
     ui->baudRateBox->addItem(tr("Custom"));
+#endif
 
     ui->dataBitsBox->addItem(QStringLiteral("5"), QSerialPort::Data5);
     ui->dataBitsBox->addItem(QStringLiteral("6"), QSerialPort::Data6);
@@ -257,59 +327,204 @@ void SettingsDialog::fillPortsInfo()
             ui->serialPortInfoListBox->addItem(list.first(), list);
         }
 
+#if USE_POLICY_CHECK
         ui->serialPortInfoListBox->addItem(tr("Custom"));
+#endif
     }
 }
 
 void SettingsDialog::on_profileListWidget_currentItemChanged(QListWidgetItem *item, QListWidgetItem *prevItem)
 {
-    qDebug() << "profile:" << item->text();
+    if (prevItem == NULL)
+    {
+        /* If no item was selected, use default item */
+        prevItem = ui->profileListWidget->item(0);
+    }
+    qDebug() << "old profile:" << prevItem->text() << "new profile:" << item->text();
+    /* Copy settings from UI to m_currentSettings */
+    ui2settings(&m_currentSettings);
+    /* Store m_currentSettings to the previous item */
+    settings2item(prevItem, &m_currentSettings);
+    /* Get settings from actual item and copy to m_currentSettings */
+    item2settings(item, &m_currentSettings);
+    /* Display current settings on UI */
+    settings2ui(&m_currentSettings);
 }
 
 void SettingsDialog::on_addButton_clicked()
 {
-    ui->profileListWidget->addItem(tr("New"));
+    QString name = tr("Copy of ") + ui->profileListWidget->currentItem()->text();
+    QListWidgetItem *item = new QListWidgetItem(name);
+    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    settings2item(item, &m_currentSettings);
+    ui->profileListWidget->addItem(item);
 }
 
 void SettingsDialog::on_removeButton_clicked()
 {
+    int currentRow = ui->profileListWidget->currentRow();
+
     /* At least one item should remain in the list */
-    if (ui->profileListWidget->count() > 1)
+    /* and current setting cannot be removed */
+    if (ui->profileListWidget->count() > 1
+            && currentRow != 0)
     {
-        int currentRow = ui->profileListWidget->currentRow();
         QListWidgetItem *item = ui->profileListWidget->takeItem(currentRow);
         delete item;
     }
 }
 
-void SettingsDialog::updateSettings()
+void SettingsDialog::ui2settings(serialSettings_t *settings)
 {
-    currentSettings.name = ui->serialPortInfoListBox->currentText();
+    settings->name = ui->serialPortInfoListBox->currentText();
 
+#if USE_POLICY_CHECK
     if (ui->baudRateBox->currentIndex() == ui->baudRateBox->count() - 1)
     {
-        currentSettings.baudRate = ui->baudRateBox->currentText().toInt();
+        settings->baudRate = ui->baudRateBox->currentText().toInt();
     }
     else
     {
-        currentSettings.baudRate = static_cast<QSerialPort::BaudRate>(
+        settings->baudRate = static_cast<QSerialPort::BaudRate>(
                     ui->baudRateBox->itemData(ui->baudRateBox->currentIndex()).toInt());
     }
-    currentSettings.stringBaudRate = QString::number(currentSettings.baudRate);
+#else
+    settings->baudRate = ui->baudRateBox->currentText().toInt();
+#endif
+    settings->stringBaudRate = QString::number(settings->baudRate);
 
-    currentSettings.dataBits = static_cast<QSerialPort::DataBits>(
+    settings->dataBits = static_cast<QSerialPort::DataBits>(
                 ui->dataBitsBox->itemData(ui->dataBitsBox->currentIndex()).toInt());
-    currentSettings.stringDataBits = ui->dataBitsBox->currentText();
 
-    currentSettings.parity = static_cast<QSerialPort::Parity>(
+    settings->parity = static_cast<QSerialPort::Parity>(
                 ui->parityBox->itemData(ui->parityBox->currentIndex()).toInt());
-    currentSettings.stringParity = ui->parityBox->currentText();
+    settings->stringParity = ui->parityBox->currentText();
 
-    currentSettings.stopBits = static_cast<QSerialPort::StopBits>(
+    settings->stopBits = static_cast<QSerialPort::StopBits>(
                 ui->stopBitsBox->itemData(ui->stopBitsBox->currentIndex()).toInt());
-    currentSettings.stringStopBits = ui->stopBitsBox->currentText();
+    settings->stringStopBits = ui->stopBitsBox->currentText();
 
-    currentSettings.flowControl = static_cast<QSerialPort::FlowControl>(
+    settings->flowControl = static_cast<QSerialPort::FlowControl>(
                 ui->flowControlBox->itemData(ui->flowControlBox->currentIndex()).toInt());
-    currentSettings.stringFlowControl = ui->flowControlBox->currentText();
+    settings->stringFlowControl = ui->flowControlBox->currentText();
+}
+
+void SettingsDialog::settings2ui(SettingsDialog::serialSettings_t *settings)
+{
+#if USE_POLICY_CHECK
+    ui->serialPortInfoListBox->setCurrentText(settings->name);
+#else
+    ui->serialPortInfoListBox->setEditText(settings->name);
+#endif
+#if USE_POLICY_CHECK
+    ui->baudRateBox->setCurrentText(QString::number(settings->baudRate));
+#else
+    ui->baudRateBox->setEditText(QString::number(settings->baudRate));
+#endif
+    ui->dataBitsBox->setCurrentText(QString::number(settings->dataBits));
+    ui->parityBox->setCurrentText(settings->stringParity);
+    ui->stopBitsBox->setCurrentText(settings->stringStopBits);
+    ui->flowControlBox->setCurrentText(settings->stringFlowControl);
+}
+
+/**
+ * @brief SettingsDialog::settings2item Copy serial port settings from
+ * serialSettings_t to QListWidgetItem.
+ * @param item      Destination item
+ * @param settings  Source of settings.
+ */
+void SettingsDialog::settings2item(QListWidgetItem *item, SettingsDialog::serialSettings_t *settings)
+{
+    item->setData(role_name, settings->name);
+    item->setData(role_baudRate, settings->baudRate);
+    item->setData(role_dataBits, settings->dataBits);
+    item->setData(role_parity, settings->parity);
+    item->setData(role_stringParity, settings->stringParity);
+    item->setData(role_stopBits, settings->stopBits);
+    item->setData(role_stringStopBits, settings->stringStopBits);
+    item->setData(role_flowControl, settings->flowControl);
+    item->setData(role_stringFlowControl, settings->stringFlowControl);
+}
+
+/**
+ * @brief SettingsDialog::item2settings Copy serial port settings from
+ * QListWidgetItem to serialSettings_t.
+ * @param item      Source item.
+ * @param settings  Destination of settings.
+ */
+void SettingsDialog::item2settings(QListWidgetItem *item, SettingsDialog::serialSettings_t *settings)
+{
+    settings->name = item->data(role_name).toString();
+    settings->baudRate = item->data(role_baudRate).toInt();
+    settings->dataBits = static_cast<QSerialPort::DataBits> (item->data(role_dataBits).toInt());
+    settings->parity = static_cast<QSerialPort::Parity> (item->data(role_parity).toInt());
+    settings->stringParity = item->data(role_stringParity).toString();
+    settings->stopBits = static_cast<QSerialPort::StopBits> (item->data(role_stopBits).toInt());
+    settings->stringStopBits = item->data(role_stringStopBits).toString();
+    settings->flowControl = static_cast<QSerialPort::FlowControl> (item->data(role_flowControl).toInt());
+    settings->stringFlowControl = item->data(role_stringFlowControl).toString();
+}
+
+void SettingsDialog::loadSettings(SettingsDialog::serialSettings_t *serialSettings, QString profileName)
+{
+    QSettings settings;
+    QString path = "serial/";
+
+    if (!profileName.isEmpty())
+    {
+        path = "profile/" + profileName + "/";
+        qDebug() << __PRETTY_FUNCTION__ << "### profile" << profileName;
+    }
+
+    serialSettings->name = settings.value (path + "name").toString();
+    serialSettings->baudRate = settings.value (path + "baudRate", m_currentSettings.baudRate).toInt();
+    serialSettings->dataBits = static_cast<QSerialPort::DataBits> (settings.value (path + "dataBits", m_currentSettings.dataBits).toInt());
+    serialSettings->parity = static_cast<QSerialPort::Parity> (settings.value (path + "parity", m_currentSettings.parity).toInt());
+    serialSettings->stringParity = settings.value (path + "stringParity", m_currentSettings.stringParity).toString();
+    serialSettings->stopBits = static_cast<QSerialPort::StopBits> (settings.value (path + "stopBits", m_currentSettings.stopBits).toInt());
+    serialSettings->stringStopBits = settings.value (path + "stringStopBits", m_currentSettings.stringStopBits).toString();
+    serialSettings->flowControl = static_cast<QSerialPort::FlowControl> (settings.value (path + "flowControl", m_currentSettings.flowControl).toInt());
+    serialSettings->stringFlowControl = settings.value (path + "stringFlowControl", m_currentSettings.stringFlowControl).toString();
+    qDebug() << __PRETTY_FUNCTION__ << "name" << serialSettings->name;
+    qDebug() << __PRETTY_FUNCTION__ << "baudRate" << serialSettings->baudRate;
+    qDebug() << __PRETTY_FUNCTION__ << "dataBits" << serialSettings->dataBits;
+    qDebug() << __PRETTY_FUNCTION__ << "parity" << serialSettings->parity;
+    qDebug() << __PRETTY_FUNCTION__ << "stringParity" << serialSettings->stringParity;
+    qDebug() << __PRETTY_FUNCTION__ << "stopBits" << serialSettings->stopBits;
+    qDebug() << __PRETTY_FUNCTION__ << "stringStopBits" << serialSettings->stringStopBits;
+    qDebug() << __PRETTY_FUNCTION__ << "flowControl" << serialSettings->flowControl;
+    qDebug() << __PRETTY_FUNCTION__ << "stringFlowControl" << serialSettings->stringFlowControl;
+}
+
+void SettingsDialog::saveSettings(SettingsDialog::serialSettings_t *serialSettings, QString profileName)
+{
+    QSettings settings;
+    QString path = "serial/";
+
+    if (!profileName.isEmpty())
+    {
+        /* Replace '/' to 0x7F, because '/' is the separator... */
+        profileName.replace(SEP_CHAR, REPL_CHAR);
+        path = "profile/" + profileName + "/";
+        qDebug() << __PRETTY_FUNCTION__ << "### profile" << profileName;
+    }
+
+    settings.setValue (path + "name", serialSettings->name);
+    settings.setValue (path + "baudRate", serialSettings->baudRate);
+    settings.setValue (path + "dataBits", serialSettings->dataBits);
+    settings.setValue (path + "parity", serialSettings->parity);
+    settings.setValue (path + "stringParity", serialSettings->stringParity);
+    settings.setValue (path + "stopBits", serialSettings->stopBits);
+    settings.setValue (path + "stringStopBits", serialSettings->stringStopBits);
+    settings.setValue (path + "flowControl", serialSettings->flowControl);
+    settings.setValue (path + "stringFlowControl", serialSettings->stringFlowControl);
+    qDebug() << __PRETTY_FUNCTION__ << "name" << serialSettings->name;
+    qDebug() << __PRETTY_FUNCTION__ << "baudRate" << serialSettings->baudRate;
+    qDebug() << __PRETTY_FUNCTION__ << "dataBits" << serialSettings->dataBits;
+    qDebug() << __PRETTY_FUNCTION__ << "parity" << serialSettings->parity;
+    qDebug() << __PRETTY_FUNCTION__ << "stringParity" << serialSettings->stringParity;
+    qDebug() << __PRETTY_FUNCTION__ << "stopBits" << serialSettings->stopBits;
+    qDebug() << __PRETTY_FUNCTION__ << "stringStopBits" << serialSettings->stringStopBits;
+    qDebug() << __PRETTY_FUNCTION__ << "flowControl" << serialSettings->flowControl;
+    qDebug() << __PRETTY_FUNCTION__ << "stringFlowControl" << serialSettings->stringFlowControl;
 }

@@ -34,4 +34,9 @@
 #define CR                13u
 #define LF                10u
 
+/* '/' shall be replaced with 0x7F when settings saved (registry/config) */
+#define SEP_CHAR          '/'
+#define REPL_CHAR         0x7Fu
+
+
 #endif /* COMMON_H */

@@ -46,6 +46,12 @@
 #include <QTimer>
 #include <QListWidgetItem>
 
+/* 1: "Custom" text will appear at end of list of baud rate and serial port
+ *    (unfinished! not working properly)
+ * 0: combo box is editable (working, finished)
+ */
+#define USE_POLICY_CHECK    0
+
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +75,6 @@ public:
         qint32 baudRate;
         QString stringBaudRate;
         QSerialPort::DataBits dataBits;
-        QString stringDataBits;
         QSerialPort::Parity parity;
         QString stringParity;
         QSerialPort::StopBits stopBits;
@@ -86,8 +91,10 @@ public:
 private slots:
     void showPortInfo(int idx);
     void on_buttonBox_clicked(QAbstractButton*);
+#if USE_POLICY_CHECK
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
+#endif
     void fillPortsInfo();
     void on_profileListWidget_currentItemChanged(QListWidgetItem *item, QListWidgetItem *prevItem);
     void on_addButton_clicked();
@@ -95,14 +102,33 @@ private slots:
 
 private:
     void fillPortsParameters();
-    void updateSettings();
+    void ui2settings(serialSettings_t *settings);
+    void settings2ui(serialSettings_t *settings);
+    void settings2item(QListWidgetItem *item, serialSettings_t *settings);
+    void item2settings(QListWidgetItem *item, serialSettings_t *settings);
+    void loadSettings(serialSettings_t *settings, QString profileName = "");
+    void saveSettings(serialSettings_t *settings, QString profileName = "");
 
 private:
-    Ui::SettingsDialog *ui;
-    serialSettings_t currentSettings;
-    QIntValidator *intValidator;
-    QTimer m_timer;
-    QList<QSerialPortInfo> m_availablePorts;
+    Ui::SettingsDialog    * ui;
+    serialSettings_t        m_currentSettings;
+    serialSettings_t      * m_profiles;
+    QIntValidator         * m_intValidator;
+    QTimer                  m_timer;
+    QList<QSerialPortInfo>  m_availablePorts;
+
+    enum
+    {
+        role_name = Qt::UserRole,
+        role_baudRate,
+        role_dataBits,
+        role_parity,
+        role_stringParity,
+        role_stopBits,
+        role_stringStopBits,
+        role_flowControl,
+        role_stringFlowControl
+    };
 };
 
 #endif // SETTINGSDIALOG_H

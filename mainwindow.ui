@@ -171,7 +171,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -201,6 +201,7 @@
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
     <addaction name="actionConfigure"/>
+    <addaction name="actionSelectProfile"/>
     <addaction name="separator"/>
     <addaction name="actionLocal_echo"/>
     <addaction name="actionToggle_DTR"/>
@@ -266,6 +267,7 @@
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
    <addaction name="actionConfigure"/>
+   <addaction name="actionSelectProfile"/>
    <addaction name="separator"/>
    <addaction name="actionClear"/>
    <addaction name="actionStop_update"/>
@@ -636,6 +638,21 @@
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="actionSelectProfile">
+   <property name="icon">
+    <iconset resource="iserterm.qrc">
+     <normaloff>:/images/notepad.png</normaloff>:/images/notepad.png</iconset>
+   </property>
+   <property name="text">
+    <string>Select profi&amp;le...</string>
+   </property>
+   <property name="toolTip">
+    <string>Select profile</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>

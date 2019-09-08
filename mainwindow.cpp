@@ -63,6 +63,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QCompleter>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -1103,4 +1104,50 @@ void MainWindow::on_actionFind_triggered()
 void MainWindow::on_actionFind_next_triggered()
 {
     find();
+}
+
+void MainWindow::on_actionSelectProfile_triggered()
+{
+    QSettings settings;
+
+    /* Get name of profiles */
+    settings.beginGroup("profile");
+    QStringList settingsProfileNames = settings.childGroups();
+    QStringList profileNames;
+    foreach (QString profileName, settingsProfileNames)
+    {
+        /* Replace 0x7F to '/', because '/' is the separator... */
+        profileName.replace(REPL_CHAR, SEP_CHAR);
+        profileNames.append(profileName);
+    }
+    settings.endGroup();
+
+    bool ok;
+    /* TODO instead of InputDialog QListWidget should be used... */
+    QString profileName = QInputDialog::getItem(this, tr("Select profile"), tr("Profile:"), profileNames, 0, false, &ok);
+
+    if (ok)
+    {
+        /* Change back '/' to 0x7F for reading the settings */
+        profileName.replace(SEP_CHAR, REPL_CHAR);
+
+        /* Copy profile's settings to current serial port settings */
+        QString path = "profile/" + profileName + "/";
+        settings.setValue("serial/name", settings.value(path + "name"));
+        settings.setValue("serial/baudRate", settings.value(path + "baudRate"));
+        settings.setValue("serial/dataBits", settings.value(path + "dataBits"));
+        settings.setValue("serial/parity", settings.value(path + "parity"));
+        settings.setValue("serial/stringParity", settings.value(path + "stringParity"));
+        settings.setValue("serial/stopBits", settings.value(path + "stopBits"));
+        settings.setValue("serial/stringStopBits", settings.value(path + "stringStopBits"));
+        settings.setValue("serial/flowControl", settings.value(path + "flowControl"));
+        settings.setValue("serial/stringFlowControl", settings.value(path + "stringFlowControl"));
+
+        if (m_serialThread->isOpen())
+        {
+            /* Post has already opened, re-open with the new settings */
+            m_serialThread->close();
+            openSerialPort();
+        }
+    }
 }

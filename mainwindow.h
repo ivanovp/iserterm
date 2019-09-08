@@ -140,6 +140,8 @@ private slots:
     void on_actionFind_triggered();
     void on_actionFind_next_triggered();
 
+    void on_actionSelectProfile_triggered();
+
 private:
     Ui::MainWindow *ui;
     Console *m_console;
