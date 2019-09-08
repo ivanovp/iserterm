@@ -479,7 +479,7 @@ void MainWindow::serialPortStatusChanged(bool opened)
 
 void MainWindow::handleError(QSerialPort::SerialPortError error)
 {
-    if (error != QSerialPort::NoError)
+    if (error != QSerialPort::NoError && error != QSerialPort::TimeoutError)
     {
         m_serialError = true;
         m_serialThread->close();
