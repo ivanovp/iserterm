@@ -646,13 +646,13 @@
      <normaloff>:/images/notepad.png</normaloff>:/images/notepad.png</iconset>
    </property>
    <property name="text">
-    <string>Select profi&amp;le...</string>
+    <string>Select pro&amp;file...</string>
    </property>
    <property name="toolTip">
     <string>Select profile</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+F</string>
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

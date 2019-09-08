@@ -20,11 +20,11 @@ bool ShiftDelEventFilter::eventFilter(QObject *obj, QEvent *event)
                 && keyEvent->modifiers() == Qt::ShiftModifier)
         {
             QComboBox *combobox = dynamic_cast<QComboBox *>(obj);
-            qDebug() << "combobox:" << combobox;
+//            qDebug() << "combobox:" << combobox;
             if (!combobox)
             {
                 combobox = dynamic_cast<QComboBox *>(parent());
-                qDebug() << "combobox2:" << combobox;
+//                qDebug() << "combobox2:" << combobox;
             }
             if (combobox)
             {

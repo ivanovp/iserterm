@@ -160,7 +160,7 @@ void Console::putData(const QByteArray &dataRaw)
     }
 
     m_data.append(data);
-    qDebug() << "m_data.len" << m_data.length();
+//    qDebug() << "m_data.len" << m_data.length();
     if (m_data.length () > m_dataSizeLimit_bytes)
     {
         /* Remove unwanted bytes */
@@ -169,7 +169,7 @@ void Console::putData(const QByteArray &dataRaw)
     }
 
     m_dataRaw.append(dataRaw);
-    qDebug() << "m_dataRaw.len" << m_dataRaw.length();
+//    qDebug() << "m_dataRaw.len" << m_dataRaw.length();
     if (m_dataRaw.length () > m_dataSizeLimit_bytes)
     {
         /* Remove unwanted bytes */
@@ -190,7 +190,7 @@ void Console::putData(const QByteArray &dataRaw)
 
 void Console::clear()
 {
-    qDebug() << __PRETTY_FUNCTION__;
+//    qDebug() << __PRETTY_FUNCTION__;
     QPlainTextEdit::clear ();
     m_data.clear ();
     m_dataTimestamp.clear ();

@@ -95,6 +95,8 @@ public:
     void recreatePort();
 
 signals:
+    void portStatusChanged(bool opened);
+    void message(QString message, bool error);
     void error(QSerialPort::SerialPortError);
     void readyRead();
     void progress(QString message, int percent);

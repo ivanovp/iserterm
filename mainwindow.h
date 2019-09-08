@@ -51,11 +51,11 @@
 #include "settingsdialog.h"
 #include "common.h"
 
-//#if WINDOWS
-//#define USE_UPDATE_TIMER    1
-//#else
+#if WINDOWS
+#define USE_UPDATE_TIMER    1
+#else
 #define USE_UPDATE_TIMER    0
-//#endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -94,6 +94,8 @@ private slots:
     void writeData(const QByteArray &data);
     void readData();
 
+    void serialMessage(QString message, bool error);
+    void serialPortStatusChanged(bool opened);
     void handleError(QSerialPort::SerialPortError error);
 
     void on_actionLocal_echo_triggered(bool checked);
@@ -147,6 +149,7 @@ private:
     Console *m_console;
 //    SettingsDialog *m_serialSettingsDialog;
     SerialThread *m_serialThread;
+    bool m_serialError;
     QProgressBar *m_progressBar;
     QPushButton *m_abortButton;
     QVector<QString> m_customTexts;

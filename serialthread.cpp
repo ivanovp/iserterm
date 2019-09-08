@@ -514,6 +514,7 @@ void SerialThread::processCommand()
                 if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
                 {
                     m_mutex.lock();
+//                    m_readData.append(m_serialPort->read(1024));
                     m_readData.append(m_serialPort->readAll());
                     m_mutex.unlock();
                     emit readyRead();
@@ -548,7 +549,9 @@ void SerialThread::processCommand()
             if (isOpened)
             {
               m_serialPort->close();
+              msleep(50);
               recreatePort();
+              msleep(50);
             }
 #endif
             m_serialPort->setPortName(m_portName);
@@ -567,10 +570,12 @@ void SerialThread::processCommand()
               m_serialPort->setParity(m_parity);
               m_serialPort->setStopBits(m_stopBits);
               m_serialPort->setFlowControl(m_flowControl);
+              emit portStatusChanged(true);
             }
             else
             {
-              qCritical() << __PRETTY_FUNCTION__ << "cannot open port!";
+                emit message("Cannot open port!", true);
+                qCritical() << __PRETTY_FUNCTION__ << "cannot open port!";
             }
         }
         m_command = CMD_undefined;
@@ -580,15 +585,18 @@ void SerialThread::processCommand()
         if (m_serialPort->isOpen())
         {
             m_serialPort->close();
+            emit portStatusChanged(false);
         }
         m_command = CMD_undefined;
     }
     else if (m_command == CMD_undefined)
     {
+        emit message("Undefined command!", true);
         qDebug() << __PRETTY_FUNCTION__ << "undefined command";
     }
     else
     {
+        emit message("Unknown command!", true);
         qCritical() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
         Q_ASSERT(0);
     }

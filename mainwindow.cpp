@@ -68,6 +68,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_serialError(false)
 {
     QSettings settings;
 
@@ -182,6 +183,7 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
     MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 
+    MY_ASSERT(connect(m_serialThread, SIGNAL(message(QString,bool)), this, SLOT(serialMessage(QString,bool))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
 #if USE_UPDATE_TIMER == 0
@@ -199,7 +201,7 @@ MainWindow::MainWindow(QWidget *parent)
 #if USE_UPDATE_TIMER
     /* Timer is used to prevent flooding of console with data */
     m_updateTimer.setSingleShot(false);
-    m_updateTimer.setInterval(100); /* FIXME this could be configurable */
+    m_updateTimer.setInterval(50); /* FIXME this could be configurable */
     m_updateTimer.start();
 
     MY_ASSERT(connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(readData())));
@@ -345,26 +347,9 @@ void MainWindow::openSerialPort()
     m_serialThread->setParity(static_cast<QSerialPort::Parity>(settings.value ("serial/parity", QSerialPort::NoParity).toInt()));
     m_serialThread->setStopBits(static_cast<QSerialPort::StopBits>(settings.value ("serial/stopBits", QSerialPort::OneStop).toInt()));
     m_serialThread->setFlowControl(static_cast<QSerialPort::FlowControl>(settings.value ("serial/flowControl", QSerialPort::NoFlowControl).toInt()));
-    if (m_serialThread->open(QIODevice::ReadWrite))
-    {
-        setEnableConsole(true);
-        //console->setLocalEchoEnabled(p.localEchoEnabled);
-        m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
-        ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
-                                   .arg(m_serialThread->portName()).arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits())
-                                   .arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits()).arg(m_serialThread->flowControlStr()));
-        QString title = QString("%1 - %2, %3, %4%5%6, %7").arg(VER_PRODUCTNAME_STR).arg(m_serialThread->portName())
-            .arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits()).arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits())
-            .arg(m_serialThread->flowControlStr());
-        setWindowTitle(title);
-    }
-    else
-    {
-        QMessageBox::critical(this, tr("Error"), m_serialThread->errorString());
-
-        ui->statusBar->showMessage(tr("Open error"));
-    }
-    updateBackgroundColor();
+    m_serialThread->open(QIODevice::ReadWrite);
+    /* serialPortOpened() will triggered if opened successfully */
+    /* serialMessage() will triggered if error occured */
 }
 
 void MainWindow::closeSerialPort(const QString &errorMsg)
@@ -373,17 +358,6 @@ void MainWindow::closeSerialPort(const QString &errorMsg)
     {
         m_serialThread->close();
     }
-    setEnableConsole(false);
-    if (errorMsg.isEmpty())
-    {
-        ui->statusBar->showMessage(tr("Disconnected"));
-    }
-    else
-    {
-        ui->statusBar->showMessage(tr("Disconnected: %1").arg(errorMsg));
-    }
-    setWindowTitle(VER_PRODUCTNAME_STR);
-    updateBackgroundColor();
 }
 
 void MainWindow::updateBackgroundColor()
@@ -456,15 +430,58 @@ void MainWindow::readData()
     }
 }
 
-void MainWindow::handleError(QSerialPort::SerialPortError error)
+void MainWindow::serialMessage(QString message, bool error)
 {
-    if (error == QSerialPort::ResourceError)
+    if (error)
     {
-        closeSerialPort(m_serialThread->errorString());
+        QMessageBox::critical(this, tr("Error"), message);
+        ui->statusBar->showMessage(tr("Error: ") + message);
     }
     else
     {
-//      qDebug() << __PRETTY_FUNCTION__ << error;
+        ui->statusBar->showMessage(message);
+    }
+    updateBackgroundColor();
+}
+
+void MainWindow::serialPortStatusChanged(bool opened)
+{
+    setEnableConsole(opened);
+    if (opened)
+    {
+        //console->setLocalEchoEnabled(p.localEchoEnabled);
+        m_console->setLocalEchoEnabled(ui->actionLocal_echo->isChecked());
+        ui->statusBar->showMessage(tr("Connected to %1: %2, %3%4%5, %6")
+                                   .arg(m_serialThread->portName()).arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits())
+                                   .arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits()).arg(m_serialThread->flowControlStr()));
+        QString title = QString("%1 - %2, %3, %4%5%6, %7").arg(VER_PRODUCTNAME_STR).arg(m_serialThread->portName())
+                .arg(m_serialThread->baudRate()).arg(m_serialThread->dataBits()).arg(m_serialThread->parityStr()[0]).arg(m_serialThread->stopBits())
+                .arg(m_serialThread->flowControlStr());
+        setWindowTitle(title);
+    }
+    else
+    {
+        if (m_serialError)
+        {
+            QString errorMsg = m_serialThread->errorString();
+            ui->statusBar->showMessage(tr("Disconnected: %1").arg(errorMsg));
+        }
+        else
+        {
+            ui->statusBar->showMessage(tr("Disconnected"));
+        }
+        m_serialError = false;
+        setWindowTitle(VER_PRODUCTNAME_STR);
+    }
+    updateBackgroundColor();
+}
+
+void MainWindow::handleError(QSerialPort::SerialPortError error)
+{
+    if (error != QSerialPort::NoError)
+    {
+        m_serialError = true;
+        m_serialThread->close();
     }
 }
 
