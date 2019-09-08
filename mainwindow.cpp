@@ -184,6 +184,7 @@ MainWindow::MainWindow(QWidget *parent)
     MY_ASSERT(connect(ui->actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt())));
 
     MY_ASSERT(connect(m_serialThread, SIGNAL(message(QString,bool)), this, SLOT(serialMessage(QString,bool))));
+    MY_ASSERT(connect(m_serialThread, SIGNAL(portStatusChanged(bool)), this, SLOT(serialPortStatusChanged(bool))));
     MY_ASSERT(connect(m_serialThread, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError))));
 #if USE_UPDATE_TIMER == 0
