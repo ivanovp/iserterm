@@ -542,10 +542,11 @@ void SerialThread::processCommand()
     {
         if (!m_serialPort->isOpen())
         {
+            bool isOpened;
 #if WINDOWS
             /* Workaround for Windows */
             m_serialPort->setPortName(m_portName);
-            bool isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
+            isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
               m_serialPort->close();

@@ -8,6 +8,6 @@
 . Timestamp on console
 + Logging to file (File/Save file)
 . Use more tabs/windows
-. Use profiles (baud rate, data bits, parity)
++ Use profiles (baud rate, data bits, parity)
 + Custom texts to send
 . ANSI/VT100 emulation
