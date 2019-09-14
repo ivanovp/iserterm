@@ -13,3 +13,4 @@ x64/
 UpgradeLog*.htm
 *~
 *.bak
+.qmake.stash
