@@ -12,11 +12,11 @@
 #include <QWaitCondition>
 #include <QSerialPort>
 
-//#if WINDOWS
-//#define ALT_MODE  1
-//#else
+#if WINDOWS
+#define ALT_MODE  1
+#else
 #define ALT_MODE  0
-//#endif
+#endif
 
 /**
  * @brief The SerialThread class
