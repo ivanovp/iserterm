@@ -417,17 +417,11 @@ void MainWindow::writeData(const QByteArray &data)
 
 void MainWindow::readData()
 {
-    /* Check if last data chunk was received within time interval (100 ms) */
-//    if (!m_updateTimer.isActive())
+    QByteArray data = m_serialThread->readAll();
+    if (data.length())
     {
-      QByteArray data = m_serialThread->readAll();
-      if (data.length())
-      {
-        //m_updateTimer.start(); // FIXME
         /* Receive serial data and show on console */
         m_console->putData(data);
-      }
-//      m_updateTimer.start(); // FIXME this should be in the 'if'
     }
 }
 

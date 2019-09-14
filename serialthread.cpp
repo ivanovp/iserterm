@@ -560,12 +560,12 @@ void SerialThread::processCommand()
             if (isOpened)
             {
               // Parameters shall be set after open on Qt 5.3!
-#if 0
+#if WINDOWS
+              m_serialPort->setBaudRate(m_baudRateOutput);
+#else
               // buggy on Windows 10 with PL2303 (not sure which one is guilty)
               m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
               m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
-#else
-              m_serialPort->setBaudRate(m_baudRateOutput);
 #endif
               m_serialPort->setDataBits(m_dataBits);
               m_serialPort->setParity(m_parity);
