@@ -148,6 +148,8 @@ private:
 #if CURSOR_MODE == 1
     QCursor m_cursor;
 #endif
+    /** Add timestamp before text because last time text finished with line ending */
+    bool m_startWithTimestamp;
 };
 
 #endif // CONSOLE_H

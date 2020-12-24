@@ -62,6 +62,7 @@ Console::Console(QWidget *parent)
     , m_autoWrapColumn(80)  /* automatically wrap text after 80 characters */
     , m_noLineEndingCntr(0)
     , m_timestampFormatString("HH:mm:ss.zzz  ")
+    , m_startWithTimestamp(false)
 {
 #if CURSOR_MODE == 1
     setOverwriteMode(true);
@@ -649,12 +650,25 @@ void Console::addTimestamp(QByteArray &buf)
 
     /* Adding timestamps after every new line character */
     QString data2 = buf;
-    for (int i = data2.length() - 1; i >= 0; i--)
+    /* -2 -> not adding timestamp for the last one */
+    if (data2.length())
     {
-        if (data2[i] == m_lineEndingRx.right(1).toLatin1())
+        if ( m_startWithTimestamp)
         {
-            data2.insert(i + 1, timestamp.toLocal8Bit());
+            m_startWithTimestamp = false;
+            data2.insert(0, timestamp.toLocal8Bit());
         }
+        for (int i = data2.length() - 2; i >= 0; i--)
+        {
+            if (data2[i] == m_lineEndingRx.right(1).toLatin1())
+            {
+                data2.insert(i + 1, timestamp.toLocal8Bit());
+            }
+        }
+    }
+    if (data2[data2.length() - 1] == m_lineEndingRx.right(1).toLatin1())
+    {
+        m_startWithTimestamp = true;
     }
 
     buf = data2.toLocal8Bit();
