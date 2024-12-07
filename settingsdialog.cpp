@@ -171,6 +171,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
             /* Ok button was pressed */
             ui2settings(&m_currentSettings->m_serialSettings);
             settings2item(ui->profileListWidget->currentItem(), &m_currentSettings->m_serialSettings);
+            // Don't save setting, only save at app exit!!!
             // saveSettings(&m_currentSettings);
 
             /* Remove all profiles, otherwise deleted names will not disappear! */
@@ -187,9 +188,9 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
             items.removeFirst();
             foreach (QListWidgetItem *item, items)
             {
-                SerialSettings::serialSettings_t serialSettings;
-                item2settings(item, &serialSettings);
-                // saveSettings(&serialSettings, item->text());
+                SerialSettings serialSettings;
+                item2settings(item, &serialSettings.m_serialSettings);
+                serialSettings.saveSettings(item->text());
             }
         }
     }
