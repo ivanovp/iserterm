@@ -46,6 +46,10 @@ ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     ui->timestampComboBox->addItem("HH:mm:ss  ");
     ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss.zzz  ");
     ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss  ");
+    ui->timestampComboBox->addItem("HH:mm:ss.zzz | ");
+    ui->timestampComboBox->addItem("HH:mm:ss | ");
+    ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss.zzz | ");
+    ui->timestampComboBox->addItem("yy-MM-dd HH:mm:ss | ");
     ui->timestampComboBox->addItem (tr("Custom"));
     ui->timestampComboBox->setEditable(false);
 
@@ -447,7 +451,7 @@ QString ConsoleSettingsDialog::bin2hexString(const QString &binString)
         {
             hexString += " ";
         }
-        s.sprintf ("%02X", static_cast<int> (binString[i].toLatin1 ()));
+        s.asprintf ("%02X", static_cast<int> (binString[i].toLatin1 ()));
         hexString += s;
     }
 

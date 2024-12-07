@@ -17,6 +17,7 @@ SOURCES += \
     console.cpp \
     consolesettingsdialog.cpp \
     serialthread.cpp \
+    serialsettings.cpp \
     multistring.cpp \
     shiftdeleventfilter.cpp \
     finddialog.cpp
@@ -30,6 +31,7 @@ HEADERS += \
     version.h \
     consolesettingsdialog.h \
     serialthread.h \
+    serialsettings.h \
     multistring.h \
     shiftdeleventfilter.h \
     finddialog.h

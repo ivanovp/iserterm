@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2024 Peter Ivanov <ivanovp@gmail.com>
 **
 ****************************************************************************/
 #ifndef SERIALTHREAD_H
@@ -11,6 +11,8 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSerialPort>
+
+class SerialSettings;
 
 #if WINDOWS
 #define ALT_MODE  1
@@ -38,7 +40,7 @@ public:
         LINE_rts,
         LINE_brk
     } lines_t;
-    explicit SerialThread(QObject *parent = 0);
+    explicit SerialThread(QObject *parent = 0, SerialSettings * serialSettings = NULL);
     ~SerialThread();
 
     void run();
@@ -136,13 +138,14 @@ protected:
      * This is usually a new line charater (CR, LF). */
     QByteArray m_chr;
     QSerialPort::PinoutSignals m_pinoutSignals;
-    QString m_portName;
-    qint32 m_baudRateInput;
-    qint32 m_baudRateOutput;
-    QSerialPort::DataBits m_dataBits;
-    QSerialPort::Parity m_parity;
-    QSerialPort::StopBits m_stopBits;
-    QSerialPort::FlowControl m_flowControl;
+    SerialSettings * m_serialSettings;
+    // QString m_portName;
+    // qint32 m_baudRateInput;
+    // qint32 m_baudRateOutput;
+    // QSerialPort::DataBits m_dataBits;
+    // QSerialPort::Parity m_parity;
+    // QSerialPort::StopBits m_stopBits;
+    // QSerialPort::FlowControl m_flowControl;
 };
 
 #endif // SERIALTHREAD_H

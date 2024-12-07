@@ -2,7 +2,7 @@
 **
 ** iSerTerm - RS-232 Serial terminal
 
-** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2024 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -46,6 +46,8 @@
 #include <QTimer>
 #include <QListWidgetItem>
 
+#include "serialsettings.h"
+
 /* 1: "Custom" text will appear at end of list of baud rate and serial port
  *    (unfinished! not working properly)
  * 0: combo box is editable (working, finished)
@@ -69,24 +71,10 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    typedef struct
-    {
-        QString name;
-        qint32 baudRate;
-        QString stringBaudRate;
-        QSerialPort::DataBits dataBits;
-        QSerialPort::Parity parity;
-        QString stringParity;
-        QSerialPort::StopBits stopBits;
-        QString stringStopBits;
-        QSerialPort::FlowControl flowControl;
-        QString stringFlowControl;
-    } serialSettings_t;
-
-    explicit SettingsDialog(QWidget *parent = 0);
+    explicit SettingsDialog(QWidget *parent = 0, SerialSettings *currentSerialSettings=NULL);
     ~SettingsDialog();
 
-    serialSettings_t serialSettings() const;
+    SerialSettings::serialSettings_t serialSettings() const;
 
 private slots:
     void showPortInfo(int idx);
@@ -102,17 +90,14 @@ private slots:
 
 private:
     void fillPortsParameters();
-    void ui2settings(serialSettings_t *settings);
-    void settings2ui(serialSettings_t *settings);
-    void settings2item(QListWidgetItem *item, serialSettings_t *settings);
-    void item2settings(QListWidgetItem *item, serialSettings_t *settings);
-    void loadSettings(serialSettings_t *settings, QString profileName = "");
-    void saveSettings(serialSettings_t *settings, QString profileName = "");
+    void ui2settings(SerialSettings::serialSettings_t *settings);
+    void settings2ui(SerialSettings::serialSettings_t *settings);
+    void settings2item(QListWidgetItem *item, SerialSettings::serialSettings_t *settings);
+    void item2settings(QListWidgetItem *item, SerialSettings::serialSettings_t *settings);
 
 private:
     Ui::SettingsDialog    * ui;
-    serialSettings_t        m_currentSettings;
-    serialSettings_t      * m_profiles;
+    SerialSettings        * m_currentSettings;
     QIntValidator         * m_intValidator;
     QTimer                  m_timer;
     QList<QSerialPortInfo>  m_availablePorts;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2024 Peter Ivanov <ivanovp@gmail.com>
 **
 ****************************************************************************/
 #include <QMutexLocker>
@@ -10,12 +10,13 @@
 #include <QElapsedTimer>
 
 #include "common.h"
+#include "serialsettings.h"
 #include "serialthread.h"
 
 Q_DECLARE_METATYPE(QSerialPort::SerialPortError)
 Q_DECLARE_METATYPE(QSerialPort::PinoutSignals)
 
-SerialThread::SerialThread(QObject *parent)
+SerialThread::SerialThread(QObject *parent, SerialSettings * serialSettings)
     : QThread(parent)
     , m_command(CMD_undefined)
     , m_serialPort(NULL)
@@ -23,12 +24,13 @@ SerialThread::SerialThread(QObject *parent)
     , m_writeDataSent(0)
     , m_delayAfterBytes_ms(1)
     , m_delayAfterChr_ms(1)
-    , m_baudRateInput(115200)
-    , m_baudRateOutput(115200)
-    , m_dataBits(QSerialPort::Data8)
-    , m_parity(QSerialPort::NoParity)
-    , m_stopBits(QSerialPort::OneStop)
-    , m_flowControl(QSerialPort::NoFlowControl)
+    , m_serialSettings(serialSettings)
+    // , m_baudRateInput(115200)
+    // , m_baudRateOutput(115200)
+    // , m_dataBits(QSerialPort::Data8)
+    // , m_parity(QSerialPort::NoParity)
+    // , m_stopBits(QSerialPort::OneStop)
+    // , m_flowControl(QSerialPort::NoFlowControl)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
     qRegisterMetaType<QSerialPort::PinoutSignals>("QSerialPort::PinoutSignals");
@@ -84,13 +86,17 @@ void SerialThread::run()
             }
             else
             {
+                m_mutex.unlock();
                 msleep(10);
+                m_mutex.lock();
             }
         }
 #if ALT_MODE
         else
         {
+          m_mutex.unlock();
           msleep(10);
+          m_mutex.lock();
         }
 #endif
         m_mutex.unlock();
@@ -193,7 +199,7 @@ void SerialThread::setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr)
 void SerialThread::setPortName(const QString &name)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_portName = name;
+    m_serialSettings->m_serialSettings.name = name;
 }
 
 QString SerialThread::portName()
@@ -232,19 +238,24 @@ void SerialThread::close() //Q_DECL_OVERRIDE
 bool SerialThread::setBaudRate(qint32 baudRate, QSerialPort::Directions directions)
 {
     QMutexLocker mutexLocker(&m_mutex);
+#if 1
+    Q_UNUSED(directions);
+    m_serialSettings->m_serialSettings.baudRate = baudRate;
+#else // TODO implement dirrection handling, if it is necessary...
     if (directions == QSerialPort::AllDirections)
     {
-      m_baudRateInput = baudRate;
-      m_baudRateOutput = baudRate;
+      m_serialSettings->m_serialSettings.baudRateInput = baudRate;
+      m_serialSettings->m_serialSettings.baudRateOutput = baudRate;
     }
     else if (directions == QSerialPort::Input)
     {
-      m_baudRateInput = baudRate;
+      m_serialSettings->m_serialSettings.baudRateInput = baudRate;
     }
     else if (directions == QSerialPort::Output)
     {
-      m_baudRateOutput = baudRate;
+      m_serialSettings->m_serialSettings.baudRateOutput = baudRate;
     }
+#endif
     return true;
 //    return m_serialPort->setBaudRate(baudRate, directions);
 }
@@ -258,7 +269,7 @@ qint32 SerialThread::baudRate(QSerialPort::Directions directions)
 bool SerialThread::setDataBits(QSerialPort::DataBits dataBits)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_dataBits = dataBits;
+    m_serialSettings->m_serialSettings.dataBits = dataBits;
     return true;
 //    return m_serialPort->setDataBits(dataBits);
 }
@@ -272,7 +283,7 @@ QSerialPort::DataBits SerialThread::dataBits()
 bool SerialThread::setParity(QSerialPort::Parity parity)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_parity = parity;
+    m_serialSettings->m_serialSettings.parity = parity;
     return true;
 //    return m_serialPort->setParity(parity);
 }
@@ -315,7 +326,7 @@ QString SerialThread::parityStr()
 bool SerialThread::setStopBits(QSerialPort::StopBits stopBits)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_stopBits = stopBits;
+    m_serialSettings->m_serialSettings.stopBits = stopBits;
     return true;
 //    return m_serialPort->setStopBits(stopBits);
 }
@@ -329,7 +340,7 @@ QSerialPort::StopBits SerialThread::stopBits()
 bool SerialThread::setFlowControl(QSerialPort::FlowControl flowControl)
 {
     QMutexLocker mutexLocker(&m_mutex);
-    m_flowControl = flowControl;
+    m_serialSettings->m_serialSettings.flowControl = flowControl;
     return true;
 //    return m_serialPort->setFlowControl(flowControl);
 }
@@ -350,10 +361,10 @@ QString SerialThread::flowControlStr()
             str = tr("No handshake");
             break;
         case QSerialPort::HardwareControl:
-            str = tr("RTS/CTS");
+            str = tr("Hardware (RTS/CTS)");
             break;
         case QSerialPort::SoftwareControl:
-            str = tr("XON/XOFF");
+            str = tr("Software (XON/XOFF)");
             break;
         default:
             str = tr("Unknown");
@@ -545,7 +556,7 @@ void SerialThread::processCommand()
             bool isOpened;
 #if WINDOWS
             /* Workaround for Windows */
-            m_serialPort->setPortName(m_portName);
+            m_serialPort->setPortName(m_serialSettings->m_serialSettings.name);
             isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
@@ -555,22 +566,22 @@ void SerialThread::processCommand()
               msleep(50);
             }
 #endif
-            m_serialPort->setPortName(m_portName);
+            m_serialPort->setPortName(m_serialSettings->m_serialSettings.name);
             isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
               // Parameters shall be set after open on Qt 5.3!
 #if WINDOWS
-              m_serialPort->setBaudRate(m_baudRateOutput);
+              m_serialPort->setBaudRate(m_serialSettings->m_serialSettings.baudRate);
 #else
               // buggy on Windows 10 with PL2303 (not sure which one is guilty)
               m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
               m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
 #endif
-              m_serialPort->setDataBits(m_dataBits);
-              m_serialPort->setParity(m_parity);
-              m_serialPort->setStopBits(m_stopBits);
-              m_serialPort->setFlowControl(m_flowControl);
+              m_serialPort->setDataBits(m_serialSettings->m_serialSettings.dataBits);
+              m_serialPort->setParity(m_serialSettings->m_serialSettings.parity);
+              m_serialPort->setStopBits(m_serialSettings->m_serialSettings.stopBits);
+              m_serialPort->setFlowControl(m_serialSettings->m_serialSettings.flowControl);
               emit portStatusChanged(true);
             }
             else

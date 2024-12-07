@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** iSerTerm - RS-232 Serial terminal
-** Copyright (C) 2015-2016 Peter Ivanov <ivanovp@gmail.com>
+** Copyright (C) 2015-2024 Peter Ivanov <ivanovp@gmail.com>
 ** This file is based on terminal example of Qt.
 **
 ** Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
@@ -72,8 +72,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     QSettings settings;
 
+    // settings.setDefaultFormat(QSettings::Format::IniFormat);
+    settings.setDefaultFormat(QSettings::Format::NativeFormat);
     ui->setupUi(this);
 
+    m_currentSerialSettings.loadSettings();
     m_multivalidator = new MultiValidator (this);
 
     m_customTexts.reserve(CUSTOM_TEXT_NUM);
@@ -147,7 +150,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_console->setHexWrap (settings.value("serial/hexWrap", m_console->getHexWrap ()).toInt ());
     m_console->setTimestampFormatString(settings.value("console/timestampFormatString", m_console->getTimestampFormatString()).toString());
 
-    m_serialThread = new SerialThread;
+    m_serialThread = new SerialThread(NULL, &m_currentSerialSettings);
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
@@ -212,6 +215,9 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     QSettings settings;
+
+    m_currentSerialSettings.saveSettings();
+
     settings.setValue("window/width", size().width());
     settings.setValue("window/height", size().height());
     settings.setValue("serial/localEchoEnabled", ui->actionLocal_echo->isChecked());
@@ -355,6 +361,8 @@ void MainWindow::openSerialPort()
 
 void MainWindow::closeSerialPort(const QString &errorMsg)
 {
+    Q_UNUSED(errorMsg);
+
     if (m_serialThread->isOpen())
     {
         m_serialThread->close();
@@ -979,7 +987,7 @@ void MainWindow::saveHistory(Multistring::mode_t mode, const QStringList &histor
 
 void MainWindow::on_actionConfigure_triggered()
 {
-    SettingsDialog * serialSettingsDialog = new SettingsDialog;
+    SettingsDialog * serialSettingsDialog = new SettingsDialog(0, &m_currentSerialSettings);
     int result = serialSettingsDialog->exec();
     qDebug() << __PRETTY_FUNCTION__ << result;
 
@@ -1037,7 +1045,7 @@ void MainWindow::find(QString searchStr, bool caseSens, bool wholeWords, bool re
         highlightCursor = m_console->textCursor();
     }
 
-    QTextDocument::FindFlags flags = 0;
+    QTextDocument::FindFlags flags;
     if (wholeWords)
     {
         flags |= QTextDocument::FindWholeWords;
