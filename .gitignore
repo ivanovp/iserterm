@@ -14,3 +14,5 @@ UpgradeLog*.htm
 *~
 *.bak
 .qmake.stash
+.*.md5
+build/
