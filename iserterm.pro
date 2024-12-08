@@ -10,37 +10,37 @@ GIT_VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --alw
 DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
 SOURCES += \
-    multivalidator.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    settingsdialog.cpp \
-    console.cpp \
-    consolesettingsdialog.cpp \
-    serialthread.cpp \
-    serialsettings.cpp \
-    multistring.cpp \
-    shiftdeleventfilter.cpp \
-    finddialog.cpp
+    src/multivalidator.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/settingsdialog.cpp \
+    src/console.cpp \
+    src/consolesettingsdialog.cpp \
+    src/serialthread.cpp \
+    src/serialsettings.cpp \
+    src/multistring.cpp \
+    src/shiftdeleventfilter.cpp \
+    src/finddialog.cpp
 
 HEADERS += \
-    common.h \
-    console.h \
-    multivalidator.h \
-    mainwindow.h \
-    settingsdialog.h \
-    version.h \
-    consolesettingsdialog.h \
-    serialthread.h \
-    serialsettings.h \
-    multistring.h \
-    shiftdeleventfilter.h \
-    finddialog.h
+    src/common.h \
+    src/console.h \
+    src/multivalidator.h \
+    src/mainwindow.h \
+    src/settingsdialog.h \
+    src/version.h \
+    src/consolesettingsdialog.h \
+    src/serialthread.h \
+    src/serialsettings.h \
+    src/multistring.h \
+    src/shiftdeleventfilter.h \
+    src/finddialog.h
 
 FORMS += \
-    mainwindow.ui \
-    settingsdialog.ui \
-    consolesettingsdialog.ui \
-    finddialog.ui
+    ui/mainwindow.ui \
+    ui/settingsdialog.ui \
+    ui/consolesettingsdialog.ui \
+    ui/finddialog.ui
 
 RESOURCES += \
     iserterm.qrc
