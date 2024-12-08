@@ -12,6 +12,7 @@
 #include <QWaitCondition>
 #include <QSerialPort>
 #include <QFile>
+#include <QDataStream>
 
 class SerialSettings;
 
@@ -46,6 +47,7 @@ public:
 
     void run();
     void stop(int timeout = 0);
+    void loadSettings();
     QSerialPort *getSerialPort();
     qint64 write(QByteArray data, const QString &lineEnding = "");
     qint64 write(const char *data, qint64 len);
@@ -56,6 +58,12 @@ public:
     int getDelayAfterChr_ms() const;
     QByteArray getChr() const;
     void setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr);
+
+    void setLineEndingRx(const QString &lineEndingRx);
+    QString lineEndingRx() const;
+
+    void setLineEndingTx(const QString &lineEndingTx);
+    QString lineEndingTx() const;
 
     void setPortName(const QString &name);
     QString portName();
@@ -97,11 +105,22 @@ public:
     QByteArray readAll(int timeout = 0);
     void recreatePort();
 
-    void enableAutomaticLog(bool enable=true);
-    bool isAutomaticLogEnabled();
+    void enableAutoLog(bool enable=true);
+    bool isAutoLogEnabled();
 
     void startLogging();
+    void writeLog(QByteArray &byteArray, bool read=true);
     void stopLogging();
+
+    QString getTimestamp() const;
+    void setTimestampFormatString(const QString &format);
+    QString getTimestampFormatString();
+
+    QString autoLogFileName() const;
+    void setAutoLogFileName(const QString &newAutoLogFileName);
+
+    QString autoLogFilePath() const;
+    void setAutoLogFilePath(const QString &newAutoLogFilePath);
 
 signals:
     void portStatusChanged(bool opened);
@@ -145,11 +164,20 @@ protected:
      * This is usually a new line charater (CR, LF). */
     QByteArray m_delayChr;
     QSerialPort::PinoutSignals m_pinoutSignals;
+    // TODO this should be a local copy and mutex protected...
     SerialSettings * m_serialSettings;
     bool m_autoLogIsEnabled;
+    bool m_autoLogOverwriteIsEnabled;
     QString m_autoLogFileName;
     QString m_autoLogFilePath;
     QFile m_logFile;
+    QDataStream m_logFileStream;
+    int m_logColumnIdx;
+    QString m_timestampFormatString;
+    QString m_lineEndingRx;
+    QByteArray m_lineEndingRxBA;
+    QString m_lineEndingTx;
+    QByteArray m_lineEndingTxBA;
 };
 
 #endif // SERIALTHREAD_H

@@ -139,7 +139,7 @@ void Console::putData(const QByteArray &dataRaw)
             if (m_noLineEndingCntr > m_autoWrapColumn)
             {
                 /* No line ending found, wrap the line! */
-                data += m_lineEndingRx;
+                data += m_lineEndingRx.toLocal8Bit();
                 m_noLineEndingCntr = 0u;
             }
             data += dataRaw[i];
@@ -481,11 +481,11 @@ void Console::appendDataToConsole(const QByteArray &data, const QByteArray &data
         }
 
         newLine = QByteArray(NATIVE_LINEENDNG);
-        data2.replace (m_lineEndingRx, newLine);
+        data2.replace (m_lineEndingRx.toLocal8Bit(), newLine);
         if (m_lineEndingRx == "\r\n" || m_lineEndingRx == "\n\r")
         {
             /* If '\r' remains in buffer, remove them. '\n' expected in next buffer */
-            data2.replace (QString ('\r'), QByteArray());
+            data2.replace (QString ('\r').toLocal8Bit(), QByteArray());
         }
         if (data2.contains (BACKSPACE))
         {
@@ -607,7 +607,7 @@ QString Console::dumpBuf(const QByteArray &buf, int hexWrap)
         /* Print buffer in hexadecimal format */
         if (i < bufSize)
         {
-            str2.sprintf ("%02X", (quint8) buf[i]);
+            str2.asprintf ("%02X", (quint8) buf[i]);
             str += str2;
         }
         else

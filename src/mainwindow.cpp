@@ -154,6 +154,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_serialThread->setDelayAfterBytes_ms (settings.value ("serial/delayAfterBytes_ms", m_serialThread->getDelayAfterBytes_ms ()).toInt());
     m_serialThread->setDelayAfterChr_ms(settings.value ("serial/delayAfterNewline_ms", m_serialThread->getDelayAfterChr_ms()).toInt(),
                                         m_console->getLineEndingTx().right(1).toLatin1());
+    m_serialThread->setLineEndingRx(m_console->getLineEndingRx());
+    m_serialThread->setLineEndingTx(m_console->getLineEndingTx());
     m_serialThread->start (QThread::NormalPriority);
 //    m_serialSettingsDialog = new SettingsDialog;
 
@@ -346,14 +348,9 @@ void MainWindow::setVisibleCustomText(int idx, bool visible, const QString& text
 
 void MainWindow::openSerialPort()
 {
-    QSettings settings;
-
-    m_serialThread->setPortName(settings.value ("serial/name").toString());
-    m_serialThread->setBaudRate(settings.value ("serial/baudRate", 115200).toInt());
-    m_serialThread->setDataBits(static_cast<QSerialPort::DataBits>(settings.value ("serial/dataBits", QSerialPort::Data8).toInt()));
-    m_serialThread->setParity(static_cast<QSerialPort::Parity>(settings.value ("serial/parity", QSerialPort::NoParity).toInt()));
-    m_serialThread->setStopBits(static_cast<QSerialPort::StopBits>(settings.value ("serial/stopBits", QSerialPort::OneStop).toInt()));
-    m_serialThread->setFlowControl(static_cast<QSerialPort::FlowControl>(settings.value ("serial/flowControl", QSerialPort::NoFlowControl).toInt()));
+    qDebug() << __FUNCTION__ << m_currentSerialSettings.toString();
+    // It is not necessary to set port name, baud rate in serial thread as m_currentSerialSettings
+    // already contains the settings
     m_serialThread->open(QIODevice::ReadWrite);
     /* serialPortOpened() will triggered if opened successfully */
     /* serialMessage() will triggered if error occured */
@@ -365,7 +362,12 @@ void MainWindow::closeSerialPort(const QString &errorMsg)
 
     if (m_serialThread->isOpen())
     {
+        qDebug() << __FUNCTION__ << m_currentSerialSettings.toString();
         m_serialThread->close();
+    }
+    else
+    {
+        qDebug() << __FUNCTION__ << "not opened!";
     }
 }
 
@@ -435,8 +437,6 @@ void MainWindow::writeData(const QByteArray &data)
     /* Send user input */
     m_serialThread->write (data);
 }
-
-
 
 void MainWindow::readData()
 {
@@ -599,7 +599,7 @@ void MainWindow::onSendLineEdit_returnPressed()
     data = m_sendLine.getByteArray();
     if (ui->eolCheckBox->isChecked())
     {
-        data.append(m_console->getLineEndingTx());
+        data.append(m_console->getLineEndingTx().toLocal8Bit());
     }
     if (data.length())
     {
@@ -653,6 +653,9 @@ void MainWindow::on_actionConfigure_console_triggered()
     dialog->setDelayAfterSendByte(m_serialThread->getDelayAfterBytes_ms());
     dialog->setDelayAfterSendNewLine(m_serialThread->getDelayAfterChr_ms());
     dialog->setTimestampFormatString(m_console->getTimestampFormatString());
+    dialog->setAutoLogFileName(m_serialThread->autoLogFileName());
+    dialog->setAutoLogFilePath(m_serialThread->autoLogFilePath());
+    dialog->setAutoLogTimestampFormatString(m_serialThread->getTimestampFormatString());
     // Tab2
 //    dialog->setCompletionMode(settings.value("completion/mode").toInt());
 //    dialog->setCompletionCaseSensitivity(settings.value("completion/caseSensitivity").toInt());
@@ -697,6 +700,12 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_console->setTimestampFormatString(timestampFormatString);
         m_serialThread->setDelayAfterBytes_ms(delayAfterBytes_ms);
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
+        m_serialThread->setLineEndingRx(lineEndingRx);
+        m_serialThread->setLineEndingTx(lineEndingTx);
+        m_serialThread->enableAutoLog(dialog->isAutoLogEnabled());
+        m_serialThread->setAutoLogFileName(dialog->getAutoLogFileName());
+        m_serialThread->setAutoLogFilePath(dialog->getAutoLogFilePath());
+        m_serialThread->setTimestampFormatString(dialog->getAutoLogTimestampFormatString());
         ui->sendLineEdit->completer()->setCompletionMode(dialog->getCompletionMode());
         ui->sendLineEdit->completer()->setCaseSensitivity(dialog->getCompletionCaseSensitivity());
     }
@@ -1153,18 +1162,7 @@ void MainWindow::on_actionSelectProfile_triggered()
         /* Change back '/' to 0x7F for reading the settings */
         profileName.replace(SEP_CHAR, REPL_CHAR);
 
-        /* Copy profile's settings to current serial port settings */
-        QString path = "profile/" + profileName + "/";
-        settings.setValue("serial/name", settings.value(path + "name"));
-        settings.setValue("serial/baudRate", settings.value(path + "baudRate"));
-        settings.setValue("serial/dataBits", settings.value(path + "dataBits"));
-        settings.setValue("serial/parity", settings.value(path + "parity"));
-        settings.setValue("serial/stringParity", settings.value(path + "stringParity"));
-        settings.setValue("serial/stopBits", settings.value(path + "stopBits"));
-        settings.setValue("serial/stringStopBits", settings.value(path + "stringStopBits"));
-        settings.setValue("serial/flowControl", settings.value(path + "flowControl"));
-        settings.setValue("serial/stringFlowControl", settings.value(path + "stringFlowControl"));
-
+        m_currentSerialSettings.loadSettings(profileName);
         if (m_serialThread->isOpen())
         {
             /* Post has already opened, re-open with the new settings */

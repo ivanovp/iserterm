@@ -149,7 +149,6 @@ private:
     Ui::MainWindow *ui;
     Console *m_console;
     SerialSettings m_currentSerialSettings;
-//    SettingsDialog *m_serialSettingsDialog;
     SerialThread *m_serialThread;
     bool m_serialError;
     QProgressBar *m_progressBar;

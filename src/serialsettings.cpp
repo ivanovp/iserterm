@@ -9,6 +9,7 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QIntValidator>
 #include <QDebug>
+#include <QDataStream>
 
 #include "serialsettings.h"
 #include "common.h"
@@ -38,6 +39,43 @@ SerialSettings::~SerialSettings()
 {
 }
 
+// FIXME it does not work
+SerialSettings::operator QString() const
+{
+    QByteArray byteArray;
+    QDataStream stream(byteArray);
+    stream << m_serialSettings;
+    // qDebug() << __PRETTY_FUNCTION__ << byteArray;
+
+    return QString(byteArray);
+}
+
+QString SerialSettings::toVerboseString() const
+{
+    QString str;
+    str = "Port: " + m_serialSettings.name + NATIVE_LINEENDNG;
+    str += "Baud rate: " + QVariant(static_cast<int>(m_serialSettings.baudRate)).toString() + NATIVE_LINEENDNG;
+    str += "Data bits: " + QVariant(static_cast<int>(m_serialSettings.dataBits)).toString() + NATIVE_LINEENDNG;
+    str += "Parity bits: " + m_serialSettings.stringParity + NATIVE_LINEENDNG;
+    str += "Stop bits: " + m_serialSettings.stringStopBits + NATIVE_LINEENDNG;
+    str += "Flow control: " + m_serialSettings.stringFlowControl + NATIVE_LINEENDNG;
+
+    return str;
+}
+
+QString SerialSettings::toString() const
+{
+    QString str;
+    str = m_serialSettings.name;
+    str += ", " + QVariant(static_cast<int>(m_serialSettings.baudRate)).toString() + ", ";
+    str += QVariant(static_cast<int>(m_serialSettings.dataBits)).toString();
+    str += m_serialSettings.stringParity[0];
+    str += m_serialSettings.stringStopBits;
+    str += ", " + m_serialSettings.stringFlowControl;
+
+    return str;
+}
+
 void SerialSettings::loadSettings(SerialSettings::serialSettings_t *serialSettings, QString profileName)
 {
     QSettings settings;
@@ -46,7 +84,7 @@ void SerialSettings::loadSettings(SerialSettings::serialSettings_t *serialSettin
     if (!profileName.isEmpty())
     {
         path = "profile/" + profileName + "/";
-        qDebug() << __PRETTY_FUNCTION__ << "### profile" << profileName;
+        qDebug() << __FUNCTION__ << "### profile" << profileName;
     }
 
     serialSettings->name = settings.value (path + "name").toString();
@@ -58,15 +96,7 @@ void SerialSettings::loadSettings(SerialSettings::serialSettings_t *serialSettin
     serialSettings->stringStopBits = settings.value (path + "stringStopBits", m_serialSettings.stringStopBits).toString();
     serialSettings->flowControl = static_cast<QSerialPort::FlowControl> (settings.value (path + "flowControl", m_serialSettings.flowControl).toInt());
     serialSettings->stringFlowControl = settings.value (path + "stringFlowControl", m_serialSettings.stringFlowControl).toString();
-    qDebug() << __PRETTY_FUNCTION__ << "name" << serialSettings->name;
-    qDebug() << __PRETTY_FUNCTION__ << "baudRate" << serialSettings->baudRate;
-    qDebug() << __PRETTY_FUNCTION__ << "dataBits" << serialSettings->dataBits;
-    qDebug() << __PRETTY_FUNCTION__ << "parity" << serialSettings->parity;
-    qDebug() << __PRETTY_FUNCTION__ << "stringParity" << serialSettings->stringParity;
-    qDebug() << __PRETTY_FUNCTION__ << "stopBits" << serialSettings->stopBits;
-    qDebug() << __PRETTY_FUNCTION__ << "stringStopBits" << serialSettings->stringStopBits;
-    qDebug() << __PRETTY_FUNCTION__ << "flowControl" << serialSettings->flowControl;
-    qDebug() << __PRETTY_FUNCTION__ << "stringFlowControl" << serialSettings->stringFlowControl;
+    qDebug() << __FUNCTION__ << toString();
 }
 
 void SerialSettings::saveSettings(SerialSettings::serialSettings_t *serialSettings, QString profileName)
@@ -79,7 +109,7 @@ void SerialSettings::saveSettings(SerialSettings::serialSettings_t *serialSettin
         /* Replace '/' to 0x7F, because '/' is the separator... */
         profileName.replace(SEP_CHAR, REPL_CHAR);
         path = "profile/" + profileName + "/";
-        qDebug() << __PRETTY_FUNCTION__ << "### profile" << profileName;
+        qDebug() << __FUNCTION__ << "### profile" << profileName;
     }
 
     settings.setValue (path + "name", serialSettings->name);
@@ -91,13 +121,24 @@ void SerialSettings::saveSettings(SerialSettings::serialSettings_t *serialSettin
     settings.setValue (path + "stringStopBits", serialSettings->stringStopBits);
     settings.setValue (path + "flowControl", serialSettings->flowControl);
     settings.setValue (path + "stringFlowControl", serialSettings->stringFlowControl);
-    qDebug() << __PRETTY_FUNCTION__ << "name" << serialSettings->name;
-    qDebug() << __PRETTY_FUNCTION__ << "baudRate" << serialSettings->baudRate;
-    qDebug() << __PRETTY_FUNCTION__ << "dataBits" << serialSettings->dataBits;
-    qDebug() << __PRETTY_FUNCTION__ << "parity" << serialSettings->parity;
-    qDebug() << __PRETTY_FUNCTION__ << "stringParity" << serialSettings->stringParity;
-    qDebug() << __PRETTY_FUNCTION__ << "stopBits" << serialSettings->stopBits;
-    qDebug() << __PRETTY_FUNCTION__ << "stringStopBits" << serialSettings->stringStopBits;
-    qDebug() << __PRETTY_FUNCTION__ << "flowControl" << serialSettings->flowControl;
-    qDebug() << __PRETTY_FUNCTION__ << "stringFlowControl" << serialSettings->stringFlowControl;
+    qDebug() << __FUNCTION__ << toString();
 }
+
+// FIXME it does not work
+QDataStream &operator<<(QDataStream &out, const SerialSettings::serialSettings_t& s)
+{
+    out << "Port: " << s.name;
+    out << "Baud rate: " << s.baudRate;
+    out << "Data bits: " << s.dataBits;
+    out << "Parity bits: " << s.stringParity;
+    out << "Stop bits: " << s.stringStopBits;
+    out << "Flow control: " << s.stringFlowControl;
+    return out;
+}
+
+// QDataStream &operator>>(QDataStream &in, SerialSettings::serialSettings_t& s)
+// {
+//     in >> s.name >> s.baudRate;
+//     return in;
+// }
+

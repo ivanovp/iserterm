@@ -108,14 +108,7 @@ SettingsDialog::SettingsDialog(QWidget *parent, SerialSettings *currentSerialSet
     ui->profileListWidget->setCurrentItem(item);
 
     bool autoRefresh = settings.value("serial/autoRefreshSerialPorts", false).toBool();
-    if (autoRefresh)
-    {
-        ui->autoRefreshSerialPortsCheckBox->setCheckState(Qt::CheckState::Checked);
-    }
-    else
-    {
-        ui->autoRefreshSerialPortsCheckBox->setCheckState(Qt::CheckState::Unchecked);
-    }
+    ui->autoRefreshSerialPortsCheckBox->setChecked(autoRefresh);
     ui->autoRefreshSerialPortsSpinBox->setValue(settings.value("serial/autoRefreshSerialPortsInterval_ms", 5000).toInt());
 
     /* Load profile items */

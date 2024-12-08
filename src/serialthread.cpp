@@ -8,8 +8,14 @@
 #include <QSerialPort>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QtGlobal>
+#include <QDataStream>
+#include <QDateTime>
+#include <QSettings>
+#include <QDir>
 
 #include "common.h"
+#include "qglobal.h"
 #include "serialsettings.h"
 #include "serialthread.h"
 
@@ -26,9 +32,12 @@ SerialThread::SerialThread(QObject *parent, SerialSettings * serialSettings)
     , m_delayAfterChr_ms(1)
     , m_serialSettings(serialSettings)
     , m_autoLogIsEnabled(false)
+    , m_autoLogOverwriteIsEnabled(false)
+    , m_timestampFormatString("HH:mm:ss.zzz ")
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
     qRegisterMetaType<QSerialPort::PinoutSignals>("QSerialPort::PinoutSignals");
+    loadSettings();
 }
 
 SerialThread::~SerialThread()
@@ -67,8 +76,9 @@ void SerialThread::run()
             {
                 if (m_serialPort->waitForReadyRead(10))
                 {
-//                    m_readData.append(m_serialPort->read(1024)); // read maximum 1024 byte only
-                    m_readData.append(m_serialPort->readAll());
+                    QByteArray byteArray = m_serialPort->readAll();
+                    writeLog(byteArray, true);
+                    m_readData.append(byteArray);
                     emit readyRead();
                 }
                 /* Check if CTS, RTS, etc. signals changed */
@@ -81,17 +91,13 @@ void SerialThread::run()
             }
             else
             {
-                m_mutex.unlock();
                 msleep(10);
-                m_mutex.lock();
             }
         }
 #if ALT_MODE
         else
         {
-          m_mutex.unlock();
           msleep(10);
-          m_mutex.lock();
         }
 #endif
         m_mutex.unlock();
@@ -122,6 +128,15 @@ void SerialThread::stop(int timeout)
             wait();
         }
     }
+}
+
+void SerialThread::loadSettings()
+{
+    QSettings settings;
+    m_autoLogIsEnabled = settings.value("serial/autoLog", false).toBool();
+    m_autoLogOverwriteIsEnabled = settings.value("serial/autoLogOverwrite", false).toBool();
+    m_autoLogFileName = settings.value("serial/autoLogFileName", "yy-MM-dd_hhmmss.log").toString();
+    m_autoLogFilePath = settings.value("serial/autoLogFilePath", "").toString();
 }
 
 QSerialPort *SerialThread::getSerialPort()
@@ -157,12 +172,12 @@ qint64 SerialThread::write(QByteArray data, const QString& lineEnding)
 
 qint64 SerialThread::write(const char *data, qint64 len)
 {
-    QByteArray data_;
+    QByteArray data_array;
     for (int i = 0; i < len; i++)
     {
-        data_.append(data[i]);
+        data_array.append(data[i]);
     }
-    return write(data_);
+    return write(data_array);
 }
 
 int SerialThread::getDelayAfterBytes_ms() const
@@ -191,6 +206,28 @@ void SerialThread::setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr)
     m_delayChr = chr;
 }
 
+void SerialThread::setLineEndingRx(const QString &lineEndingRx)
+{
+    m_lineEndingRx = lineEndingRx;
+    m_lineEndingRxBA = m_lineEndingRx.toLocal8Bit();
+}
+
+QString SerialThread::lineEndingRx() const
+{
+    return m_lineEndingRx;
+}
+
+void SerialThread::setLineEndingTx(const QString &lineEndingTx)
+{
+    m_lineEndingTx = lineEndingTx;
+    m_lineEndingTxBA = m_lineEndingTx.toLocal8Bit();
+}
+
+QString SerialThread::lineEndingTx() const
+{
+    return m_lineEndingTx;
+}
+
 void SerialThread::setPortName(const QString &name)
 {
     QMutexLocker mutexLocker(&m_mutex);
@@ -212,6 +249,7 @@ void SerialThread::setPort(const QSerialPortInfo &info)
 bool SerialThread::open(QIODevice::OpenMode mode) //Q_DECL_OVERRIDE
 {
     QMutexLocker mutexLocker(&m_mutex);
+    loadSettings();
     m_command = CMD_open;
     m_commandParam = mode;
 #if ALT_MODE == 0
@@ -457,24 +495,84 @@ void SerialThread::recreatePort()
   }
 }
 
-void SerialThread::enableAutomaticLog(bool enable)
+void SerialThread::enableAutoLog(bool enable)
 {
     m_autoLogIsEnabled = enable;
+    qDebug() << __PRETTY_FUNCTION__ << enable;
 }
 
-bool SerialThread::isAutomaticLogEnabled()
+bool SerialThread::isAutoLogEnabled()
 {
     return m_autoLogIsEnabled;
 }
 
 void SerialThread::startLogging()
 {
-    m_logFile.setFileName(m_autoLogFileName);
-
-    if (m_logFile.open(QFile::WriteOnly))
+    if (m_autoLogIsEnabled)
     {
-        // QString str = QString("Start logging on %1").arg();
-        // m_logFile.write(;
+        QString fileName;
+        QDateTime now = QDateTime::currentDateTime();
+        fileName = now.toString(m_autoLogFileName);
+        qDebug() << "log file name" << fileName;
+        QString filePath = QDir::cleanPath(m_autoLogFilePath + QDir::separator() + fileName);
+        m_logFile.setFileName(filePath);
+        qDebug() << "log file path" << filePath;
+
+        QIODevice::OpenModeFlag openModeFlag;
+        if (m_autoLogOverwriteIsEnabled)
+        {
+            openModeFlag = QIODevice::WriteOnly;
+            qDebug() << __FUNCTION__ << "overwrite";
+        }
+        else
+        {
+            openModeFlag = QIODevice::Append;
+            qDebug() << __FUNCTION__ << "append";
+        }
+
+        if (m_logFile.open(openModeFlag))
+        {
+            QString str;
+            str = tr("Start logging on %1, serial port %2").arg(getTimestamp().trimmed()).arg(m_serialSettings->toString()) + m_lineEndingRx;
+            m_logFile.write(str.toLocal8Bit());
+        }
+    }
+    else
+    {
+        qDebug() << __FUNCTION__ << "auto log disabled";
+    }
+}
+
+void SerialThread::writeLog(QByteArray &byteArray, bool read)
+{
+    if (m_autoLogIsEnabled)
+    {
+        int len = byteArray.length();
+        int rxLen = m_lineEndingRxBA.length();
+        int txLen = m_lineEndingTxBA.length();
+        for (int i = 0; i < len; i++)
+        {
+            if (!m_logColumnIdx)
+            {
+                m_logFile.flush(); // TODO configurable parameter?
+                m_logFile.write(getTimestamp().toLocal8Bit());
+            }
+            char c = byteArray[i];
+            m_logFile.write(&c, 1);
+            m_logColumnIdx++;
+            // TODO is it okay to check the whole line ending???
+            // what if 0xD and 0xA are received in to chunks?
+            if (read && byteArray.mid(i, rxLen) == m_lineEndingRxBA)
+            {
+                // qDebug() << "rxLen:" << rxLen;
+                m_logColumnIdx = 1 - rxLen;
+            }
+            else if (!read && byteArray.mid(i, txLen) == m_lineEndingTxBA)
+            {
+                // qDebug() << "txLen:" << txLen;
+                m_logColumnIdx = 1 - txLen;
+            }
+        }
     }
 }
 
@@ -482,6 +580,9 @@ void SerialThread::stopLogging()
 {
     if (m_logFile.isOpen())
     {
+        QString str;
+        str = tr("Stop logging on %1, serial port %2").arg(getTimestamp().trimmed()).arg(m_serialSettings->toString()) + m_lineEndingRx;
+        m_logFile.write(str.toLocal8Bit());
         m_logFile.close();
     }
 }
@@ -517,6 +618,7 @@ void SerialThread::processCommand()
                 m_writeData.remove(0, 1);
                 m_mutex.unlock();
                 //qDebug() << __PRETTY_FUNCTION__ << "sending" << c;
+                writeLog(c, false);
                 m_serialPort->write(c);
                 m_serialPort->flush();
                 m_writeDataSent++;
@@ -549,8 +651,9 @@ void SerialThread::processCommand()
                 if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
                 {
                     m_mutex.lock();
-                    //                    m_readData.append(m_serialPort->read(1024));
-                    m_readData.append(m_serialPort->readAll());
+                    QByteArray byteArray = m_serialPort->readAll();
+                    writeLog(byteArray, true);
+                    m_readData.append(byteArray);
                     m_mutex.unlock();
                     emit readyRead();
                 }
@@ -576,6 +679,13 @@ void SerialThread::processCommand()
     else if (m_command == CMD_open)
     {
         stopLogging();
+        if (m_serialPort->isOpen())
+        {
+            qDebug() << __FUNCTION__ << "port already opened! closing";
+            m_serialPort->close();
+            emit portStatusChanged(false);
+            msleep(500);
+        }
         if (!m_serialPort->isOpen())
         {
             bool isOpened;
@@ -591,6 +701,7 @@ void SerialThread::processCommand()
                 msleep(50);
             }
 #endif
+            qDebug() << __FUNCTION__ << m_serialSettings->toString();
             m_serialPort->setPortName(m_serialSettings->m_serialSettings.name);
             isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
@@ -613,9 +724,13 @@ void SerialThread::processCommand()
             }
             else
             {
-                emit message("Cannot open port!", true);
+                emit message(tr("Cannot open port!"), true);
                 qCritical() << __PRETTY_FUNCTION__ << "cannot open port!";
             }
+        }
+        else
+        {
+            qDebug() << __PRETTY_FUNCTION__ << "port already opened!";
         }
         m_command = CMD_undefined;
     }
@@ -631,13 +746,49 @@ void SerialThread::processCommand()
     }
     else if (m_command == CMD_undefined)
     {
-        emit message("Undefined command!", true);
+        emit message(tr("Undefined command!"), true);
         qDebug() << __PRETTY_FUNCTION__ << "undefined command";
     }
     else
     {
-        emit message("Unknown command!", true);
+        emit message(tr("Unknown command!"), true);
         qCritical() << __PRETTY_FUNCTION__ << "unknown command:" << (int)m_command;
         Q_ASSERT(0);
     }
+}
+
+QString SerialThread::autoLogFilePath() const
+{
+    return m_autoLogFilePath;
+}
+
+void SerialThread::setAutoLogFilePath(const QString &newAutoLogFilePath)
+{
+    m_autoLogFilePath = newAutoLogFilePath;
+}
+
+QString SerialThread::autoLogFileName() const
+{
+    return m_autoLogFileName;
+}
+
+void SerialThread::setAutoLogFileName(const QString &newAutoLogFileName)
+{
+    m_autoLogFileName = newAutoLogFileName;
+}
+
+QString SerialThread::getTimestamp() const
+{
+    QDateTime now = QDateTime::currentDateTime();
+    return now.toString(m_timestampFormatString);
+}
+
+void SerialThread::setTimestampFormatString(const QString &format)
+{
+    m_timestampFormatString = format;
+}
+
+QString SerialThread::getTimestampFormatString()
+{
+    return m_timestampFormatString;
 }

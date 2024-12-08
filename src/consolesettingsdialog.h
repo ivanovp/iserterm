@@ -48,11 +48,20 @@ public:
     int getDelayAfterSendNewLine();
     void setDelayAfterSendNewLine(const int delayAfterSendNewline);
 
+    bool isAutoLogEnabled();
+    void setAutoLogEnabled(bool enabled=true);
+
     QString getTimestampFormatString();
     void setTimestampFormatString(const QString& formatString);
 
-    QString getLogTimestampFormatString();
-    void setLogTimestampFormatString(const QString& formatString);
+    QString getAutoLogFileName();
+    void setAutoLogFileName(const QString& fileName);
+
+    QString getAutoLogFilePath();
+    void setAutoLogFilePath(const QString& filePath);
+
+    QString getAutoLogTimestampFormatString();
+    void setAutoLogTimestampFormatString(const QString& formatString);
 
     QString getCustomText(int idx);
     void setCustomText(int idx, const QString& customText);
@@ -74,6 +83,9 @@ private slots:
     void on_timestampComboBox_currentIndexChanged(int index);
     void on_autoLogCheckBox_stateChanged(int arg1);
     void on_buttonBox_clicked(QAbstractButton *button);
+    void on_autoLogTimestampComboBox_currentIndexChanged(int index);
+
+    void on_autoLogFilePathBrowseButton_clicked();
 
 private:
     Ui::ConsoleSettingsDialog *ui;

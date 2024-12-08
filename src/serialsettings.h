@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QtSerialPort/QSerialPort>
+#include <QDataStream>
 
 class SerialSettings : public QObject
 {
@@ -34,6 +35,10 @@ public:
     ~SerialSettings();
 
     serialSettings_t serialSettings() const;
+    operator QString() const;
+
+    QString toVerboseString() const;
+    QString toString() const;
 
     void loadSettings(serialSettings_t *settings, QString profileName = "");
     void loadSettings(QString profileName = "") { loadSettings(&m_serialSettings, profileName); }
@@ -45,5 +50,8 @@ private slots:
 public:
     serialSettings_t        m_serialSettings;
 };
+
+QDataStream &operator<<(QDataStream &out, const SerialSettings::serialSettings_t& s);
+// QDataStream &operator>>(QDataStream &in, SerialSettings::serialSettings_t& s);
 
 #endif // SERIALSETTINGS_H
