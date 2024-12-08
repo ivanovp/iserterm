@@ -16,3 +16,4 @@ UpgradeLog*.htm
 .qmake.stash
 .*.md5
 build/
+.qtc_clangd/
