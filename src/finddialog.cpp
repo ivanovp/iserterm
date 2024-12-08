@@ -8,21 +8,21 @@ FindDialog::FindDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::FindDialog)
 {
-  ui->setupUi(this);
+    ui->setupUi(this);
 
-  QSettings settings;
+    QSettings settings;
 
-  QString findStr = settings.value("find/text", "").toString();
-  bool caseSens = settings.value("find/caseSens", false).toBool();
-  bool wholeWords = settings.value("find/wholeWords", false).toBool();
-  bool regEx = settings.value("find/regEx", false).toBool();
+    QString findStr = settings.value("find/text", "").toString();
+    bool caseSens = settings.value("find/caseSens", false).toBool();
+    bool wholeWords = settings.value("find/wholeWords", false).toBool();
+    bool regEx = settings.value("find/regEx", false).toBool();
 
-  ui->findComboBox->addItems(loadHistory(Multistring::ASCII));
-  ui->findComboBox->setCurrentText(findStr);
-  ui->findComboBox->lineEdit()->selectAll();
-  ui->caseSensCheckBox->setChecked(caseSens);
-  ui->wholeWordsCheckBox->setChecked(wholeWords);
-  ui->regExCheckBox->setChecked(regEx);
+    ui->findComboBox->addItems(loadHistory(Multistring::ASCII));
+    ui->findComboBox->setCurrentText(findStr);
+    ui->findComboBox->lineEdit()->selectAll();
+    ui->caseSensCheckBox->setChecked(caseSens);
+    ui->wholeWordsCheckBox->setChecked(wholeWords);
+    ui->regExCheckBox->setChecked(regEx);
 }
 
 /**

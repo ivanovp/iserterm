@@ -401,18 +401,33 @@ void MainWindow::updateBackgroundColor()
 
 void MainWindow::about()
 {
-    QMessageBox::about(this, tr("About"),
-                       QString(tr("%1 v%2.%3.%4\n"
+    QString aboutStr;
+    aboutStr = QString(tr("%1 v%2.%3.%4\n"
+                          "RS-232 serial terminal software based on Simple Terminal example.\n"
+                          "License: GPLv3.\n"
                           "Compiled on " __DATE__ " " __TIME__ ".\n"
                           "Git version %5.\n"
-                          "RS-232 serial terminal software based on Simple Terminal example.\n"
-                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2019\n"
+                          "Copyright (C) Peter Ivanov <ivanovp@gmail.com>, 2015-2024\n"
                           "\n"
                           "Simple Terminal authors:\n"
                           "Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>\n"
                           "Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>\n"
+                          "\n"
+                          "This program is free software: you can redistribute it and/or modify "
+                          "it under the terms of the GNU General Public License as published by "
+                          "the Free Software Foundation either version 3 of the License or "
+                          "(at your option) any later version.\n"
+                          "\n"
+                          "This program is distributed in the hope that it will be useful "
+                          "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+                          "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+                          "GNU General Public License for more details.\n"
+                          "\n"
+                          "You should have received a copy of the GNU General Public License "
+                          "along with this program.  If not, see <https://www.gnu.org/licenses/>.\n"
                           )).arg(VER_PRODUCTNAME_STR).arg(VER_PRODUCT_MAJOR)
-                       .arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE).arg(GIT_VERSION));
+                   .arg(VER_PRODUCT_MINOR).arg(VER_PRODUCT_RELEASE).arg(GIT_VERSION);
+    QMessageBox::about(this, tr("About"), aboutStr);
 }
 
 void MainWindow::writeData(const QByteArray &data)
