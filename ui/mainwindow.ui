@@ -74,9 +74,6 @@
           <property name="editable">
            <bool>true</bool>
           </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::AdjustToMinimumContentsLength</enum>
-          </property>
          </widget>
         </item>
         <item>
@@ -171,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>510</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
@@ -298,7 +295,7 @@
   </action>
   <action name="actionConnect">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/connect.png</normaloff>:/images/connect.png</iconset>
    </property>
    <property name="text">
@@ -313,7 +310,7 @@
   </action>
   <action name="actionDisconnect">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/disconnect.png</normaloff>:/images/disconnect.png</iconset>
    </property>
    <property name="text">
@@ -328,7 +325,7 @@
   </action>
   <action name="actionConfigure">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/settings.png</normaloff>:/images/settings.png</iconset>
    </property>
    <property name="text">
@@ -343,7 +340,7 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/clear.png</normaloff>:/images/clear.png</iconset>
    </property>
    <property name="text">
@@ -358,7 +355,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
    </property>
    <property name="text">
@@ -381,8 +378,7 @@
   </action>
   <action name="actionSet_font">
    <property name="icon">
-    <iconset theme="font">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="font"/>
    </property>
    <property name="text">
     <string>Set &amp;font...</string>
@@ -406,7 +402,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
    </property>
    <property name="text">
@@ -424,7 +420,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/hex-input-24.png</normaloff>:/images/hex-input-24.png</iconset>
    </property>
    <property name="text">
@@ -455,7 +451,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/hex-view-24.png</normaloff>:/images/hex-view-24.png</iconset>
    </property>
    <property name="text">
@@ -518,7 +514,7 @@
   </action>
   <action name="actionSend_custom_text_1">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text1.png</normaloff>:/images/text1.png</iconset>
    </property>
    <property name="text">
@@ -530,7 +526,7 @@
   </action>
   <action name="actionSend_custom_text_2">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text2.png</normaloff>:/images/text2.png</iconset>
    </property>
    <property name="text">
@@ -542,7 +538,7 @@
   </action>
   <action name="actionSend_custom_text_3">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text3.png</normaloff>:/images/text3.png</iconset>
    </property>
    <property name="text">
@@ -554,7 +550,7 @@
   </action>
   <action name="actionSend_custom_text_4">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text4.png</normaloff>:/images/text4.png</iconset>
    </property>
    <property name="text">
@@ -566,7 +562,7 @@
   </action>
   <action name="actionSend_custom_text_5">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text5.png</normaloff>:/images/text5.png</iconset>
    </property>
    <property name="text">
@@ -578,7 +574,7 @@
   </action>
   <action name="actionSend_custom_text_6">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/text6.png</normaloff>:/images/text6.png</iconset>
    </property>
    <property name="text">
@@ -603,7 +599,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/timestamp.png</normaloff>:/images/timestamp.png</iconset>
    </property>
    <property name="text">
@@ -642,7 +638,7 @@
   </action>
   <action name="actionSelectProfile">
    <property name="icon">
-    <iconset resource="iserterm.qrc">
+    <iconset resource="../iserterm.qrc">
      <normaloff>:/images/notepad.png</normaloff>:/images/notepad.png</iconset>
    </property>
    <property name="text">
@@ -661,7 +657,7 @@
   <tabstop>sendButton</tabstop>
  </tabstops>
  <resources>
-  <include location="iserterm.qrc"/>
+  <include location="../iserterm.qrc"/>
  </resources>
  <connections/>
 </ui>
