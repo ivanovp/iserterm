@@ -83,10 +83,16 @@ private slots:
     void checkCustomBaudRatePolicy(int idx);
     void checkCustomDevicePathPolicy(int idx);
 #endif
-    void fillPortsInfo();
+    void fillPortsInfo(bool forceUpdate=false);
     void on_profileListWidget_currentItemChanged(QListWidgetItem *item, QListWidgetItem *prevItem);
     void on_addButton_clicked();
     void on_removeButton_clicked();
+
+    void on_autoRefreshSerialPortsCheckBox_stateChanged(int arg1);
+
+    void on_autoRefreshSerialPortsSpinBox_valueChanged(int arg1);
+
+    void on_filterSerialPortsLineEdit_editingFinished();
 
 private:
     void fillPortsParameters();

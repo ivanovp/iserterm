@@ -687,8 +687,6 @@ void MainWindow::on_actionConfigure_console_triggered()
             m_customTexts[i] = dialog->getCustomText(i);
             m_customTextsEnabled[i] = dialog->isCustomTextEnabled(i);
             setVisibleCustomText(i, m_customTextsEnabled[i], m_customTexts[i]);
-            settings.setValue(QString("serial/customText%1").arg(i + 1), m_customTexts[i]);
-            settings.setValue(QString("serial/customText%1Enabled").arg(i + 1), m_customTextsEnabled[i]);
         }
         m_console->setAutoWrapColumn(autoWrapColumn);
         m_console->setLineEndingRx(lineEndingRx);
@@ -701,17 +699,6 @@ void MainWindow::on_actionConfigure_console_triggered()
         m_serialThread->setDelayAfterChr_ms(delayAfterNewline_ms, lineEndingTx.right(1).toLatin1());
         ui->sendLineEdit->completer()->setCompletionMode(dialog->getCompletionMode());
         ui->sendLineEdit->completer()->setCaseSensitivity(dialog->getCompletionCaseSensitivity());
-        settings.setValue("serial/autoWrapColumn", autoWrapColumn);
-        settings.setValue("serial/lineEndingRx", lineEndingRx);
-        settings.setValue("serial/lineEndingTx", lineEndingTx);
-        settings.setValue("serial/dataSizeLimit", dataSizeLimit);
-        settings.setValue("serial/displaySize", displaySize);
-        settings.setValue("serial/hexWrap", hexWrap);
-        settings.setValue("serial/delayAfterBytes_ms", delayAfterBytes_ms);
-        settings.setValue("serial/delayAfterNewline_ms", delayAfterNewline_ms);
-        settings.setValue("console/timestampFormatString", timestampFormatString);
-        settings.setValue("completion/mode", dialog->getCompletionMode());
-        settings.setValue("completion/caseSensitivity", dialog->getCompletionCaseSensitivity());
     }
 
     delete dialog;

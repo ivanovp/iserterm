@@ -10,6 +10,7 @@
 
 #include <QDialog>
 #include <QCompleter>
+#include <QAbstractButton>
 
 namespace Ui {
     class ConsoleSettingsDialog;
@@ -50,6 +51,9 @@ public:
     QString getTimestampFormatString();
     void setTimestampFormatString(const QString& formatString);
 
+    QString getLogTimestampFormatString();
+    void setLogTimestampFormatString(const QString& formatString);
+
     QString getCustomText(int idx);
     void setCustomText(int idx, const QString& customText);
 
@@ -68,10 +72,13 @@ private slots:
     QString bin2hexString(const QString& binString);
 
     void on_timestampComboBox_currentIndexChanged(int index);
+    void on_autoLogCheckBox_stateChanged(int arg1);
+    void on_buttonBox_clicked(QAbstractButton *button);
 
 private:
     Ui::ConsoleSettingsDialog *ui;
     QString m_customTimestampFormatString;
+    QString m_customLogTimestampFormatString;
 };
 
 #endif // CONSOLESETTINGSDIALOG_H

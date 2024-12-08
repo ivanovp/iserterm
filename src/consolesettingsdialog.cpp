@@ -53,6 +53,26 @@ ConsoleSettingsDialog::ConsoleSettingsDialog(QWidget *parent) :
     ui->timestampComboBox->addItem (tr("Custom"));
     ui->timestampComboBox->setEditable(false);
 
+    ui->autoLogTimestampComboBox->addItem("HH:mm:ss.zzz  ");
+    ui->autoLogTimestampComboBox->addItem("HH:mm:ss  ");
+    ui->autoLogTimestampComboBox->addItem("yy-MM-dd HH:mm:ss.zzz  ");
+    ui->autoLogTimestampComboBox->addItem("yy-MM-dd HH:mm:ss  ");
+    ui->autoLogTimestampComboBox->addItem("HH:mm:ss.zzz | ");
+    ui->autoLogTimestampComboBox->addItem("HH:mm:ss | ");
+    ui->autoLogTimestampComboBox->addItem("yy-MM-dd HH:mm:ss.zzz | ");
+    ui->autoLogTimestampComboBox->addItem("yy-MM-dd HH:mm:ss | ");
+    ui->autoLogTimestampComboBox->addItem (tr("Custom"));
+    ui->autoLogTimestampComboBox->setEditable(false);
+
+    bool autoLogEnabled = settings.value("serial/autoLog", false).toBool();
+    ui->autoLogCheckBox->setChecked(autoLogEnabled);
+    ui->autoLogFileNameLineEdit->setText(settings.value("serial/autoLogFileName", "%Y-%m-%d_%H:%M:%S.log").toString());
+    ui->autoLogFileNameLineEdit->setEnabled(autoLogEnabled);
+    ui->autoLogFilePathLineEdit->setText(settings.value("serial/autoLogFilePath", "").toString());
+    ui->autoLogFilePathLineEdit->setEnabled(autoLogEnabled);
+    ui->autoLogFilePathBrowseButton->setEnabled(autoLogEnabled);
+    ui->autoLogTimestampComboBox->setEnabled(autoLogEnabled);
+
     /* Hide unused buttons */
     ui->text1Button->hide();
     ui->text2Button->hide();
@@ -238,7 +258,48 @@ void ConsoleSettingsDialog::setTimestampFormatString(const QString &formatString
         ui->timestampComboBox->setEditText (formatString);
         ui->timestampComboBox->setEditable(true);
     }
-    m_customTimestampFormatString = formatString;
+    m_customLogTimestampFormatString = formatString;
+}
+
+QString ConsoleSettingsDialog::getLogTimestampFormatString()
+{
+    QString timestamp;
+    if (ui->timestampComboBox->currentIndex () == ui->timestampComboBox->count () - 1)
+    {
+        timestamp = ui->timestampComboBox->currentData (Qt::DisplayRole).toString ();
+        if (timestamp == tr("Custom"))
+        {
+            /* LogTimestamp was not edited */
+            timestamp = m_customLogTimestampFormatString;
+        }
+    }
+    else
+    {
+        timestamp = ui->timestampComboBox->currentText ();
+    }
+    return timestamp;
+}
+
+void ConsoleSettingsDialog::setLogTimestampFormatString(const QString &formatString)
+{
+    bool found = false;
+
+    for (int i = 0; i < ui->timestampComboBox->count () - 1; i++)
+    {
+        if (formatString == ui->timestampComboBox->itemText(i))
+        {
+            ui->timestampComboBox->setCurrentIndex (i);
+            found = true;
+        }
+    }
+    if (!found)
+    {
+        /* This is a custom timestamp */
+        ui->timestampComboBox->setCurrentIndex (ui->timestampComboBox->count () - 1);
+        ui->timestampComboBox->setEditText (formatString);
+        ui->timestampComboBox->setEditable(true);
+    }
+    m_customLogTimestampFormatString = formatString;
 }
 
 QString ConsoleSettingsDialog::getCustomText(int idx)
@@ -468,3 +529,48 @@ void ConsoleSettingsDialog::on_timestampComboBox_currentIndexChanged(int index)
         ui->timestampComboBox->clearEditText ();
     }
 }
+
+void ConsoleSettingsDialog::on_autoLogCheckBox_stateChanged(int arg1)
+{
+    ui->autoLogFileNameLineEdit->setEnabled(arg1);
+    ui->autoLogFilePathLineEdit->setEnabled(arg1);
+    ui->autoLogFilePathBrowseButton->setEnabled(arg1);
+    ui->autoLogTimestampComboBox->setEnabled(arg1);
+}
+
+void ConsoleSettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
+{
+    if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::AcceptRole)
+    {
+        int autoWrapColumn = getAutoWrapColumn();
+        QString lineEndingRx = getLineEndingRx();
+        QString lineEndingTx = getLineEndingTx();
+        int dataSizeLimit = getDataBufferSize() << 20;
+        int displaySize = getDisplaySize();
+        int hexWrap = getHexWrap();
+        int delayAfterBytes_ms = getDelayAfterSendByte();
+        int delayAfterNewline_ms = getDelayAfterSendNewLine();
+        QString timestampFormatString = getTimestampFormatString();
+        QSettings settings;
+        for (int i = 0; i < CUSTOM_TEXT_NUM; i++)
+        {
+            settings.setValue(QString("serial/customText%1").arg(i + 1), getCustomText(i));
+            settings.setValue(QString("serial/customText%1Enabled").arg(i + 1), isCustomTextEnabled(i));
+        }
+        settings.setValue("serial/autoWrapColumn", autoWrapColumn);
+        settings.setValue("serial/lineEndingRx", lineEndingRx);
+        settings.setValue("serial/lineEndingTx", lineEndingTx);
+        settings.setValue("serial/dataSizeLimit", dataSizeLimit);
+        settings.setValue("serial/displaySize", displaySize);
+        settings.setValue("serial/hexWrap", hexWrap);
+        settings.setValue("serial/delayAfterBytes_ms", delayAfterBytes_ms);
+        settings.setValue("serial/delayAfterNewline_ms", delayAfterNewline_ms);
+        settings.setValue("console/timestampFormatString", timestampFormatString);
+        settings.setValue("completion/mode", getCompletionMode());
+        settings.setValue("completion/caseSensitivity", getCompletionCaseSensitivity());
+        settings.setValue("serial/autoLog", ui->autoLogCheckBox->isChecked());
+        settings.setValue("serial/autoLogFileName", ui->autoLogFileNameLineEdit->text());
+        settings.setValue("serial/autoLogFilePath", ui->autoLogFilePathLineEdit->text());
+    }
+}
+

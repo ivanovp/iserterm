@@ -11,6 +11,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSerialPort>
+#include <QFile>
 
 class SerialSettings;
 
@@ -96,6 +97,12 @@ public:
     QByteArray readAll(int timeout = 0);
     void recreatePort();
 
+    void enableAutomaticLog(bool enable=true);
+    bool isAutomaticLogEnabled();
+
+    void startLogging();
+    void stopLogging();
+
 signals:
     void portStatusChanged(bool opened);
     void message(QString message, bool error);
@@ -136,16 +143,13 @@ protected:
     int m_delayAfterChr_ms;
     /** After this character m_delayAfterChr_ms microseconds delay will be applied instead of m_delayAfterBytes_ms.
      * This is usually a new line charater (CR, LF). */
-    QByteArray m_chr;
+    QByteArray m_delayChr;
     QSerialPort::PinoutSignals m_pinoutSignals;
     SerialSettings * m_serialSettings;
-    // QString m_portName;
-    // qint32 m_baudRateInput;
-    // qint32 m_baudRateOutput;
-    // QSerialPort::DataBits m_dataBits;
-    // QSerialPort::Parity m_parity;
-    // QSerialPort::StopBits m_stopBits;
-    // QSerialPort::FlowControl m_flowControl;
+    bool m_autoLogIsEnabled;
+    QString m_autoLogFileName;
+    QString m_autoLogFilePath;
+    QFile m_logFile;
 };
 
 #endif // SERIALTHREAD_H

@@ -46,6 +46,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
+#include <QRegExp>
 
 QT_USE_NAMESPACE
 
@@ -56,6 +57,7 @@ SettingsDialog::SettingsDialog(QWidget *parent, SerialSettings *currentSerialSet
     ui(new Ui::SettingsDialog),
     m_currentSettings(currentSerialSettings)
 {
+    QSettings settings;
     ui->setupUi(this);
 
     m_intValidator = new QIntValidator(0, 4000000, this);
@@ -82,6 +84,16 @@ SettingsDialog::SettingsDialog(QWidget *parent, SerialSettings *currentSerialSet
 
     ui->profileListWidget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
+    QString defaultFilterSerialPorts;
+#ifndef WINDOWS
+    /* Filter all old serial ports on Linux */
+    defaultFilterSerialPorts = "ttyS.*";
+    ui->filterSerialPortsLineEdit->setToolTip(tr("Hide serial ports which match the regular expression\nExamples:\nttyS.*\nttyS.*|ttyACM.*"));
+#else
+    ui->filterSerialPortsLineEdit->setToolTip(tr("Hide serial ports which match the regular expression\nExample: COM[1-2]"));
+#endif
+    ui->filterSerialPortsLineEdit->setText(settings.value("serial/filterSerialPorts", defaultFilterSerialPorts).toString());
+
     fillPortsParameters();
     fillPortsInfo();
 
@@ -95,8 +107,18 @@ SettingsDialog::SettingsDialog(QWidget *parent, SerialSettings *currentSerialSet
     /* First item is selected */
     ui->profileListWidget->setCurrentItem(item);
 
+    bool autoRefresh = settings.value("serial/autoRefreshSerialPorts", false).toBool();
+    if (autoRefresh)
+    {
+        ui->autoRefreshSerialPortsCheckBox->setCheckState(Qt::CheckState::Checked);
+    }
+    else
+    {
+        ui->autoRefreshSerialPortsCheckBox->setCheckState(Qt::CheckState::Unchecked);
+    }
+    ui->autoRefreshSerialPortsSpinBox->setValue(settings.value("serial/autoRefreshSerialPortsInterval_ms", 5000).toInt());
+
     /* Load profile items */
-    QSettings settings;
     settings.beginGroup("profile");
     QStringList profileNames = settings.childGroups();
     foreach (QString profileName, profileNames)
@@ -114,8 +136,15 @@ SettingsDialog::SettingsDialog(QWidget *parent, SerialSettings *currentSerialSet
         ui->profileListWidget->addItem(item);
     }
 
-    m_timer.setInterval(1000);
-    m_timer.start();
+    m_timer.setInterval(ui->autoRefreshSerialPortsSpinBox->value());
+    bool autoRefreshEnabled = ui->autoRefreshSerialPortsCheckBox->isChecked();
+
+    ui->autoRefreshSerialPortsSpinBox->setEnabled(autoRefreshEnabled);
+    ui->autoRefreshSerialPortsLabel->setEnabled(autoRefreshEnabled);
+    if (autoRefreshEnabled)
+    {
+        m_timer.start();
+    }
 }
 
 SettingsDialog::~SettingsDialog()
@@ -174,8 +203,13 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
             // Don't save setting, only save at app exit!!!
             // saveSettings(&m_currentSettings);
 
-            /* Remove all profiles, otherwise deleted names will not disappear! */
             QSettings settings;
+
+            settings.setValue("serial/filterSerialPorts", ui->filterSerialPortsLineEdit->text());
+            settings.setValue("serial/autoRefreshSerialPorts", ui->autoRefreshSerialPortsCheckBox->isChecked());
+            settings.setValue("serial/autoRefreshSerialPortsInterval_ms", ui->autoRefreshSerialPortsSpinBox->value());
+
+            /* Remove all profiles, otherwise deleted names will not disappear! */
             settings.beginGroup("profile");
             QStringList profileNames = settings.childGroups();
             foreach (QString profileName, profileNames)
@@ -268,24 +302,25 @@ void SettingsDialog::fillPortsParameters()
  * @brief SettingsDialog::fillPortsInfo
  * Update list of serial ports. It is called in every second.
  */
-void SettingsDialog::fillPortsInfo()
+void SettingsDialog::fillPortsInfo(bool forceUpdate)
 {
     bool update = false;
     QString description;
     QString manufacturer;
     QString serialNumber;
+    QList<QSerialPortInfo> availablePorts = QSerialPortInfo::availablePorts();
 
     /* Check if serial ports have changed */
-    if (m_availablePorts.size() != QSerialPortInfo::availablePorts().size())
+    if (m_availablePorts.size() != availablePorts.size() || forceUpdate)
     {
         update = true;
     }
     else
     {
-        for (int i = 0; i < QSerialPortInfo::availablePorts().size(); i++)
+        for (int i = 0; i < availablePorts.size(); i++)
         {
             const QSerialPortInfo info1 = m_availablePorts[i];
-            const QSerialPortInfo info2 = QSerialPortInfo::availablePorts()[i];
+            const QSerialPortInfo info2 = availablePorts[i];
             if (info1.portName() != info2.portName()
                     || info1.description() != info2.description()
                     || info1.manufacturer() != info2.manufacturer()
@@ -305,27 +340,36 @@ void SettingsDialog::fillPortsInfo()
     /* Update of list is necessary */
     if (update)
     {
-        m_availablePorts = QSerialPortInfo::availablePorts();
+        m_availablePorts = availablePorts;
         ui->serialPortInfoListBox->clear();
+        QRegExp filterRegEx;
+        QString filter = ui->filterSerialPortsLineEdit->text();
+        filterRegEx.setPattern(filter);
+        filterRegEx.setPatternSyntax(QRegExp::PatternSyntax::RegExp);
+
         foreach (const QSerialPortInfo &info, m_availablePorts)
         {
-            QStringList list;
-            description = info.description();
-            manufacturer = info.manufacturer();
+            if (filter.isEmpty() ||
+                (!filter.isEmpty() && !filterRegEx.exactMatch(info.portName())))
+            {
+                QStringList list;
+                description = info.description();
+                manufacturer = info.manufacturer();
 #if QT_VERSION >= 0x050300
-            serialNumber = info.serialNumber();
+                serialNumber = info.serialNumber();
 #else
-            serialNumber.clear();
+                serialNumber.clear();
 #endif
-            list << info.portName()
-                 << (!description.isEmpty() ? description : blankString)
-                 << (!manufacturer.isEmpty() ? manufacturer : blankString)
-                 << (!serialNumber.isEmpty() ? serialNumber : blankString)
-                 << info.systemLocation()
-                 << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : blankString)
-                 << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : blankString);
+                list << info.portName()
+                     << (!description.isEmpty() ? description : blankString)
+                     << (!manufacturer.isEmpty() ? manufacturer : blankString)
+                     << (!serialNumber.isEmpty() ? serialNumber : blankString)
+                     << info.systemLocation()
+                     << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : blankString)
+                     << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : blankString);
 
-            ui->serialPortInfoListBox->addItem(list.first(), list);
+                ui->serialPortInfoListBox->addItem(list.first(), list);
+            }
         }
 
 #if USE_POLICY_CHECK
@@ -464,5 +508,37 @@ void SettingsDialog::item2settings(QListWidgetItem *item, SerialSettings::serial
     settings->stringStopBits = item->data(role_stringStopBits).toString();
     settings->flowControl = static_cast<QSerialPort::FlowControl> (item->data(role_flowControl).toInt());
     settings->stringFlowControl = item->data(role_stringFlowControl).toString();
+}
+
+
+void SettingsDialog::on_autoRefreshSerialPortsCheckBox_stateChanged(int arg1)
+{
+    bool enabled = ui->autoRefreshSerialPortsCheckBox->isChecked();
+
+    Q_UNUSED(arg1);
+    ui->autoRefreshSerialPortsSpinBox->setEnabled(enabled);
+    ui->autoRefreshSerialPortsLabel->setEnabled(enabled);
+    if (enabled)
+    {
+        m_timer.start();
+        fillPortsInfo();
+    }
+    else
+    {
+        m_timer.stop();
+    }
+}
+
+
+void SettingsDialog::on_autoRefreshSerialPortsSpinBox_valueChanged(int arg1)
+{
+    m_timer.setInterval(arg1);
+}
+
+
+void SettingsDialog::on_filterSerialPortsLineEdit_editingFinished()
+{
+    /* Force refreshing of port list */
+    fillPortsInfo(true);
 }
 

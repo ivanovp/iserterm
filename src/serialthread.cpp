@@ -25,12 +25,7 @@ SerialThread::SerialThread(QObject *parent, SerialSettings * serialSettings)
     , m_delayAfterBytes_ms(1)
     , m_delayAfterChr_ms(1)
     , m_serialSettings(serialSettings)
-    // , m_baudRateInput(115200)
-    // , m_baudRateOutput(115200)
-    // , m_dataBits(QSerialPort::Data8)
-    // , m_parity(QSerialPort::NoParity)
-    // , m_stopBits(QSerialPort::OneStop)
-    // , m_flowControl(QSerialPort::NoFlowControl)
+    , m_autoLogIsEnabled(false)
 {
     qRegisterMetaType<QSerialPort::SerialPortError>("QSerialPort::SerialPortError");
     qRegisterMetaType<QSerialPort::PinoutSignals>("QSerialPort::PinoutSignals");
@@ -147,7 +142,7 @@ qint64 SerialThread::write(QByteArray data, const QString& lineEnding)
 //    qDebug() << __PRETTY_FUNCTION__ << "adding" << data.length () << "bytes";
     if (lineEnding.length())
     {
-        data.replace(QString(NATIVE_LINEENDNG), lineEnding.toLocal8Bit());
+        data.replace(QString(NATIVE_LINEENDNG).toLocal8Bit(), lineEnding.toLocal8Bit());
     }
     m_writeData.append(data);
     m_command = CMD_write;
@@ -187,13 +182,13 @@ int SerialThread::getDelayAfterChr_ms() const
 
 QByteArray SerialThread::getChr() const
 {
-    return m_chr;
+    return m_delayChr;
 }
 
 void SerialThread::setDelayAfterChr_ms(int delayAfterChr_ms, QByteArray chr)
 {
     m_delayAfterChr_ms = delayAfterChr_ms;
-    m_chr = chr;
+    m_delayChr = chr;
 }
 
 void SerialThread::setPortName(const QString &name)
@@ -462,6 +457,35 @@ void SerialThread::recreatePort()
   }
 }
 
+void SerialThread::enableAutomaticLog(bool enable)
+{
+    m_autoLogIsEnabled = enable;
+}
+
+bool SerialThread::isAutomaticLogEnabled()
+{
+    return m_autoLogIsEnabled;
+}
+
+void SerialThread::startLogging()
+{
+    m_logFile.setFileName(m_autoLogFileName);
+
+    if (m_logFile.open(QFile::WriteOnly))
+    {
+        // QString str = QString("Start logging on %1").arg();
+        // m_logFile.write(;
+    }
+}
+
+void SerialThread::stopLogging()
+{
+    if (m_logFile.isOpen())
+    {
+        m_logFile.close();
+    }
+}
+
 void SerialThread::abortSend()
 {
     qDebug() << __FUNCTION__;
@@ -506,7 +530,7 @@ void SerialThread::processCommand()
                  * data can be received.
                  */
                 int delay_ms = 0;
-                if (m_chr.length() > 0 && c == m_chr)
+                if (m_delayChr.length() > 0 && c == m_delayChr)
                 {
                     delay_ms = m_delayAfterChr_ms;
                 }
@@ -525,7 +549,7 @@ void SerialThread::processCommand()
                 if (delay_ms && m_serialPort->waitForReadyRead(delay_ms))
                 {
                     m_mutex.lock();
-//                    m_readData.append(m_serialPort->read(1024));
+                    //                    m_readData.append(m_serialPort->read(1024));
                     m_readData.append(m_serialPort->readAll());
                     m_mutex.unlock();
                     emit readyRead();
@@ -551,6 +575,7 @@ void SerialThread::processCommand()
     }
     else if (m_command == CMD_open)
     {
+        stopLogging();
         if (!m_serialPort->isOpen())
         {
             bool isOpened;
@@ -560,29 +585,31 @@ void SerialThread::processCommand()
             isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
-              m_serialPort->close();
-              msleep(50);
-              recreatePort();
-              msleep(50);
+                m_serialPort->close();
+                msleep(50);
+                recreatePort();
+                msleep(50);
             }
 #endif
             m_serialPort->setPortName(m_serialSettings->m_serialSettings.name);
             isOpened = m_serialPort->open(static_cast<QSerialPort::OpenMode>(m_commandParam));
             if (isOpened)
             {
-              // Parameters shall be set after open on Qt 5.3!
+                startLogging();
+                // Parameters shall be set after open on Qt 5.3!
 #if WINDOWS
-              m_serialPort->setBaudRate(m_serialSettings->m_serialSettings.baudRate);
+                m_serialPort->setBaudRate(m_serialSettings->m_serialSettings.baudRate);
 #else
-              // buggy on Windows 10 with PL2303 (not sure which one is guilty)
-              m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
-              m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
+                // buggy on Windows 10 with PL2303 (not sure which one is guilty)
+                // m_serialPort->setBaudRate(m_baudRateOutput, QSerialPort::Output);
+                // m_serialPort->setBaudRate(m_baudRateInput, QSerialPort::Input);
+                m_serialPort->setBaudRate(m_serialSettings->m_serialSettings.baudRate);
 #endif
-              m_serialPort->setDataBits(m_serialSettings->m_serialSettings.dataBits);
-              m_serialPort->setParity(m_serialSettings->m_serialSettings.parity);
-              m_serialPort->setStopBits(m_serialSettings->m_serialSettings.stopBits);
-              m_serialPort->setFlowControl(m_serialSettings->m_serialSettings.flowControl);
-              emit portStatusChanged(true);
+                m_serialPort->setDataBits(m_serialSettings->m_serialSettings.dataBits);
+                m_serialPort->setParity(m_serialSettings->m_serialSettings.parity);
+                m_serialPort->setStopBits(m_serialSettings->m_serialSettings.stopBits);
+                m_serialPort->setFlowControl(m_serialSettings->m_serialSettings.flowControl);
+                emit portStatusChanged(true);
             }
             else
             {
@@ -594,6 +621,7 @@ void SerialThread::processCommand()
     }
     else if (m_command == CMD_close || m_command == CMD_stop)
     {
+        stopLogging();
         if (m_serialPort->isOpen())
         {
             m_serialPort->close();
