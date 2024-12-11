@@ -548,8 +548,6 @@ void SerialThread::writeLog(QByteArray &byteArray, bool read)
     if (m_autoLogIsEnabled)
     {
         int len = byteArray.length();
-        int rxLen = m_lineEndingRxBA.length();
-        int txLen = m_lineEndingTxBA.length();
         for (int i = 0; i < len; i++)
         {
             if (!m_logColumnIdx)
@@ -560,17 +558,13 @@ void SerialThread::writeLog(QByteArray &byteArray, bool read)
             char c = byteArray[i];
             m_logFile.write(&c, 1);
             m_logColumnIdx++;
-            // TODO is it okay to check the whole line ending???
-            // what if 0xD and 0xA are received in to chunks?
-            if (read && byteArray.mid(i, rxLen) == m_lineEndingRxBA)
+            if (read && c == m_lineEndingRxBA.right(1)[0])
             {
-                // qDebug() << "rxLen:" << rxLen;
-                m_logColumnIdx = 1 - rxLen;
+                m_logColumnIdx = 0;
             }
-            else if (!read && byteArray.mid(i, txLen) == m_lineEndingTxBA)
+            else if (!read && c == m_lineEndingTxBA.right(1)[0])
             {
-                // qDebug() << "txLen:" << txLen;
-                m_logColumnIdx = 1 - txLen;
+                m_logColumnIdx = 0;
             }
         }
     }
